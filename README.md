@@ -1,16 +1,26 @@
 # second_music
+一个聚合音乐客户端。
 
-A new Flutter application.
+## 支持平台
+- [ ] 网易云音乐
+- [x] QQ音乐
+- [x] 虾米音乐
+- [ ] 酷狗音乐
+- [ ] 酷我音乐
+- [ ] 哔哩哔哩音乐
 
-## Getting Started
+## 已完成功能
+- [x] 热门推荐
+- [x] 搜索单曲、歌单、歌手、专辑
+- [x] 本地收藏管理
 
-This project is a starting point for a Flutter application.
+## 待完成功能
+- [ ] 后台播放
+- [ ] 本地音乐
+- [ ] 播放历史
+- [ ] 歌词
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.dev/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+## 一些页面预览
+| ![my_playlist](https://github.com/cooaer/second_music/screenshots/my_playlist.png) | ![hot_playlist](https://github.com/cooaer/second_music/screenshots/hot_playlist.png) | ![playlist](https://github.com/cooaer/second_music/screenshots/playlist.png) |
+| :------: | :------: | :------: |
+| ![play](https://github.com/cooaer/second_music/screenshots/play.png) | ![search_history](https://github.com/cooaer/second_music/screenshots/search_history.png) | ![search_result](https://github.com/cooaer/second_music/screenshots/search_result.png) |
