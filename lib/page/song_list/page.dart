@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:second_music/common/palette.dart';
 import 'package:second_music/model/enum.dart';
 import 'package:second_music/model/song.dart';
 import 'package:second_music/model/song_list.dart';

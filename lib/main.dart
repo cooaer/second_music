@@ -15,6 +15,8 @@ void main() async {
 }
 
 Future initApp() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   await initPreferences();
 
   await AppPath.instance.init();

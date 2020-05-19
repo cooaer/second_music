@@ -1,7 +1,4 @@
-import 'package:second_music/model/album.dart';
-import 'package:second_music/model/playlist.dart';
-import 'package:second_music/model/singer.dart';
-import 'package:second_music/model/song.dart';
+
 
 //搜索结果
 class SearchResult

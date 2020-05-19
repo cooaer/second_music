@@ -9,7 +9,6 @@ import 'package:second_music/model/search.dart';
 import 'package:second_music/model/singer.dart';
 import 'package:second_music/model/song.dart';
 import 'package:second_music/model/song_list.dart';
-import 'package:second_music/page/home/my_song_list/widget.dart';
 import 'package:second_music/page/navigator.dart';
 import 'package:second_music/page/play_control/page.dart';
 import 'package:second_music/page/search/model.dart';

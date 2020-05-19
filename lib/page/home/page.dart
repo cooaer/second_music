@@ -1,13 +1,10 @@
 import 'package:extended_tabs/extended_tabs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:second_music/model/enum.dart';
-import 'package:second_music/network/platform/music_provider.dart';
 import 'package:second_music/page/home/hot_playlist/page.dart';
 import 'package:second_music/page/home/my_song_list/page.dart';
 import 'package:second_music/page/navigator.dart';
 import 'package:second_music/page/play_control/page.dart';
-import 'package:second_music/page/setting/page.dart';
 import 'package:second_music/page/ui_style.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/widget/material_icon_round.dart';
@@ -148,7 +145,7 @@ class _HomeTopBar extends StatelessWidget {
                           shape: CircleBorder(side: BorderSide.none),
                           onPressed: () => AppNavigator.instance.navigateTo(context, AppNavigator.setting, overlay: true),
                           child: Icon(
-                            MdiIcons.settings,
+                            MdiIcons.cogOutline,
                             color: Colors.grey.shade600,
                           ),
                         )),

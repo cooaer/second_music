@@ -11,7 +11,6 @@ import '../../model/album.dart';
 import '../../model/enum.dart';
 import '../../model/playlist.dart';
 import '../../model/playlist_set.dart';
-import '../../model/search.dart';
 import '../../model/singer.dart';
 
 
@@ -39,7 +38,7 @@ class NeteaseMusic extends BaseMusicProvider{
 
   @override
   Future<Singer> singer(String artistId, MusicObjectType type,
-      {int offset, int count = DEFAULT_REQUEST_COUNT}) {
+      {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) {
     // TODO: implement artist
     return null;
   }
