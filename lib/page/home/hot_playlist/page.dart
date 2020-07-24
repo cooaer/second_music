@@ -1,91 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:extended_tabs/extended_tabs.dart';
 import 'package:flutter/material.dart';
-import 'package:second_music/model/enum.dart';
 import 'package:second_music/model/playlist.dart';
 import 'package:second_music/model/playlist_set.dart';
 import 'package:second_music/model/song_list.dart';
 import 'package:second_music/page/home/hot_playlist/model.dart';
 import 'package:second_music/page/navigator.dart';
 import 'package:second_music/res/res.dart';
-import 'package:second_music/storage/preference/config.dart';
 import 'package:second_music/widget/loading_more.dart';
 import 'package:second_music/widget/material_icon_round.dart';
-
-class HomeHotPlaylist extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() {
-    return HomeHotPlaylistState();
-  }
-}
-
-class HomeHotPlaylistState extends State with AutomaticKeepAliveClientMixin {
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    int length = MusicPlatforms.platforms.length;
-    return DefaultTabController(
-      length: length,
-      child: Column(
-        children: <Widget>[
-          HomeHotPlaylistTabBar(),
-          Expanded(
-            flex: 1,
-            child: HomeHotPlaylistTabBarView(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  bool get wantKeepAlive => true;
-}
-
-class HomeHotPlaylistTabBar extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        color: Colors.white,
-        child: StreamBuilder(
-          initialData: AppConfig.instance.platformRank,
-          stream: AppConfig.instance.platformRankStream,
-          builder: (context, AsyncSnapshot<List<String>> snapshot) {
-            return TabBar(
-                indicatorWeight: 3,
-                indicatorSize: TabBarIndicatorSize.label,
-                labelColor: AppColors.text_accent,
-                unselectedLabelColor: AppColors.text_light,
-                labelPadding: EdgeInsets.zero,
-                tabs: snapshot.data.map((item) {
-                  var name =
-                      stringsOf(context).platformNames[MusicPlatforms.platforms.indexOf(item)];
-                  return Tab(
-                    key: Key(name),
-                    text: name,
-                  );
-                }).toList());
-          },
-        ));
-  }
-}
-
-class HomeHotPlaylistTabBarView extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder(
-      initialData: AppConfig.instance.platformRank,
-      stream: AppConfig.instance.platformRankStream,
-      builder: (context, AsyncSnapshot<List<String>> snapshot) {
-        return ExtendedTabBarView(
-            linkWithAncestor: true,
-            children: snapshot.data
-                .map((item) => HomeHotPlaylistPlatform(item, key: Key(item)))
-                .toList());
-      },
-    );
-  }
-}
 
 class HotPlaylistModelProvider extends InheritedWidget {
   final HotPlaylistModel model;
@@ -205,8 +127,8 @@ class HomeHotPlaylistPlatformState extends State with AutomaticKeepAliveClientMi
               stream: _hotPlaylistModel.lastErrorStream,
               builder: (context, AsyncSnapshot<bool> snapshot) {
                 var lastError = snapshot.data;
-                return LoadingMore(loading, lastError, () =>
-                    HotPlaylistModelProvider.of(context).model.requestMore(true));
+                return LoadingMore(loading, lastError,
+                    () => HotPlaylistModelProvider.of(context).model.requestMore(true));
               });
         });
   }
@@ -301,5 +223,3 @@ class HomeHotPlaylistItem extends StatelessWidget {
     );
   }
 }
-
-

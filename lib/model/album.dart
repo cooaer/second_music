@@ -16,7 +16,7 @@ class Album
   int playCount; //播放量
   int favorCount; //收藏量
 
-  Singer singer;
+  Singer get singer => singers != null && singers.isNotEmpty ? singers[0] : null;
   List<Singer> singers;//歌手
 
   int songTotal;//歌曲的数量

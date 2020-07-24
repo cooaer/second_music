@@ -339,6 +339,13 @@ class _PlayLyricContainer extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: double.infinity,
+      alignment: Alignment.center,
+      child:Text(
+        '暂不支持显示歌词',
+        style: TextStyle(
+          color: AppColors.text_embed
+        ),
+      )
     );
   }
 }

@@ -91,7 +91,7 @@ class QQMusic extends BaseMusicProvider {
       ..cover = _getImageUrl(Json.getString(dataJson, 'mid'), 'album')
       ..releaseTime = Json.getString(dataJson, 'aDate')
       ..description = Json.getString(dataJson, 'desc')
-      ..singer = singer
+      ..singers = [singer]
       ..songTotal = Json.getInt(dataJson, 'total')
       ..songs = songs;
 

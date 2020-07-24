@@ -57,7 +57,8 @@ abstract class MusicProvider {
   Future<SearchResult> search(String text, MusicObjectType type,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT});
 
-  Future<SearchResult> searchSongs(String keyword, {int page = 0, int count = DEFAULT_REQUEST_COUNT});
+  Future<SearchResult> searchSongs(String keyword,
+      {int page = 0, int count = DEFAULT_REQUEST_COUNT});
 
   Future<SearchResult> searchPlaylists(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT});
@@ -119,11 +120,11 @@ abstract class BaseMusicProvider implements MusicProvider {
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) async {
     if (type == MusicObjectType.song) {
       return searchSongs(keyword, page: page, count: count);
-    }else if (type == MusicObjectType.playlist) {
+    } else if (type == MusicObjectType.playlist) {
       return searchPlaylists(keyword, page: page, count: count);
-    }else if (type == MusicObjectType.album) {
+    } else if (type == MusicObjectType.album) {
       return searchAlbums(keyword, page: page, count: count);
-    }else if (type == MusicObjectType.singer) {
+    } else if (type == MusicObjectType.singer) {
       return searchSingers(keyword, page: page, count: count);
     }
     return Future.value(null);
@@ -131,16 +132,23 @@ abstract class BaseMusicProvider implements MusicProvider {
 
   Future<SearchResult> searchSongs(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {
+    return null;
   }
 
   Future<SearchResult> searchPlaylists(String keyword,
-      {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {}
+      {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {
+    return null;
+  }
 
   Future<SearchResult> searchAlbums(String keyword,
-      {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {}
+      {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {
+    return null;
+  }
 
   Future<SearchResult> searchSingers(String keyword,
-      {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {}
+      {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {
+    return null;
+  }
 
   @override
   Future<Singer> singer(String artistId, MusicObjectType type,

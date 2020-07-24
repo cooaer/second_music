@@ -41,19 +41,20 @@ class HomeMySongListState extends State with AutomaticKeepAliveClientMixin {
     var collectedAlbums = MySongListModel.collectedOfAlbum(songLists);
     return CustomScrollView(
       slivers: <Widget>[
-        SliverToBoxAdapter(
-          child: Container(
-            color: Colors.white,
-            child: Column(
-              children: <Widget>[
-                //播放历史
-                _HomeMyCommonItem('history', stringsOf(context).recentlyPlayed, 28),
-                _HomeMyCommonDivider(),
-                _HomeMyCommonItem('queue_music', stringsOf(context).localMusic, 12),
-              ],
-            ),
-          ),
-        ),
+// 暂不支持播放历史和本地音乐
+//        SliverToBoxAdapter(
+//          child: Container(
+//            color: Colors.white,
+//            child: Column(
+//              children: <Widget>[
+//                //播放历史
+//                _HomeMyCommonItem('history', stringsOf(context).recentlyPlayed, 28),
+//                _HomeMyCommonDivider(),
+//                _HomeMyCommonItem('queue_music', stringsOf(context).localMusic, 12),
+//              ],
+//            ),
+//          ),
+//        ),
         SliverToBoxAdapter(
           child: SizedBox(
             height: 8,

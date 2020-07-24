@@ -213,7 +213,7 @@ class XiamiMusic extends BaseMusicProvider {
       ..cover = Json.getString(dataJson, 'album_logo')
       ..releaseTime = dateTimeToString(
           DateTime.fromMillisecondsSinceEpoch(Json.getInt(dataJson, 'gmt_publish') * 1000))
-      ..singer = singer
+      ..singers = [singer]
       ..songTotal = Json.getInt(dataJson, 'song_count')
       ..songs = songs;
     return album;

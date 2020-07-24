@@ -78,6 +78,7 @@ class SearchObjectModel {
 
   // 有一个渠道请求成功就算是没有失败
   bool get lastError {
+    if (_results.isEmpty) return false;
     for (SearchResult result in _results.values) {
       if (!result.hasError) return false;
     }
@@ -85,12 +86,14 @@ class SearchObjectModel {
   }
 
   var _results = <String, SearchResult>{};
+
   Map<String, SearchResult> get results => _results;
   var _resultController = StreamController<Map<String, SearchResult>>.broadcast();
+
   Stream<Map<String, SearchResult>> get resultStream => _resultController.stream;
 
   bool hasMore({List<String> plts}) {
-    if(_results.isEmpty) return true;
+    if (_results.isEmpty) return true;
     plts = plts ?? _plts;
     for (String plt in plts) {
       if (_results.containsKey(plt) && _results[plt].hasMore) {

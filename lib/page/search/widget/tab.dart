@@ -36,7 +36,6 @@ class _SearchObjectTabState extends State<SearchObjectTab> with AutomaticKeepAli
   void initState() {
     super.initState();
     _model = SearchObjectModel(widget.type, widget.keyword);
-    _model.refresh(true);
   }
 
   @override
@@ -70,6 +69,7 @@ class _SearchObjectTabState extends State<SearchObjectTab> with AutomaticKeepAli
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    var plts = AppConfig.instance.searchPltRank;
     return StreamBuilder(
       stream: _model.resultStream,
       builder: (context, AsyncSnapshot<Map<String, SearchResult>> snapshot) {
@@ -78,15 +78,15 @@ class _SearchObjectTabState extends State<SearchObjectTab> with AutomaticKeepAli
             if (snapshot?.data != null)
               SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
-                  var plt = AppConfig.instance.searchPltRank[index];
+                  var plt = plts[index];
                   var result = snapshot.data[plt];
                   return result?.items != null && result.items.isNotEmpty
                       ? _SearchResultItemWidget(plt, widget.keyword, widget.type, result,
                           key: ValueKey(plt))
                       : Container();
-                }, childCount: AppConfig.instance.searchPltRank.length),
+                }, childCount: plts.length),
               ),
-            if (_model.hasMore())
+            if (_model.hasMore() && (snapshot?.data == null || snapshot.data.length < plts.length))
               SliverToBoxAdapter(
                 child: LoadingMore(_model.loading, _model.lastError, () {}),
               ),

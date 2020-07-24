@@ -7,7 +7,7 @@ class MusicPlatforms {
   static const KUGOU = 'kugou';
   static const BILIBILI = 'bilibili';
 
-  static const platforms = [NETEASE, QQ, XIAMI, KUWO, KUGOU, BILIBILI];
+  static const platforms = [NETEASE, QQ, XIAMI];
 }
 
 enum MusicObjectType { song, playlist, album, singer}

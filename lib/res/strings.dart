@@ -72,6 +72,7 @@ class AppLocalizations {
       case MusicPlatforms.BILIBILI:
         return bilibili;
     }
+    return null;
   }
 
   //common

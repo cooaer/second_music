@@ -13,8 +13,9 @@ Future<T> dioGet<T>(String url) async {
   return response.data;
 }
 
-Future<T> dioPost<T>(String url, Map<String, String> params) async {
-  var response = await dio.post(url, queryParameters: params);
+Future<T> dioPost<T>(String url, dynamic data, Map<String, dynamic> headers) async {
+  var contentType = headers.remove('Content-Type');
+  var response = await dio.post<T>(url, data:data, options: Options(headers: headers, contentType: contentType));
   return response.data;
 }
 

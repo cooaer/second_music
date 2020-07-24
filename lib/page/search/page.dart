@@ -100,6 +100,7 @@ class SearchBar extends StatelessWidget {
                         ),
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.zero,
+                        isDense: true,//是文本垂直居中
                       ),
                     ),
                   ),
