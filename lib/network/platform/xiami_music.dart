@@ -291,6 +291,7 @@ class XiamiMusic extends BaseMusicProvider {
       ..plt = MusicPlatforms.XIAMI
       ..id = Json.getString(json, 'songId')
       ..name = Json.getString(json, 'songName')
+      ..subtitle = Json.getString(json, 'subName')
       ..cover = Json.getString(json, 'albumLogo')
       ..description = Json.getString(json, 'description')
       ..album = album
@@ -315,6 +316,7 @@ class XiamiMusic extends BaseMusicProvider {
       ..plt = MusicPlatforms.XIAMI
       ..id = Json.getString(json, 'song_id')
       ..name = Json.getString(json, 'song_name')
+      ..subtitle = Json.getString(json, 'subName')
       ..cover = Json.getString(json, 'album_logo')
       ..album = album
       ..singer = singer;

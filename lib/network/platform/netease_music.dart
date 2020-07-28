@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
 
+import 'package:flutter/foundation.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart' show parse;
 import 'package:netease_music_cipher/netease_music_cipher.dart';
@@ -51,6 +52,7 @@ class NeteaseMusic extends BaseMusicProvider {
     var respStr = await _neteaseHttpRequest(url, params);
 
     var respMap = json.decode(respStr);
+
     var playlistMap = Json.getMap(respMap, 'playlist');
     var trackIds =
         Json.getList(playlistMap, 'trackIds').map((e) => Json.getObject(e, 'id')).toList();
@@ -231,9 +233,11 @@ class NeteaseMusic extends BaseMusicProvider {
       ..plt = MusicPlatforms.NETEASE
       ..id = Json.getString(map, 'id')
       ..name = Json.getString(map, 'name')
+      ..subtitle = Json.getList(map, 'alia').join(' | ')
       ..cover = Json.getString(Json.getMap(map, 'al'), 'picUrl')
       ..album = _convertAlbum(Json.getMap(map, 'al'))
       ..singers = Json.getList(map, 'ar')?.map<Singer>((e) => _convertSinger(e))?.toList();
+    //alia
     return song;
   }
 
@@ -245,6 +249,7 @@ class NeteaseMusic extends BaseMusicProvider {
       ..plt = MusicPlatforms.NETEASE
       ..id = Json.getString(map, 'id')
       ..name = Json.getString(map, 'name')
+      ..subtitle = Json.getList(map, 'alia').join(' | ')
       ..cover = Json.getString(Json.getMap(map, 'album'), 'picUrl')
       ..album = _convertAlbum(Json.getMap(map, 'album'))
       ..singers = Json.getList(map, 'artists')?.map<Singer>((e) => _convertSinger(e))?.toList();

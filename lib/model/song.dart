@@ -7,6 +7,7 @@ class Song extends Object {
   String plt; //netease,qq,xiami,kugou,kuwo
   String id; //歌曲ID
   String name;
+  String subtitle;//子标题
   String cover;
   String streamUrl; //歌曲播放流地址
   String description; //描述
