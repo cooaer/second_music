@@ -98,7 +98,7 @@ packages:
       name: csslib
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.16.1"
+    version: "0.16.2"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -250,7 +250,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "9e3b4e35574c720af8e401ccf8bd962c4f32fe37"
+      resolved-ref: "2ca5956ebaaaa5c4e941051c6b85e64f387863f5"
       url: "git@github.com:cooaer/netease_music_cipher.git"
     source: git
     version: "0.0.1"
