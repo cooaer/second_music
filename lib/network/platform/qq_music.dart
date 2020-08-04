@@ -312,7 +312,7 @@ class QQMusic extends BaseMusicProvider {
       ..plt = MusicPlatforms.QQ
       ..id = Json.getString(songJson, 'songmid')
       ..name = Json.getString(songJson, 'songname')
-      ..name = Json.getString(songJson, 'lyric')
+      ..subtitle = Json.getString(songJson, 'lyric')
       ..cover = _getImageUrl(album.id, 'album')
       ..singers = singerList
       ..album = album;

@@ -135,8 +135,8 @@ class NeteaseMusic extends BaseMusicProvider {
     };
     var respStr = await _neteaseHttpRequest(url, params);
     var respMap = json.decode(respStr);
-    var dataMap = Json.getMap(respMap, 'data');
-    var firstTrackMap = dataMap != null && dataMap.isNotEmpty ? dataMap[0] : null;
+    var dataList = Json.getList(respMap, 'data');
+    var firstTrackMap = dataList != null && dataList.isNotEmpty ? dataList[0] : null;
     song.streamUrl = Json.getString(firstTrackMap, 'url');
     return true;
   }
