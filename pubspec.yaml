@@ -33,7 +33,6 @@ dependencies:
   sqflite: ^1.1.0
   cached_network_image: ^2.2.0+1
   shared_preferences: ^0.5.2
-  keyboard_visibility: ^0.5.2
   event_bus: ^1.1.0
   crypto: ^2.0.6
   convert: ^2.1.1
