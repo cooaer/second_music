@@ -29,6 +29,8 @@ class AppLocalizations {
 
   String get appName => '第二音乐';
 
+  String get appNameForShort => '氘';
+
   //音乐平台
 
   List<String> get platformNames => [netease, qq, xiami, kugou, kuwo, bilibili];

@@ -92,7 +92,7 @@ class _HomeTopBar extends StatelessWidget {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
-                        'Dier',
+                        stringsOf(context).appNameForShort,
                         style: TextStyle(
                           fontSize: 28,
                           color: AppColors.text_title,
