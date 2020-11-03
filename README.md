@@ -21,6 +21,6 @@
 - [ ] 歌词
 
 ## 一些页面预览
-| ![my_playlist](https://github.com/cooaer/second_music/blob/master/screenshots/my_playlist.png?raw=true) | ![hot_playlist](https://github.com/cooaer/second_music/blob/master/screenshots/hot_playlist.png?raw=true) | ![playlist](https://github.com/cooaer/second_music/blob/master/screenshots/playlist.png?raw=true) |
+| ![my_playlist](https://github.com/cooaer/second_music/blob/master/screenshots/my_playlist.jpg?raw=true) | ![hot_playlist](https://github.com/cooaer/second_music/blob/master/screenshots/hot_playlist.jpg?raw=true) | ![playlist](https://github.com/cooaer/second_music/blob/master/screenshots/playlist.jpg?raw=true) |
 | :------: | :------: | :------: |
-| ![play](https://github.com/cooaer/second_music/blob/master/screenshots/play.png?raw=true) | ![search_history](https://github.com/cooaer/second_music/blob/master/screenshots/search_history.png?raw=true) | ![search_result](https://github.com/cooaer/second_music/blob/master/screenshots/search_result.png?raw=true) |
+| ![play](https://github.com/cooaer/second_music/blob/master/screenshots/play.jpg?raw=true) | ![search_history](https://github.com/cooaer/second_music/blob/master/screenshots/search_history.jpg?raw=true) | ![search_result](https://github.com/cooaer/second_music/blob/master/screenshots/search_result.jpg?raw=true) |
