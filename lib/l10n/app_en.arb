@@ -1,0 +1,14 @@
+{
+  "helloWorld": "Hello World!",
+  "@helloWorld": {
+    "description": "The conventional newborn programmer greeting"
+  },
+  "appName": "Second Music",
+  "@appName": {
+    "description": ""
+  },
+  "neteaseMusic": "Netease Music",
+  "@neteaseMusic": {
+    "description": ""
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "helloWorld": "你好！",
+  "@helloWorld": {
+    "description": ""
+  },
+  "appName": "第二音乐",
+  "@appName": {
+    "description": ""
+  },
+  "neteaseMusic": "网易云音乐",
+  "@neteaseMusic": {
+    "description": ""
+  }
+}

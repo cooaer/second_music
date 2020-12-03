@@ -1,0 +1,8 @@
+arb-dir: lib/l10n
+template-arb-file: app_zh.arb
+output-localization-file: app_localizations.dart
+
+#  This file configures the localization tool; in this example, the input files
+#  are located in ${FLUTTER_PROJECT}/lib/l10n, the app_en.arb file provides the
+#  template, and the generated localizations are placed in the app_localizations.dart file.
+
