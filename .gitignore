@@ -75,3 +75,4 @@ android/settings_aar.gradle
 ios/Flutter/flutter_export_environment.sh
 .gradle
 local.properties
+/ios/Flutter/Flutter.podspec
