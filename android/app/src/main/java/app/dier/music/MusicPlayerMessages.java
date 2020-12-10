@@ -34,9 +34,9 @@ public class MusicPlayerMessages {
 
   /** Generated class from Pigeon that represents data sent in messages. */
   public static class PlayModeMessage {
-    private Long playMode;
-    public Long getPlayMode() { return playMode; }
-    public void setPlayMode(Long setterArg) { this.playMode = setterArg; }
+    private String playMode;
+    public String getPlayMode() { return playMode; }
+    public void setPlayMode(String setterArg) { this.playMode = setterArg; }
 
     HashMap toMap() {
       HashMap<String, Object> toMapResult = new HashMap<>();
@@ -46,7 +46,7 @@ public class MusicPlayerMessages {
     static PlayModeMessage fromMap(HashMap map) {
       PlayModeMessage fromMapResult = new PlayModeMessage();
       Object playMode = map.get("playMode");
-      fromMapResult.playMode = (playMode == null) ? null : ((playMode instanceof Integer) ? (Integer)playMode : (Long)playMode);
+      fromMapResult.playMode = (String)playMode;
       return fromMapResult;
     }
   }
@@ -194,9 +194,9 @@ public class MusicPlayerMessages {
 
   /** Generated class from Pigeon that represents data sent in messages. */
   public static class StateMessage {
-    private Long state;
-    public Long getState() { return state; }
-    public void setState(Long setterArg) { this.state = setterArg; }
+    private String state;
+    public String getState() { return state; }
+    public void setState(String setterArg) { this.state = setterArg; }
 
     HashMap toMap() {
       HashMap<String, Object> toMapResult = new HashMap<>();
@@ -206,7 +206,7 @@ public class MusicPlayerMessages {
     static StateMessage fromMap(HashMap map) {
       StateMessage fromMapResult = new StateMessage();
       Object state = map.get("state");
-      fromMapResult.state = (state == null) ? null : ((state instanceof Integer) ? (Integer)state : (Long)state);
+      fromMapResult.state = (String)state;
       return fromMapResult;
     }
   }

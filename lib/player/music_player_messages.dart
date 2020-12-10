@@ -23,7 +23,7 @@ class SongsMessage {
 }
 
 class PlayModeMessage {
-  int playMode;
+  String playMode;
   // ignore: unused_element
   Map<dynamic, dynamic> _toMap() {
     final Map<dynamic, dynamic> pigeonMap = <dynamic, dynamic>{};
@@ -123,7 +123,7 @@ class StreamUrlMessage {
 }
 
 class StateMessage {
-  int state;
+  String state;
   // ignore: unused_element
   Map<dynamic, dynamic> _toMap() {
     final Map<dynamic, dynamic> pigeonMap = <dynamic, dynamic>{};

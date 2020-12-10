@@ -1,10 +1,10 @@
 import 'package:pigeon/pigeon.dart';
 
-class SongMessage{
+class SongMessage {
   String plt; //netease,qq,xiami,kugou,kuwo
   String id; //歌曲ID
   String name;
-  String subtitle;//子标题
+  String subtitle; //子标题
   String cover;
   String streamUrl; //歌曲播放流地址
   String description; //描述
@@ -18,25 +18,24 @@ class SongMessage{
   String singerAvatar;
 }
 
-class SongsMessage{
+class SongsMessage {
   List<SongMessage> songs;
 }
 
-class PositionMessage{
+class PositionMessage {
   int position;
 }
 
-class DurationMessage{
+class DurationMessage {
   int duration;
 }
 
-class PlayModeMessage{
-  int playMode;
+class PlayModeMessage {
+  String playMode;
 }
 
 @HostApi()
-abstract class MusicPlayerControllerApi{
-
+abstract class MusicPlayerControllerApi {
   void addToPlaylist(SongsMessage message);
 
   void removeFromPlaylist(SongsMessage message);
@@ -54,20 +53,18 @@ abstract class MusicPlayerControllerApi{
   void stop();
 
   void seek(PositionMessage message);
-
 }
 
-class StateMessage{
-  int state;
+class StateMessage {
+  String state;
 }
 
-class StreamUrlMessage{
+class StreamUrlMessage {
   String streamUrl;
 }
 
 @FlutterApi()
-abstract class MusicPlayerCallbackApi{
-
+abstract class MusicPlayerCallbackApi {
   StreamUrlMessage streamUrl(SongMessage message);
 
   void onPlayerStateChange(StateMessage message);
@@ -77,19 +74,19 @@ abstract class MusicPlayerCallbackApi{
   void onPositionChanged(PositionMessage message);
 
   void onDurationChanged(DurationMessage message);
-
 }
 
 //回调歌曲播放进度、歌曲总时长、当前播放的歌曲
 //回调获取最新的歌曲播放地址
 
 // 输出配置
+// flutter pub run pigeon --input pigeons/music_player_messages.dart
 void configurePigeon(PigeonOptions opts) {
   opts.dartOut = './lib/player/music_player_messages.dart';
   opts.objcHeaderOut = 'ios/Runner/MusicPlayerMessages.h';
   opts.objcSourceOut = 'ios/Runner/MusicPlayerMessages.m';
   opts.objcOptions.prefix = 'FLT';
   opts.javaOut =
-  'android/app/src/main/java/app/dier/music/MusicPlayerMessages.java';
+      'android/app/src/main/java/app/dier/music/MusicPlayerMessages.java';
   opts.javaOptions.package = 'app.dier.music';
 }

@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface FLTPlayModeMessage : NSObject
-@property(nonatomic, strong, nullable) NSNumber * playMode;
+@property(nonatomic, copy, nullable) NSString * playMode;
 @end
 
 @interface FLTSongMessage : NSObject
@@ -48,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface FLTStateMessage : NSObject
-@property(nonatomic, strong, nullable) NSNumber * state;
+@property(nonatomic, copy, nullable) NSString * state;
 @end
 
 @interface FLTDurationMessage : NSObject
