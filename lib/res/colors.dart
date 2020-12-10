@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:second_music/model/enum.dart';
+import 'package:second_music/entity/enum.dart';
 
 class AppColors {
   static final primary = Colors.white;
@@ -27,21 +27,20 @@ class AppColors {
 
   static final search_bg = Colors.grey.shade200;
 
-  static Color platform(String plt) {
+  static Color platform(MusicPlatform plt) {
     switch (plt) {
-      case MusicPlatforms.NETEASE:
+      case MusicPlatform.netease:
         return Color(0xffd22a0d);
-      case MusicPlatforms.QQ:
+      case MusicPlatform.qq:
         return Color(0xff59be7c);
-      case MusicPlatforms.XIAMI:
-        return Color(0xfff69802);
-      case MusicPlatforms.KUWO:
-        return Color(0xfffdb340);
-      case MusicPlatforms.KUGOU:
-        return Color(0xff3f80f6);
-      case MusicPlatforms.BILIBILI:
-        return Color(0xffde819d);
+      // case MusicPlatform.kuwo:
+      //   return Color(0xfffdb340);
+      // case MusicPlatform.kugou:
+      //   return Color(0xff3f80f6);
+      // case MusicPlatform.bilibili:
+      //   return Color(0xffde819d);
+      // default:
+      //   return accent;
     }
-    return accent;
   }
 }

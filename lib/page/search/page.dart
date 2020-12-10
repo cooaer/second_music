@@ -1,3 +1,4 @@
+import 'package:dart_extensions_methods/dart_extension_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:second_music/page/navigator.dart';
 import 'package:second_music/page/search/model.dart';
@@ -20,16 +21,20 @@ class _SearchPageState extends State<SearchPage> {
       searchModel,
       Scaffold(
         appBar: PreferredSize(
-            child:
-                SafeArea(top: true, left: false, right: false, bottom: false, child: SearchBar()),
+            child: SafeArea(
+                top: true,
+                left: false,
+                right: false,
+                bottom: false,
+                child: SearchBar()),
             preferredSize: Size.fromHeight(50)),
         body: StreamBuilder(
           stream: searchModel.keywordStream,
           builder: (context, AsyncSnapshot<String> snapshot) {
-            if (snapshot?.data == null || snapshot.data.isEmpty) {
+            if (snapshot.data.isNullOrEmpty()) {
               return SearchHistoryWidget();
             } else {
-              return SearchResultWidget(snapshot.data);
+              return SearchResultWidget(snapshot.data!);
             }
           },
         ),
@@ -47,13 +52,15 @@ class _SearchPageState extends State<SearchPage> {
 class SearchModelProvider extends InheritedWidget {
   final SearchModel model;
 
-  SearchModelProvider(this.model, Widget child, {Key key}) : super(child: child, key: key);
+  SearchModelProvider(this.model, Widget child, {Key? key})
+      : super(child: child, key: key);
 
   @override
-  bool updateShouldNotify(SearchModelProvider oldWidget) => model != oldWidget.model;
+  bool updateShouldNotify(SearchModelProvider oldWidget) =>
+      model != oldWidget.model;
 
   static SearchModelProvider of(BuildContext context) =>
-      context.inheritFromWidgetOfExactType(SearchModelProvider);
+      context.dependOnInheritedWidgetOfExactType<SearchModelProvider>()!;
 }
 
 class SearchBar extends StatelessWidget {
@@ -100,27 +107,26 @@ class SearchBar extends StatelessWidget {
                         ),
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.zero,
-                        isDense: true,//是文本垂直居中
+                        isDense: true, //是文本垂直居中
                       ),
                     ),
                   ),
                   ButtonTheme(
                     minWidth: 0,
                     child: FlatButton(
-                      onPressed: (){
+                      onPressed: () {
                         searchModel.setInputText('');
                       },
                       padding: EdgeInsets.zero,
                       shape: CircleBorder(),
-                      child:Container(
-                        width: 36,
-                        alignment: Alignment.center,
-                        child:MdrIcon(
-                          'close',
-                          size: 20,
-                          color: AppColors.tint_rounded,
-                        )
-                      ),
+                      child: Container(
+                          width: 36,
+                          alignment: Alignment.center,
+                          child: MdrIcon(
+                            'close',
+                            size: 20,
+                            color: AppColors.tint_rounded,
+                          )),
                     ),
                   )
                 ],
@@ -149,10 +155,10 @@ class SearchBar extends StatelessWidget {
   }
 }
 
-class SearchMorePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    return null;
-  }
-}
+// class SearchMorePage extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     // TODO: implement build
+//     return null;
+//   }
+// }

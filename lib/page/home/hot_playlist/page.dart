@@ -1,8 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:second_music/model/playlist.dart';
-import 'package:second_music/model/playlist_set.dart';
-import 'package:second_music/model/song_list.dart';
+import 'package:second_music/entity/enum.dart';
+import 'package:second_music/entity/playlist.dart';
+import 'package:second_music/entity/playlist_set.dart';
+import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/page/home/hot_playlist/model.dart';
 import 'package:second_music/page/navigator.dart';
 import 'package:second_music/res/res.dart';
@@ -12,20 +13,22 @@ import 'package:second_music/widget/material_icon_round.dart';
 class HotPlaylistModelProvider extends InheritedWidget {
   final HotPlaylistModel model;
 
-  HotPlaylistModelProvider(this.model, {Key key, Widget child}) : super(key: key, child: child);
+  HotPlaylistModelProvider(this.model, {Key? key, required Widget child})
+      : super(key: key, child: child);
 
   @override
   bool updateShouldNotify(InheritedWidget oldWidget) => true;
 
-  static HotPlaylistModelProvider of(BuildContext context) {
-    return context.inheritFromWidgetOfExactType(HotPlaylistModelProvider);
+  static HotPlaylistModelProvider? of(BuildContext context) {
+    return context
+        .dependOnInheritedWidgetOfExactType<HotPlaylistModelProvider>();
   }
 }
 
 class HomeHotPlaylistPlatform extends StatefulWidget {
-  final String platform;
+  final MusicPlatform platform;
 
-  HomeHotPlaylistPlatform(this.platform, {Key key}) : super(key: key);
+  HomeHotPlaylistPlatform(this.platform, {Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -33,17 +36,19 @@ class HomeHotPlaylistPlatform extends StatefulWidget {
   }
 }
 
-class HomeHotPlaylistPlatformState extends State with AutomaticKeepAliveClientMixin {
+class HomeHotPlaylistPlatformState extends State
+    with AutomaticKeepAliveClientMixin {
   static final int crossAxisCount = 3;
   var _100dp = 50.0;
 
   HotPlaylistModel _hotPlaylistModel;
 
-  final String platform;
+  final MusicPlatform platform;
 
   ScrollController _scrollController = ScrollController();
 
-  HomeHotPlaylistPlatformState(this.platform) : _hotPlaylistModel = HotPlaylistModel(platform);
+  HomeHotPlaylistPlatformState(this.platform)
+      : _hotPlaylistModel = HotPlaylistModel(platform);
 
   @override
   void initState() {
@@ -66,8 +71,8 @@ class HomeHotPlaylistPlatformState extends State with AutomaticKeepAliveClientMi
                   child: CustomScrollView(
                     controller: _scrollController,
                     slivers: <Widget>[
-                      _buildGrid(context, snapshot.data),
-                      if (snapshot.data == null || snapshot.data.hasNext)
+                      _buildGrid(context, snapshot.data?.playlists ?? []),
+                      if (snapshot.data == null || snapshot.data!.hasNext)
                         SliverToBoxAdapter(
                           child: _buildLoadMore(context),
                         ),
@@ -85,29 +90,33 @@ class HomeHotPlaylistPlatformState extends State with AutomaticKeepAliveClientMi
     _hotPlaylistModel.dispose();
   }
 
-  Widget _buildGrid(BuildContext context, PlaylistSet set) {
-    double itemWidth =
-        (MediaQuery.of(context).size.width - (crossAxisCount - 1) * 10 - 16 * 2) / crossAxisCount;
+  Widget _buildGrid(BuildContext context, List<Playlist> playlists) {
+    double itemWidth = (MediaQuery.of(context).size.width -
+            (crossAxisCount - 1) * 10 -
+            16 * 2) /
+        crossAxisCount;
     double itemHeight = itemWidth + 8 * 2 + 14 * 2 + 6;
 
     return SliverPadding(
         padding: EdgeInsets.all(16),
         sliver: SliverGrid(
             delegate: SliverChildBuilderDelegate((context, index) {
-              var item = set.playlists[index];
+              var item = playlists[index];
               return FlatButton(
                 onPressed: () {
-                  AppNavigator.instance.navigateTo(context, AppNavigator.song_list, params: {
-                    'plt': item.plt,
+                  AppNavigator.instance.navigateTo(
+                      context, AppNavigator.song_list, params: {
+                    'plt': item.plt.name,
                     'songListId': item.id,
                     'songListType': SongListType.playlist
                   });
                 },
                 padding: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5)),
                 child: HomeHotPlaylistItem(item, key: Key(item.id)),
               );
-            }, childCount: set == null ? 0 : set.playlists.length),
+            }, childCount: playlists.length),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,
               crossAxisSpacing: 10,
@@ -121,14 +130,18 @@ class HomeHotPlaylistPlatformState extends State with AutomaticKeepAliveClientMi
         initialData: _hotPlaylistModel.loading,
         stream: _hotPlaylistModel.loadingStream,
         builder: (context, AsyncSnapshot<bool> snapshot) {
-          var loading = snapshot.data;
+          var loading = snapshot.data!;
           return StreamBuilder(
               initialData: _hotPlaylistModel.lastError,
               stream: _hotPlaylistModel.lastErrorStream,
               builder: (context, AsyncSnapshot<bool> snapshot) {
-                var lastError = snapshot.data;
-                return LoadingMore(loading, lastError,
-                    () => HotPlaylistModelProvider.of(context).model.requestMore(true));
+                var lastError = snapshot.data!;
+                return LoadingMore(
+                    loading,
+                    lastError,
+                    () => HotPlaylistModelProvider.of(context)
+                        ?.model
+                        .requestMore(true));
               });
         });
   }
@@ -141,7 +154,8 @@ class HomeHotPlaylistPlatformState extends State with AutomaticKeepAliveClientMi
   }
 
   Future _onScroll() async {
-    if (_scrollController.position.pixels > _scrollController.position.maxScrollExtent - _100dp) {
+    if (_scrollController.position.pixels >
+        _scrollController.position.maxScrollExtent - _100dp) {
       _hotPlaylistModel.requestMore(false);
     }
   }
@@ -150,7 +164,7 @@ class HomeHotPlaylistPlatformState extends State with AutomaticKeepAliveClientMi
 class HomeHotPlaylistItem extends StatelessWidget {
   final Playlist playlist;
 
-  HomeHotPlaylistItem(this.playlist, {Key key}) : super(key: key);
+  HomeHotPlaylistItem(this.playlist, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

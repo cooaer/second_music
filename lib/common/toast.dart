@@ -30,8 +30,8 @@ class ToastView {
 
   ToastView._internal();
 
-  static OverlayState overlayState;
-  static OverlayEntry _overlayEntry;
+  static late OverlayState? overlayState;
+  static late OverlayEntry _overlayEntry;
   static bool _isVisible = false;
 
   static void createView(
@@ -70,9 +70,8 @@ class ToastView {
           gravity: gravity),
     );
     _isVisible = true;
-    overlayState.insert(_overlayEntry);
-    await new Future.delayed(
-        Duration(seconds: duration == null ? Toast.LENGTH_SHORT : duration));
+    overlayState?.insert(_overlayEntry);
+    await new Future.delayed(Duration(seconds: duration));
     dismiss();
   }
 
@@ -81,15 +80,15 @@ class ToastView {
       return;
     }
     _isVisible = false;
-    _overlayEntry?.remove();
+    _overlayEntry.remove();
   }
 }
 
 class ToastWidget extends StatelessWidget {
   ToastWidget({
-    Key key,
-    @required this.widget,
-    @required this.gravity,
+    Key? key,
+    required this.widget,
+    required this.gravity,
   }) : super(key: key);
 
   final Widget widget;

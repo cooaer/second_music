@@ -2,12 +2,15 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_extensions_methods/dart_extension_methods.dart';
+import 'package:flutter/material.dart';
 import 'package:palette_generator/palette_generator.dart';
-import 'package:second_music/model/enum.dart';
-import 'package:second_music/model/song_list.dart';
-import 'package:second_music/network/platform/music_provider.dart';
+import 'package:second_music/entity/enum.dart';
+import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/page/home/my_song_list/model.dart';
-import 'package:second_music/storage/database/music/dao.dart';
+import 'package:second_music/repository/local/database/song/dao.dart';
+import 'package:second_music/repository/remote/platform/music_provider.dart';
+import 'package:second_music/service/music_service.dart';
 
 class SongListModel {
   final String plt;
@@ -18,63 +21,60 @@ class SongListModel {
 
   SongListModel(this.plt, this.songListId, this.songListType);
 
-  SongList _songList;
+  SongList? _songList;
   var _songListStreamController = StreamController<SongList>.broadcast();
 
   Stream<SongList> get songListStream => _songListStreamController.stream;
 
   void refresh() async {
-    await _refreshCollectionState();
-    await _refreshSongList();
-  }
+    SongList? songList =
+        await _mySongListDao.getSongList(plt, songListId, songListType);
+    debugPrint(
+        "refreshSongList: local, isCollected = $_isCollected, songTotal = ${songList?.songTotal}");
 
-  /// 更新列表数据，自己创建或收藏的歌单：读取本地数据，平台的歌单或专辑：通过网络读取
-  Future _refreshSongList() async {
-    if (_isCollected) {
-      _songList = await _mySongListDao.querySongList(plt, songListId, songListType);
-      _songListStreamController.add(_songList);
-      await Future.delayed(Duration(seconds: 2));
+    _isCollected = songList != null;
+    _isCollectedController.add(_isCollected);
+
+    if (songList == null) {
+      final musicPlatform = MusicPlatforms.fromString(plt)!;
+      songList =
+          await MusicProvider(musicPlatform).songList(songListType, songListId);
+      debugPrint(
+          "refreshSongList: remote, isCollected = $_isCollected, songTotal = ${songList?.songTotal}");
     }
-    if (plt != MusicPlatforms.LOCAL) {
-      _songList = await MusicProvider(plt).songList(songListType, songListId);
-      _songListStreamController.add(_songList);
-      if (_isCollected) {
-        // 更新收藏到本地的歌单数据
-        _mySongListDao.saveSongList(_songList);
-      }
+
+    if (songList != null) {
+      _songList = songList;
+      _songListStreamController.add(songList);
     }
+
     //更新AppBar颜色
-    if (_songList.hasDisplayCover) {
-      _generateBarColor(_songList.displayCover);
+    if (songList != null && songList.hasDisplayCover) {
+      _generateBarColor(songList.displayCover);
     }
   }
 
   // 收藏状态
-  bool _isCollected;
+  bool _isCollected = false;
 
   bool get isCollected => _isCollected;
   var _isCollectedController = StreamController<bool>.broadcast();
 
   Stream<bool> get isCollectedStream => _isCollectedController.stream;
 
-  /// 查询收藏状态
-  Future _refreshCollectionState() async {
-    _isCollected = await _mySongListDao.hasSongList(plt, songListId, songListType);
-    _isCollectedController.add(_isCollected);
-  }
-
   /// 收藏歌单，保存歌单到数据库
-  Future togglePlaylistCollection() async {
-    if (_songList == null || _isCollected == null) return;
+  Future togglePlaylistCollection(SongList songList) async {
     _isCollectedController.add(!_isCollected);
     var result = false;
     if (_isCollected) {
-      result = await _mySongListDao.deleteSongList(plt, songListId, songListType);
+      result = await _mySongListDao.deleteSongList(songList.id);
       _isCollected = false;
     } else {
-      result = await _mySongListDao.saveSongList(_songList);
+      result = await _mySongListDao.saveSongList(songList);
       _isCollected = true;
     }
+    debugPrint(
+        "togglePlaylistCollection, isCollected = $_isCollected, result = $result");
     if (result) {
       notifyMySongListChanged();
     }
@@ -90,12 +90,14 @@ class SongListModel {
 
   Stream<Color> get barColorStream => _barColorController.stream;
 
-  PaletteGenerator _paletteGenerator;
+  PaletteGenerator? _paletteGenerator;
 
   void _generateBarColor(String coverUrl) async {
-    _paletteGenerator = await PaletteGenerator.fromImageProvider(
-        CachedNetworkImageProvider(coverUrl),
-        size: Size(140, 140));
+    if (_paletteGenerator == null) {
+      _paletteGenerator = await PaletteGenerator.fromImageProvider(
+          CachedNetworkImageProvider(coverUrl),
+          size: Size(140, 140));
+    }
     _barColor = _headerBackgroundColor();
     _barColorController.add(_barColor);
   }
@@ -103,18 +105,24 @@ class SongListModel {
   Color _headerBackgroundColor() {
     var defColor = Color(0xff8f8f8f);
     if (_paletteGenerator == null) return defColor;
-    return _paletteGenerator.dominantColor?.color ??
-        _paletteGenerator.lightVibrantColor?.color ??
-        _paletteGenerator.lightMutedColor?.color ??
-        _paletteGenerator.darkVibrantColor?.color ??
-        _paletteGenerator.darkMutedColor?.color ??
+    return _paletteGenerator?.dominantColor?.color ??
+        _paletteGenerator?.lightVibrantColor?.color ??
+        _paletteGenerator?.lightMutedColor?.color ??
+        _paletteGenerator?.darkVibrantColor?.color ??
+        _paletteGenerator?.darkMutedColor?.color ??
         defColor;
+  }
+
+  ///播放全部歌曲
+  void playAll() {
+    if (_songList != null && _songList!.songs.isNotNullOrEmpty()) {
+      MusicService.instance.playSongList(_songList!.songs);
+    }
   }
 
   /// 编辑歌单，本地歌单：收藏到歌单、下一首播放、删除，平台歌单：没有删除功能
   void dispose() {
     _songListStreamController.close();
     _isCollectedController.close();
-    _mySongListDao.close();
   }
 }

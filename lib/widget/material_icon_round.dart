@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 
 class MdrIcon extends StatelessWidget {
   ///合字
-  final String ligature;
-  final double size;
+  final String? ligature;
+  final double? size;
   final Color color;
 
-  MdrIcon(this.ligature, {Key key, this.size, this.color}) : super(key: key);
+  MdrIcon(this.ligature, {Key? key, this.size, required this.color})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final IconThemeData iconTheme = IconTheme.of(context);
-    final double iconSize = size ?? iconTheme.size;
+    final double? iconSize = size ?? iconTheme.size;
 
     if (this.ligature == null) {
       return SizedBox(
@@ -20,8 +21,8 @@ class MdrIcon extends StatelessWidget {
       );
     }
 
-    final double iconOpacity = iconTheme.opacity;
-    Color iconColor = color ?? iconTheme.color;
+    final double iconOpacity = iconTheme.opacity ?? 1.0;
+    var iconColor = color;
     if (iconOpacity != 1.0)
       iconColor = iconColor.withOpacity(iconColor.opacity * iconOpacity);
 

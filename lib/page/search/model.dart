@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:second_music/model/enum.dart';
-import 'package:second_music/model/search.dart';
-import 'package:second_music/network/platform/music_provider.dart';
-import 'package:second_music/storage/preference/playing.dart';
+import 'package:second_music/entity/enum.dart';
+import 'package:second_music/entity/search.dart';
+import 'package:second_music/repository/local/preference/playing.dart';
+import 'package:second_music/repository/remote/platform/music_provider.dart';
 
 class SearchModel {
-  List<String> _searchKeywords;
+  late List<String> _searchKeywords;
 
   SearchModel() {
     _searchKeywords = PlayingStorage.instance.searchKeywords();
@@ -23,11 +23,12 @@ class SearchModel {
 
   var _keywordHistoryController = StreamController<List<String>>.broadcast();
 
-  Stream<List<String>> get keywordHistoryStream => _keywordHistoryController.stream;
+  Stream<List<String>> get keywordHistoryStream =>
+      _keywordHistoryController.stream;
 
   void submit(String text) {
     _keywordController.add(text);
-    if (text != null && text.isNotEmpty) {
+    if (text.isNotEmpty) {
       _saveKeyword(text);
     }
   }
@@ -45,7 +46,9 @@ class SearchModel {
 
   void setInputText(String text) {
     _searchEditingController.value = TextEditingValue(
-        text: text, selection: TextSelection.fromPosition(TextPosition(offset: text.length)));
+        text: text,
+        selection:
+            TextSelection.fromPosition(TextPosition(offset: text.length)));
     submit(text);
   }
 
@@ -64,10 +67,10 @@ class SearchModel {
 class SearchObjectModel {
   final MusicObjectType type;
   String _keyword;
-  bool _selected;
-  List<String> _plts;
+  final List<MusicPlatform> _plts;
 
-  SearchObjectModel(this.type, this._keyword, {List<String> plts = MusicPlatforms.platforms})
+  SearchObjectModel(this.type, this._keyword,
+      {List<MusicPlatform> plts = MusicPlatform.values})
       : this._plts = plts;
 
   static const REQUEST_COUNT = 20;
@@ -85,22 +88,18 @@ class SearchObjectModel {
     return true;
   }
 
-  var _results = <String, SearchResult>{};
+  var _results = <MusicPlatform, SearchResult>{};
 
-  Map<String, SearchResult> get results => _results;
-  var _resultController = StreamController<Map<String, SearchResult>>.broadcast();
+  Map<MusicPlatform, SearchResult> get results => _results;
+  var _resultController =
+      StreamController<Map<MusicPlatform, SearchResult>>.broadcast();
 
-  Stream<Map<String, SearchResult>> get resultStream => _resultController.stream;
+  Stream<Map<MusicPlatform, SearchResult>> get resultStream =>
+      _resultController.stream;
 
-  bool hasMore({List<String> plts}) {
+  bool hasMore() {
     if (_results.isEmpty) return true;
-    plts = plts ?? _plts;
-    for (String plt in plts) {
-      if (_results.containsKey(plt) && _results[plt].hasMore) {
-        return true;
-      }
-    }
-    return false;
+    return _plts.any((plt) => _results[plt]?.hasMore == true);
   }
 
   set keyword(String text) {
@@ -110,12 +109,14 @@ class SearchObjectModel {
     _results.clear();
     _resultController.add(_results);
 
-    if (_keyword == null || _keyword.isEmpty) return;
+    if (_keyword.isEmpty) return;
 
     refresh(false);
   }
 
   String get keyword => _keyword;
+
+  bool _selected = false;
 
   set selected(bool selected) {
     if (_selected == selected) return;
@@ -125,33 +126,30 @@ class SearchObjectModel {
 
   bool get selected => _selected;
 
-  refresh(bool force, {List<String> plts}) {
+  refresh(bool force, {List<MusicPlatform> plts = MusicPlatform.values}) {
     if (!force && !selected) return;
-    _refreshInternal(plts: plts);
+    _refreshInternal(plts);
   }
 
-  _refreshInternal({List<String> plts}) async {
-    plts = plts ?? _plts;
-
+  _refreshInternal(List<MusicPlatform> plts) async {
     _loading = true;
 
-    for (String plt in plts) {
-      SearchResult _lastResult;
+    for (MusicPlatform plt in plts) {
+      SearchResult? _lastResult;
       if (_results.containsKey(plt)) {
         _lastResult = _results[plt];
         // 该平台已经搜索完毕
-        if (!_lastResult.hasMore) continue;
+        if (_lastResult == null || !_lastResult.hasMore) continue;
       } else {
         _lastResult = SearchResult();
         _results[plt] = _lastResult;
       }
 
-      var musicProvider = MusicProvider(plt);
-      if (musicProvider == null) continue;
+      final musicProvider = MusicProvider(plt);
 
       SearchResult result = await musicProvider.search(_keyword, type,
           page: _lastResult.nextPage, count: REQUEST_COUNT);
-      if (result?.items != null && result.items.isNotEmpty) {
+      if (result.items.isNotEmpty) {
         _lastResult.page++;
         _lastResult.hasError = false;
         _lastResult.total = result.total;
@@ -165,7 +163,7 @@ class SearchObjectModel {
     _loading = false;
   }
 
-  requestMore(bool force, {List<String> plts}) {
+  requestMore(bool force, List<MusicPlatform> plts) {
     if (!force && lastError) return;
     refresh(force, plts: plts);
   }

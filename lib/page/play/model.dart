@@ -1,92 +1,56 @@
 import 'dart:async';
 
-import 'package:second_music/model/enum.dart';
-import 'package:second_music/model/song.dart';
-import 'package:second_music/model/song_list.dart';
-import 'package:second_music/page/home/my_song_list/model.dart';
-import 'package:second_music/storage/database/music/dao.dart';
-import 'package:second_music/storage/database/music/table.dart';
 import 'package:flutter/material.dart';
-import 'package:second_music/page/model.dart';
+import 'package:second_music/entity/song.dart';
+import 'package:second_music/entity/song_list.dart';
+import 'package:second_music/page/home/my_song_list/model.dart';
+import 'package:second_music/repository/local/database/song/dao.dart';
+import 'package:second_music/service/music_service.dart';
+import 'package:second_music/widget/infinite_page_view.dart';
 
-class SongControllerModel {
-  static final initialPage = 1000000;
+class PlaySongListModel {
+  final InfinitePageController _pageController;
 
-  static int realIndexOf(int index) {
-    var listCount = PlayControlModel.instance.playingList.length;
-    return (index - initialPage) % listCount;
+  InfinitePageController get pageController => _pageController;
+
+  ///InfinitePageView会在第一个位置和最后一个位置分别添加真是列表的最后一个和第一个元素，所以默认的初试页面应该为1
+  PlaySongListModel() : _pageController = InfinitePageController() {
+    _pageController.addListener(_onPageChanged);
+    MusicService.instance.currentIndexStream
+        .listen(_onPlayerCurrentIndexChanged);
   }
 
-  SongControllerModel() {
-    PlayControlModel.instance.registerSongControllerModel(this);
-  }
-
-  PageController _songPageController;
-
-  PageController get currentPageController => _songPageController;
-
-  PageController newSongPageController() {
-    var page = initialPage + PlayControlModel.instance.currentIndex;
-    _songPageController = PageController(initialPage: page, keepPage: true);
-    return _songPageController;
-  }
-
-  void jumpToCurrent() {
-    if (_songPageController == null) return;
-
-    var listCount = PlayControlModel.instance.playingList.length;
-    if (listCount == 0) return;
-
-    var listIndex = PlayControlModel.instance.currentIndex;
-    var controllerIndex = realIndexOf(_songPageController.page.round());
-    print('jumpToCurrent, currentIndex : ${_songPageController.page.round()}');
-    if (listIndex == controllerIndex) return;
-
-    _songPageController.jumpToPage(initialPage + PlayControlModel.instance.currentIndex);
-  }
-
-  void jumpTo(int index){
-    if (_songPageController == null) return;
-
-    var listCount = PlayControlModel.instance.playingList.length;
-    if (listCount == 0) return;
-
-    _songPageController.jumpToPage(initialPage + index);
-  }
-
-  void scrollToNext() {
-    if (_songPageController == null) return;
-
-    var listCount = PlayControlModel.instance.playingList.length;
-    if (listCount == 0) return;
-
-    var listIndex = PlayControlModel.instance.currentIndex;
-    var controllerIndex = realIndexOf(_songPageController.page.round());
-    if (listIndex != controllerIndex) {
-      _songPageController.jumpToPage(initialPage + listIndex + 1);
-    } else {
-      _songPageController.nextPage(duration: Duration(milliseconds: 300), curve: Curves.linear);
+  void _onPageChanged() {
+    if (_pageController.positions.isEmpty) {
+      return;
     }
+    final realPageIndex = _pageController.page!.round();
+    final playlistIndex = MusicService.instance.currentIndex;
+    if (realPageIndex == playlistIndex) {
+      return;
+    }
+    debugPrint(
+        "onPageChanged, realPageIndex = $realPageIndex, playlistIndex = $playlistIndex");
+    MusicService.instance.playSongWithPlayingIndicesIndex(realPageIndex);
   }
 
-  void scrollToPrev() {
-    if (_songPageController == null) return;
-
-    var listCount = PlayControlModel.instance.playingList.length;
-    if (listCount == 0) return;
-
-    var listIndex = PlayControlModel.instance.currentIndex;
-    var controllerIndex = realIndexOf(_songPageController.page.round());
-    if (listIndex != controllerIndex) {
-      _songPageController.jumpToPage(initialPage + listIndex - 1);
-    } else {
-      _songPageController.previousPage(duration: Duration(milliseconds: 300), curve: Curves.linear);
+  void _onPlayerCurrentIndexChanged(int showingListIndex) {
+    if (_pageController.positions.isEmpty) {
+      return;
     }
+    final realPageIndex = _pageController.page!.round();
+    final realShowingListIndex =
+        MusicService.instance.playingIndices[realPageIndex];
+    if (showingListIndex == realShowingListIndex) {
+      return;
+    }
+    debugPrint(
+        "onPlayerCurrentIndexChanged, pageIndex = $realPageIndex, playlistIndex = $showingListIndex");
+    _pageController.jumpToPage(showingListIndex);
   }
 
   void dispose() {
-    PlayControlModel.instance.unregisterSongControllerModel(this);
-    _songPageController.dispose();
+    _pageController.dispose();
   }
 }
 
@@ -95,14 +59,13 @@ class SongModel {
 
   final _mySongListDao = MySongListDao();
 
-  SongModel(this.song){
+  SongModel(this.song) {
     refresh();
   }
 
   void refresh() async {
-    if (song == null) return;
-
-    _isFavorite = await _mySongListDao.hasSongInFavoriteList(song.plt, song.id);
+    _isFavorite =
+        await _mySongListDao.isSongInFavoriteList(song.plt.name, song.pltId);
     _isFavoriteController.add(_isFavorite);
   }
 
@@ -115,20 +78,19 @@ class SongModel {
   Stream<bool> get isFavoriteStream => _isFavoriteController.stream;
 
   void toggleFavorite() async {
-    if (song == null) return;
-
     _isFavoriteController.add(!_isFavorite);
-    var result = false;
+    var isSuccessful = false;
     if (isFavorite) {
-      result = await _mySongListDao.deleteSongFromSongList(
-          MusicPlatforms.LOCAL, SongListTable.FAVOR_ID, SongListType.playlist, song.plt, song.id);
-      if (result) _isFavorite = false;
+      isSuccessful = await _mySongListDao.deleteSongFromSongList(
+          SongList.FAVOR_ID, song.id);
+      if (isSuccessful) _isFavorite = false;
     } else {
-      result = await _mySongListDao.addSongToSongList(
-          MusicPlatforms.LOCAL, SongListTable.FAVOR_ID, SongListType.playlist, song);
-      if (result) _isFavorite = true;
+      final addedSongs =
+          await _mySongListDao.addSongsToSongList(SongList.FAVOR_ID, [song]);
+      isSuccessful = addedSongs == 1;
+      if (isSuccessful) _isFavorite = true;
     }
-    if (result) {
+    if (isSuccessful) {
       notifyMySongListChanged();
     }
     _isFavoriteController.add(_isFavorite);
@@ -136,6 +98,5 @@ class SongModel {
 
   void dispose() {
     _isFavoriteController.close();
-    _mySongListDao.close();
   }
 }

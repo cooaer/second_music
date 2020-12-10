@@ -2,19 +2,19 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:second_music/model/album.dart';
-import 'package:second_music/model/enum.dart';
-import 'package:second_music/model/playlist.dart';
-import 'package:second_music/model/search.dart';
-import 'package:second_music/model/singer.dart';
-import 'package:second_music/model/song.dart';
-import 'package:second_music/model/song_list.dart';
+import 'package:second_music/entity/album.dart';
+import 'package:second_music/entity/enum.dart';
+import 'package:second_music/entity/playlist.dart';
+import 'package:second_music/entity/search.dart';
+import 'package:second_music/entity/singer.dart';
+import 'package:second_music/entity/song.dart';
+import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/page/navigator.dart';
 import 'package:second_music/page/play_control/page.dart';
 import 'package:second_music/page/search/model.dart';
 import 'package:second_music/page/song_list/widget.dart';
+import 'package:second_music/repository/local/preference/config.dart';
 import 'package:second_music/res/res.dart';
-import 'package:second_music/storage/preference/config.dart';
 import 'package:second_music/widget/loading_more.dart';
 import 'package:second_music/widget/material_icon_round.dart';
 
@@ -23,14 +23,16 @@ class SearchObjectTab extends StatefulWidget {
   final MusicObjectType type;
   final bool selected;
 
-  SearchObjectTab(this.keyword, this.type, this.selected, {Key key}) : super(key: key);
+  SearchObjectTab(this.keyword, this.type, this.selected, {Key? key})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _SearchObjectTabState();
 }
 
-class _SearchObjectTabState extends State<SearchObjectTab> with AutomaticKeepAliveClientMixin {
-  SearchObjectModel _model;
+class _SearchObjectTabState extends State<SearchObjectTab>
+    with AutomaticKeepAliveClientMixin {
+  late SearchObjectModel _model;
 
   @override
   void initState() {
@@ -49,7 +51,7 @@ class _SearchObjectTabState extends State<SearchObjectTab> with AutomaticKeepAli
   void didUpdateWidget(SearchObjectTab oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.selected != oldWidget.selected) {
-      if(_model.results.isEmpty){
+      if (_model.results.isEmpty) {
         _updateModelSelected();
       }
     }
@@ -72,27 +74,31 @@ class _SearchObjectTabState extends State<SearchObjectTab> with AutomaticKeepAli
     var plts = AppConfig.instance.searchPltRank;
     return StreamBuilder(
       stream: _model.resultStream,
-      builder: (context, AsyncSnapshot<Map<String, SearchResult>> snapshot) {
+      builder:
+          (context, AsyncSnapshot<Map<MusicPlatform, SearchResult>> snapshot) {
         return CustomScrollView(
           slivers: <Widget>[
-            if (snapshot?.data != null)
+            if (snapshot.data != null)
               SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
                   var plt = plts[index];
-                  var result = snapshot.data[plt];
-                  return result?.items != null && result.items.isNotEmpty
-                      ? _SearchResultItemWidget(plt, widget.keyword, widget.type, result,
+                  var result = snapshot.data![plt]!;
+                  return result.items.isNotEmpty
+                      ? _SearchResultItemWidget(
+                          plt, widget.keyword, widget.type, result,
                           key: ValueKey(plt))
                       : Container();
                 }, childCount: plts.length),
               ),
-            if (_model.hasMore() && (snapshot?.data == null || snapshot.data.length < plts.length))
+            if (_model.hasMore() &&
+                (snapshot.data == null || snapshot.data!.length < plts.length))
               SliverToBoxAdapter(
                 child: LoadingMore(_model.loading, _model.lastError, () {}),
               ),
             SliverToBoxAdapter(
               child: SizedBox(
-                height: MediaQuery.of(context).padding.bottom + PlayController.ALL_HEIGHT,
+                height: MediaQuery.of(context).padding.bottom +
+                    PlayController.ALL_HEIGHT,
               ),
             )
           ],
@@ -114,20 +120,21 @@ class _SearchObjectTabState extends State<SearchObjectTab> with AutomaticKeepAli
 class _SearchResultItemWidget extends StatelessWidget {
   static const PLT_MAX_COUNT = 5;
 
-  final String plt;
+  final MusicPlatform plt;
   final String keyword;
   final MusicObjectType type;
   final SearchResult searchResult;
 
-  _SearchResultItemWidget(this.plt, this.keyword, this.type, this.searchResult, {Key key})
+  _SearchResultItemWidget(this.plt, this.keyword, this.type, this.searchResult,
+      {Key? key})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        _SearchResultTitle(
-            plt, keyword, type, searchResult.hasMore || searchResult.items.length > PLT_MAX_COUNT),
+        _SearchResultTitle(plt, keyword, type,
+            searchResult.hasMore || searchResult.items.length > PLT_MAX_COUNT),
       ]..addAll(_buildItemsWidget(context, searchResult.items)),
     );
   }
@@ -149,17 +156,19 @@ class _SearchResultItemWidget extends StatelessWidget {
         return _SearchResultSinger(item);
       }
       return null;
-    }).toList();
+    }).whereType<Widget>().toList();
   }
 }
 
 class _SearchResultTitle extends StatelessWidget {
-  final String plt;
+  final MusicPlatform plt;
   final String keyword;
   final MusicObjectType type;
   final bool hasMore;
 
-  _SearchResultTitle(this.plt, this.keyword, this.type, this.hasMore, {Key key}) : super(key: key);
+  _SearchResultTitle(this.plt, this.keyword, this.type, this.hasMore,
+      {Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -229,7 +238,7 @@ class _SearchResultTitle extends StatelessWidget {
 class _SearchResultSong extends StatelessWidget {
   final Song _song;
 
-  _SearchResultSong(this._song, {Key key}) : super(key: ValueKey(_song));
+  _SearchResultSong(this._song) : super(key: ValueKey(_song));
 
   @override
   Widget build(BuildContext context) {
@@ -238,8 +247,8 @@ class _SearchResultSong extends StatelessWidget {
       minWidth: 0,
       child: FlatButton(
         onPressed: () {
-          AppNavigator.instance
-              .navigateTo(context, AppNavigator.play, params: {'song': _song}, overlay: true);
+          AppNavigator.instance.navigateTo(context, AppNavigator.play,
+              params: {'song': _song}, overlay: true);
         },
         padding: EdgeInsets.zero,
         child: Row(
@@ -250,7 +259,7 @@ class _SearchResultSong extends StatelessWidget {
             ),
             ClipRRect(
               borderRadius: BorderRadius.all(Radius.circular(5)),
-              child: _song?.cover == null || _song.cover.isEmpty
+              child: _song.cover.isEmpty
                   ? Container(
                       width: 50,
                       height: 50,
@@ -279,7 +288,7 @@ class _SearchResultSong extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    _song?.name ?? '',
+                    _song.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -292,7 +301,8 @@ class _SearchResultSong extends StatelessWidget {
                     height: 6,
                   ),
                   Text(
-                    stringsOf(context).singerAndAlbum(_song?.singer?.name, _song?.album?.name),
+                    stringsOf(context)
+                        .singerAndAlbum(_song.singer?.name, _song.album?.name),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -324,15 +334,16 @@ class _SearchResultSong extends StatelessWidget {
 class _SearchResultSongList extends StatelessWidget {
   final SongList _songList;
 
-  _SearchResultSongList(this._songList, {Key key}) : super(key: key);
+  _SearchResultSongList(this._songList, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return FlatButton(
         onPressed: () {
-          AppNavigator.instance.navigateTo(context, AppNavigator.song_list, params: {
+          AppNavigator.instance
+              .navigateTo(context, AppNavigator.song_list, params: {
             'plt': _songList.plt,
-            'songListId': _songList.id,
+            'songListId': _songList.pltId,
             'songListType': _songList.type,
           });
         },
@@ -344,14 +355,14 @@ class _SearchResultSongList extends StatelessWidget {
             children: <Widget>[
               ClipRRect(
                 borderRadius: BorderRadius.all(Radius.circular(5)),
-                child: _songList?.cover == null || _songList.cover.isEmpty
+                child: _songList.cover.isEmpty
                     ? Container(
                         width: 50,
                         height: 50,
                         color: AppColors.cover_bg,
                       )
                     : CachedNetworkImage(
-                        imageUrl: _songList?.cover,
+                        imageUrl: _songList.cover,
                         width: 50,
                         height: 50,
                         fit: BoxFit.cover,
@@ -374,15 +385,17 @@ class _SearchResultSongList extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      _songList?.title,
+                      _songList.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                          color: AppColors.text_title, fontSize: 16, fontWeight: FontWeight.normal),
+                          color: AppColors.text_title,
+                          fontSize: 16,
+                          fontWeight: FontWeight.normal),
                     ),
                     Text(
                       stringsOf(context).songListCountAndCreator(
-                          this._songList?.songTotal, this._songList?.userName),
+                          this._songList.songTotal, this._songList.userName),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -403,7 +416,7 @@ class _SearchResultSongList extends StatelessWidget {
 class _SearchResultSinger extends StatelessWidget {
   final Singer _singer;
 
-  _SearchResultSinger(this._singer, {Key key}) : super(key: key);
+  _SearchResultSinger(this._singer, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -416,14 +429,14 @@ class _SearchResultSinger extends StatelessWidget {
         child: Row(
           children: <Widget>[
             ClipOval(
-              child: _singer?.avatar == null || _singer.avatar.isEmpty
+              child: _singer.avatar.isEmpty
                   ? Container(
                       width: 50,
                       height: 50,
                       color: AppColors.cover_bg,
                     )
                   : CachedNetworkImage(
-                      imageUrl: _singer?.avatar,
+                      imageUrl: _singer.avatar,
                       width: 50,
                       height: 50,
                       fit: BoxFit.cover,
@@ -441,8 +454,9 @@ class _SearchResultSinger extends StatelessWidget {
             ),
             Expanded(
                 flex: 1,
-                child: Text(_singer?.name,
-                    style: TextStyle(fontSize: 16, color: AppColors.text_title)))
+                child: Text(_singer.name,
+                    style:
+                        TextStyle(fontSize: 16, color: AppColors.text_title)))
           ],
         ),
       ),

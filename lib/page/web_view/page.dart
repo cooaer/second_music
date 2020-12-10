@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
-import 'package:second_music/network/cookie.dart';
+import 'package:flutter/services.dart';
 import 'package:second_music/res/res.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class WebViewPage extends StatelessWidget {
   final String url;
@@ -10,8 +10,7 @@ class WebViewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return WebviewScaffold(
-      url: url,
+    return Scaffold(
       appBar: AppBar(
         centerTitle: true,
         leading: BackButton(
@@ -25,22 +24,17 @@ class WebViewPage extends StatelessWidget {
           ),
         ),
         backgroundColor: AppColors.main_bg,
-        brightness: Brightness.light,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
         bottom: PreferredSize(
             child: Divider(
               height: 1,
             ),
             preferredSize: Size.fromHeight(1)),
       ),
-      withZoom: true,
-      withJavascript: true,
-      withLocalStorage: true,
-      hidden: true,
-      initialChild: Container(
-        alignment: Alignment.center,
-        child: CircularProgressIndicator(),
+      body: WebView(
+        initialUrl: url,
+        javascriptMode: JavascriptMode.unrestricted,
       ),
-      headers: {'cookie': cookieJar.loadForRequest(Uri.parse(url)).join(';')},
     );
   }
 }

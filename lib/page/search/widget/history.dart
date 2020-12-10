@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:second_music/page/search/page.dart';
+import 'package:second_music/repository/local/preference/playing.dart';
 import 'package:second_music/res/res.dart';
-import 'package:second_music/storage/preference/playing.dart';
 import 'package:second_music/widget/material_icon_round.dart';
 
 class SearchHistoryWidget extends StatelessWidget {
@@ -48,7 +48,7 @@ class SearchHistoryWidget extends StatelessWidget {
                 spacing: 10,
                 runSpacing: 10,
                 alignment: WrapAlignment.spaceBetween,
-                children: buildHistoryItems(context, snapshot.data),
+                children: buildHistoryItems(context, snapshot.data!),
               );
             },
           ),
@@ -66,14 +66,15 @@ class SearchHistoryWidget extends StatelessWidget {
         minWidth: 0,
         height: 32,
         child: FlatButton(
-          onPressed: (){
+          onPressed: () {
             //隐藏键盘
             FocusScope.of(context).requestFocus(FocusNode());
             SearchModelProvider.of(context).model.setInputText(key);
           },
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
           color: AppColors.page_background,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           child: Column(
             children: <Widget>[

@@ -18,19 +18,19 @@ class AppNavigator {
   static const web_view = '/web_view';
   static const setting = '/setting';
 
-  static AppNavigator _instance;
+  static AppNavigator? _instance;
 
   static AppNavigator get instance {
     if (_instance == null) {
       _instance = AppNavigator._();
     }
-    return _instance;
+    return _instance!;
   }
 
   AppNavigator._();
 
   Future navigateTo(BuildContext context, String name,
-      {Map<String, dynamic> params,
+      {Map<String, dynamic>? params,
       bool clearTask = false,
       bool replace = false,
       bool overlay = false}) {
@@ -54,7 +54,7 @@ class AppNavigator {
     return navigatorKey.currentState as NavigatorState;
   }
 
-  Widget matchPage(String name, {Map<String, dynamic> params}) {
+  Widget matchPage(String name, {Map<String, dynamic>? params}) {
     switch (name) {
       case home:
         return buildHome(params: params);
@@ -68,11 +68,14 @@ class AppNavigator {
         return buildWebView(params: params);
       case setting:
         return buildSetting(params: params);
+      default:
+        debugPrint("Error: invalid route name $name");
+        return buildHome(params: params);
     }
-    return null;
   }
 
-  PageRoute buildRoute(BuildContext context, String name, Map<String, dynamic> params) {
+  PageRoute buildRoute(
+      BuildContext context, String name, Map<String, dynamic>? params) {
     var page = matchPage(name, params: params);
     switch (name) {
       case search:
@@ -80,20 +83,22 @@ class AppNavigator {
             transitionDuration: Duration(milliseconds: 300),
             pageBuilder: (context, anim, secondAnim) {
               return AnnotatedRegion<SystemUiOverlayStyle>(
-                  value: darkIconUiStyle,
-                  child: page,
+                value: darkIconUiStyle,
+                child: page,
               );
             },
             transitionsBuilder: (context, anim, anim2, child) {
               return FadeTransition(
-                  opacity: anim,
-                  child: child,
-                );
+                opacity: anim,
+                child: child,
+              );
             });
       default:
         return MaterialPageRoute(
             builder: (context) => AnnotatedRegion<SystemUiOverlayStyle>(
-                  value: lightIconStatusBar(name) ? lightIconUiStyle : darkIconUiStyle,
+                  value: lightIconStatusBar(name)
+                      ? lightIconUiStyle
+                      : darkIconUiStyle,
                   child: page,
                 ));
     }
@@ -108,27 +113,28 @@ class AppNavigator {
     return false;
   }
 
-  Widget buildHome({Map<String, dynamic> params}) {
+  Widget buildHome({Map<String, dynamic>? params}) {
     return HomePage();
   }
 
-  Widget buildSearch({Map<String, dynamic> params}) {
+  Widget buildSearch({Map<String, dynamic>? params}) {
     return SearchPage();
   }
 
-  Widget buildSongList({Map<String, dynamic> params}) {
-    return SongListPage(params['plt'], params['songListId'], params['songListType']);
+  Widget buildSongList({Map<String, dynamic>? params}) {
+    return SongListPage(
+        params?["plt"], params?['songListId'], params?['songListType']);
   }
 
-  Widget buildPlay({Map<String, dynamic> params}) {
-    return PlayPage(params == null ? null : params['song']);
+  Widget buildPlay({Map<String, dynamic>? params}) {
+    return PlayPage(params?['song']);
   }
 
-  Widget buildWebView({Map<String, dynamic> params}) {
-    return WebViewPage(params['url']);
+  Widget buildWebView({Map<String, dynamic>? params}) {
+    return WebViewPage(params?['url']);
   }
 
-  Widget buildSetting({Map<String, dynamic> params}) {
+  Widget buildSetting({Map<String, dynamic>? params}) {
     return SettingPage();
   }
 }

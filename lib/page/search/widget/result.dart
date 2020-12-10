@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:second_music/model/enum.dart';
+import 'package:second_music/entity/enum.dart';
 import 'package:second_music/page/search/widget/tab.dart';
 import 'package:second_music/res/res.dart';
 
 class SearchResultWidget extends StatefulWidget {
   final String keyword;
 
-  SearchResultWidget(this.keyword, {Key key}) : super(key: key);
+  SearchResultWidget(this.keyword, {Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _SearchResultWidgetState();
@@ -22,7 +22,7 @@ class _SearchResultWidgetState extends State<SearchResultWidget>
     MusicObjectType.album
   ];
 
-  TabController _tabController;
+  late TabController _tabController;
   int _selectedIndex = 0;
 
   @override
@@ -39,7 +39,10 @@ class _SearchResultWidgetState extends State<SearchResultWidget>
       children: <Widget>[
         TabBar(
           controller: _tabController,
-          tabs: stringsOf(context).searchTabTitles.map((title) => Tab(text: title)).toList(),
+          tabs: stringsOf(context)
+              .searchTabTitles
+              .map((title) => Tab(text: title))
+              .toList(),
           labelColor: AppColors.text_title,
           labelPadding: EdgeInsets.zero,
           labelStyle: TextStyle(
@@ -63,8 +66,8 @@ class _SearchResultWidgetState extends State<SearchResultWidget>
           child: TabBarView(
               controller: _tabController,
               children: List.generate(TAB_LENGTH, (index) {
-                return SearchObjectTab(
-                    widget.keyword, SEARCH_OBJECT_TYPES[index], _selectedIndex == index,
+                return SearchObjectTab(widget.keyword,
+                    SEARCH_OBJECT_TYPES[index], _selectedIndex == index,
                     key: ValueKey(SEARCH_OBJECT_TYPES[index]));
               }).toList()),
         )
@@ -81,7 +84,7 @@ class _SearchResultWidgetState extends State<SearchResultWidget>
 
   void _handleTabControllerChanges() {
     var index = _tabController.index.round();
-    if(_selectedIndex == index) return;
+    if (_selectedIndex == index) return;
     setState(() {
       _selectedIndex = index;
     });

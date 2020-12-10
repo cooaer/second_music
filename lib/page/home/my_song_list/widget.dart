@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:second_music/model/song_list.dart';
+import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/page/basic_types.dart';
 import 'package:second_music/page/home/my_song_list/model.dart';
 import 'package:second_music/page/play_control/page.dart';
+import 'package:second_music/repository/local/database/song/dao.dart';
 import 'package:second_music/res/res.dart';
-import 'package:second_music/storage/database/music/dao.dart';
 import 'package:second_music/widget/material_icon_round.dart';
 
 void showCreatePlaylistDialog(BuildContext context) {
@@ -49,10 +49,10 @@ void showCreatePlaylistDialog(BuildContext context) {
                 stream: model.titleStream,
                 builder: (context, AsyncSnapshot<String> snapshot) {
                   return FlatButton(
-                      onPressed: snapshot.data?.isEmpty
+                      onPressed: snapshot.data!.isEmpty
                           ? null
-                          : () =>
-                              _createPlaylist(context, model.titleEditingController.text.trim()),
+                          : () => _createPlaylist(context,
+                              model.titleEditingController.text.trim()),
                       child: Text(stringsOf(context).ok));
                 }),
           ],
@@ -67,12 +67,12 @@ void _createPlaylist(BuildContext context, String text) async {
   Navigator.of(context).pop();
   var songListDao = MySongListDao();
   await songListDao.createSongList(text);
-  songListDao.close();
   notifyMySongListChanged();
 }
 
 void showSongListMenu(BuildContext context, SongList songList) {
-  showModalBottomSheet(context: context, builder: (context) => _SongMenu(songList));
+  showModalBottomSheet(
+      context: context, builder: (context) => _SongMenu(songList));
 }
 
 //删除
@@ -89,7 +89,7 @@ class _SongMenu extends StatelessWidget {
       alignment: Alignment.centerLeft,
       padding: EdgeInsets.symmetric(horizontal: 18),
       child: Text(
-        stringsOf(context).playlistWithTitle(songList?.title),
+        stringsOf(context).playlistWithTitle(songList.title),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
@@ -100,7 +100,12 @@ class _SongMenu extends StatelessWidget {
     ));
 
     final items = [
-      ['deleteSongList', 'delete_outline', stringsOf(context).delete, !songList.isFavor]
+      [
+        'deleteSongList',
+        'delete_outline',
+        stringsOf(context).delete,
+        !songList.isFavor
+      ]
     ];
 
     listWidgets.addAll(_buildMenuItems(context, items));
@@ -108,7 +113,8 @@ class _SongMenu extends StatelessWidget {
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).padding.bottom + PlayController.ALL_HEIGHT),
+            bottom: MediaQuery.of(context).padding.bottom +
+                PlayController.ALL_HEIGHT),
         child: Column(children: listWidgets),
       ),
     );
@@ -126,7 +132,7 @@ class _SongMenu extends StatelessWidget {
         item[1],
         item[2],
         item[3],
-        (type) =>  _onTapMenuItem(context, type),
+        (type) => _onTapMenuItem(context, type),
         key: Key(item[0]),
       ));
     }
@@ -142,10 +148,9 @@ class _SongMenu extends StatelessWidget {
     }
   }
 
-  void _deleteSongList() async{
+  void _deleteSongList() async {
     var _mySongListDao = MySongListDao();
-    await _mySongListDao.deleteSongList(songList.plt, songList.id, songList.type);
-    _mySongListDao.close();
+    await _mySongListDao.deleteSongList(songList.id);
     notifyMySongListChanged();
   }
 }
@@ -157,7 +162,9 @@ class _SongMenuItem extends StatelessWidget {
   final bool enable;
   final ValueCallback<String> callback;
 
-  _SongMenuItem(this.type, this.logo, this.title, this.enable, this.callback, {Key key}) : super(key: key);
+  _SongMenuItem(this.type, this.logo, this.title, this.enable, this.callback,
+      {Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -194,7 +201,7 @@ class _SongMenuItem extends StatelessWidget {
 }
 
 class _SongMenuDivider extends StatelessWidget {
-  _SongMenuDivider({Key key}) : super(key: key);
+  _SongMenuDivider({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

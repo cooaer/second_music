@@ -1,32 +1,30 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:second_music/common/date.dart';
-import 'package:second_music/common/md5.dart';
-import 'package:second_music/model/enum.dart';
-import 'package:second_music/model/song.dart';
-import 'package:second_music/model/song_list.dart';
-import 'package:second_music/storage/database/music/dao.dart';
-import 'package:second_music/storage/database/music/table.dart';
+import 'package:second_music/entity/enum.dart';
+import 'package:second_music/entity/song_list.dart';
+import 'package:second_music/repository/local/database/song/dao.dart';
 
 void notifyMySongListChanged() {
   MySongListModel.instance.refresh();
 }
 
 class MySongListModel {
-  static MySongListModel _instance;
+  static MySongListModel? _instance;
 
   static MySongListModel get instance {
     if (_instance == null) {
       _instance = MySongListModel._();
     }
-    return _instance;
+    return _instance!;
   }
 
   static List<SongList> createdOfPlaylist(List<SongList> all) {
-    if (all == null || all.isEmpty) return [];
-    var songLists = all.where((playlist) => playlist.plt == MusicPlatforms.LOCAL).toList();
-    var favorIndex = songLists.indexWhere((playlist) => playlist.id == SongListTable.FAVOR_ID);
+    if (all.isEmpty) return [];
+    var songLists =
+        all.where((playlist) => playlist.plt == MusicPlatforms.local).toList();
+    var favorIndex = songLists
+        .indexWhere((playlist) => playlist.pltId == SongList.FAVOR_PLT_ID);
     if (favorIndex != -1 && favorIndex != 0) {
       var favor = songLists.removeAt(favorIndex);
       songLists[0] = favor;
@@ -35,18 +33,20 @@ class MySongListModel {
   }
 
   static List<SongList> collectedOfPlaylist(List<SongList> all) {
-    if (all == null || all.isEmpty) return [];
+    if (all.isEmpty) return [];
     return all
         .where((playlist) =>
-            playlist.plt != MusicPlatforms.LOCAL && playlist.type == SongListType.playlist)
+            playlist.plt != MusicPlatforms.local &&
+            playlist.type == SongListType.playlist)
         .toList();
   }
 
   static List<SongList> collectedOfAlbum(List<SongList> all) {
-    if (all == null || all.isEmpty) return [];
+    if (all.isEmpty) return [];
     return all
         .where((playlist) =>
-    playlist.plt != MusicPlatforms.LOCAL && playlist.type == SongListType.album)
+            playlist.plt != MusicPlatforms.local &&
+            playlist.type == SongListType.album)
         .toList();
   }
 
@@ -60,43 +60,22 @@ class MySongListModel {
 
   //我的所有歌单
   Future refresh() async {
-    List<SongList> songLists = await _mySongListDao.queryAllWithoutSongs();
+    List<SongList> songLists =
+        await _mySongListDao.queryAllSongListWithoutSongs();
     _mySongListController.add(songLists);
   }
 
   //创建歌单
   Future<bool> createSongList(String title) async {
-    if (title == null || title.isEmpty) return false;
-    var songList = DbSongList();
-    songList.plt = MusicPlatforms.LOCAL;
-    songList.id = md5(title + DateTime.now().millisecond.toString()).substring(0, 16);
-    songList.title = title;
-    songList.type = SongListType.playlist;
-    songList.createdTime = dateTimeToString(DateTime.now());
-    var result = await _mySongListDao.saveSongList(songList);
+    if (title.isEmpty) return false;
+    var result = await _mySongListDao.createSongList(title);
     await refresh();
     return result;
   }
 
   //删除歌单（删除没有从属某个歌单且没有播放时间的歌曲）
-  Future<bool> deleteSongList(String plt, String id, SongListType type) async {
-    var result = await _mySongListDao.deleteSongList(plt, id, type);
-    await refresh();
-    return result;
-  }
-
-  //添加歌曲到歌单
-  Future<bool> addSongToList(Song song, int songListRowId) async {
-    var result = await _mySongListDao.addSongToSongListWithRowId(songListRowId, song);
-    await refresh();
-    return result;
-  }
-
-  //删除歌单中的歌曲
-  Future<bool> deleteSongFromList(String songListType, String songListId, SongListType type,
-      String songPlt, String songId) async {
-    var result = await _mySongListDao.deleteSongFromSongList(
-        songListType, songListId, type, songPlt, songId);
+  Future<bool> deleteSongList(int songListId) async {
+    var result = await _mySongListDao.deleteSongList(songListId);
     await refresh();
     return result;
   }

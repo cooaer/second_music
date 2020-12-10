@@ -6,8 +6,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:second_music/common/path.dart';
 import 'package:second_music/page/home/page.dart';
 import 'package:second_music/page/ui_style.dart';
+import 'package:second_music/repository/local/preference/basic.dart';
 import 'package:second_music/res/res.dart';
-import 'package:second_music/storage/preference/basic.dart';
 
 void main() async {
   await initApp();
@@ -21,7 +21,7 @@ Future initApp() async {
 
   await AppPath.instance.init();
 
-  if(Platform.isAndroid){
+  if (Platform.isAndroid) {
     SystemChrome.setSystemUIOverlayStyle(darkIconUiStyle);
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   }
@@ -33,6 +33,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       onGenerateTitle: (context) => stringsOf(context).appName,
       theme: ThemeData(
+        // useMaterial3: true,
         primarySwatch: Colors.red,
       ),
       home: HomePage(),

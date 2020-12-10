@@ -3,4 +3,9 @@
 
     <string name="app_name">第二音乐</string>
 
+    <string name="notification_action_play">播放</string>
+    <string name="notification_action_pause">暂停</string>
+    <string name="notification_action_previous">上一首</string>
+    <string name="notification_action_next">下一首</string>
+
 </resources>

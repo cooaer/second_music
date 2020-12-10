@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:second_music/model/enum.dart';
+import 'package:second_music/entity/enum.dart';
 import 'package:second_music/page/home/hot_playlist/page.dart';
 import 'package:second_music/page/home/my_song_list/page.dart';
 import 'package:second_music/page/navigator.dart';
@@ -58,7 +58,8 @@ class _HomeContent extends StatelessWidget {
         children: <Widget>[
           SafeArea(
             child: Container(
-              padding: EdgeInsets.only(top: 50, bottom: 48 + MediaQuery.of(context).padding.bottom),
+              padding: EdgeInsets.only(
+                  top: 50, bottom: 48 + MediaQuery.of(context).padding.bottom),
               child: _HomeTabs(),
             ),
           ),
@@ -111,12 +112,14 @@ class _HomeTopBar extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               onPressed: () {
-                                AppNavigator.instance.navigateTo(context, AppNavigator.search);
+                                AppNavigator.instance
+                                    .navigateTo(context, AppNavigator.search);
                               },
                               child: Row(
                                 children: <Widget>[
                                   Padding(
-                                    padding: EdgeInsets.only(left: 10, right: 6),
+                                    padding:
+                                        EdgeInsets.only(left: 10, right: 6),
                                     child: MdrIcon(
                                       'search',
                                       color: AppColors.tint_rounded,
@@ -140,8 +143,9 @@ class _HomeTopBar extends StatelessWidget {
                         child: FlatButton(
                           padding: EdgeInsets.all(0),
                           shape: CircleBorder(side: BorderSide.none),
-                          onPressed: () => AppNavigator.instance
-                              .navigateTo(context, AppNavigator.setting, overlay: true),
+                          onPressed: () => AppNavigator.instance.navigateTo(
+                              context, AppNavigator.setting,
+                              overlay: true),
                           child: Icon(
                             MdiIcons.cogOutline,
                             color: Colors.grey.shade600,
@@ -153,16 +157,21 @@ class _HomeTopBar extends StatelessWidget {
 }
 
 class _HomeTabs extends StatelessWidget {
+  static const List<MusicPlatform> tabPlts = [
+    MusicPlatform.netease,
+    MusicPlatform.qq,
+  ];
+
   @override
   Widget build(BuildContext context) {
-    var titles = MusicPlatforms.platforms.map((e) => stringsOf(context).platform(e)).toList()
+    var titles = tabPlts.map((e) => stringsOf(context).platform(e)).toList()
       ..insert(0, stringsOf(context).mine);
     return DefaultTabController(
       length: titles.length,
       child: Column(
         children: <Widget>[
           _HomeTabBar(titles),
-          _HomeTabBarView(MusicPlatforms.platforms),
+          _HomeTabBarView(tabPlts),
         ],
       ),
     );
@@ -194,13 +203,15 @@ class _HomeTabBar extends StatelessWidget {
 }
 
 class _HomeTabBarView extends StatelessWidget {
-  final List<String> platforms;
+  final List<MusicPlatform> platforms;
 
   _HomeTabBarView(this.platforms);
 
   @override
   Widget build(BuildContext context) {
-    var children = platforms.map<Widget>((e) => HomeHotPlaylistPlatform(e, key: Key(e))).toList();
+    var children = platforms
+        .map<Widget>((e) => HomeHotPlaylistPlatform(e, key: Key(e.name)))
+        .toList();
     children.insert(0, HomeMySongList());
     return Expanded(child: TabBarView(children: children));
   }

@@ -6,7 +6,8 @@ class LoadingMore extends StatelessWidget {
   final bool lastError;
   final VoidCallback onPressed;
 
-  LoadingMore(this.loading, this.lastError, this.onPressed, {Key key}) : super(key: key);
+  LoadingMore(this.loading, this.lastError, this.onPressed, {Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

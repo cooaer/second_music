@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:second_music/model/song_list.dart';
+import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/page/home/my_song_list/model.dart';
 import 'package:second_music/page/home/my_song_list/widget.dart';
 import 'package:second_music/page/navigator.dart';
@@ -15,7 +15,7 @@ class HomeMySongList extends StatefulWidget {
 }
 
 class HomeMySongListState extends State with AutomaticKeepAliveClientMixin {
-  MySongListModel _model;
+  late MySongListModel _model;
 
   @override
   void initState() {
@@ -30,7 +30,7 @@ class HomeMySongListState extends State with AutomaticKeepAliveClientMixin {
     return StreamBuilder(
       stream: MySongListModel.instance.mySongListStream,
       builder: (context, AsyncSnapshot<List<SongList>> snapshot) {
-        return _buildContent(context, snapshot.data);
+        return _buildContent(context, snapshot.data ?? []);
       },
     );
   }
@@ -61,8 +61,8 @@ class HomeMySongListState extends State with AutomaticKeepAliveClientMixin {
           ),
         ),
         SliverToBoxAdapter(
-          child: _HomeMySongListTitle(
-              stringsOf(context).createdPlaylist, true, createdPlaylists.length),
+          child: _HomeMySongListTitle(stringsOf(context).createdPlaylist, true,
+              createdPlaylists.length),
         ),
         if (createdPlaylists.isNotEmpty)
           SliverList(
@@ -71,7 +71,7 @@ class HomeMySongListState extends State with AutomaticKeepAliveClientMixin {
                 var songList = createdPlaylists[index];
                 return _HomeMySongListItem(
                   songList,
-                  key: Key('${songList.type},${songList.id}'),
+                  key: Key('${songList.type},${songList.pltId}'),
                 );
               },
               childCount: createdPlaylists.length,
@@ -79,8 +79,8 @@ class HomeMySongListState extends State with AutomaticKeepAliveClientMixin {
           ),
         if (collectedPlaylists.isNotEmpty)
           SliverToBoxAdapter(
-            child: _HomeMySongListTitle(
-                stringsOf(context).collectedPlaylist, false, collectedPlaylists.length),
+            child: _HomeMySongListTitle(stringsOf(context).collectedPlaylist,
+                false, collectedPlaylists.length),
           ),
         if (collectedPlaylists.isNotEmpty)
           SliverList(
@@ -89,7 +89,7 @@ class HomeMySongListState extends State with AutomaticKeepAliveClientMixin {
                 var songList = collectedPlaylists[index];
                 return _HomeMySongListItem(
                   songList,
-                  key: Key('${songList.type},${songList.id}'),
+                  key: Key('${songList.type},${songList.pltId}'),
                 );
               },
               childCount: collectedPlaylists.length,
@@ -97,8 +97,8 @@ class HomeMySongListState extends State with AutomaticKeepAliveClientMixin {
           ),
         if (collectedAlbums.isNotEmpty)
           SliverToBoxAdapter(
-            child: _HomeMySongListTitle(
-                stringsOf(context).collectedAlbum, false, collectedAlbums.length),
+            child: _HomeMySongListTitle(stringsOf(context).collectedAlbum,
+                false, collectedAlbums.length),
           ),
         if (collectedAlbums.isNotEmpty)
           SliverList(
@@ -107,7 +107,7 @@ class HomeMySongListState extends State with AutomaticKeepAliveClientMixin {
                 var songList = collectedAlbums[index];
                 return _HomeMySongListItem(
                   songList,
-                  key: Key('${songList.type},${songList.id}'),
+                  key: Key('${songList.type},${songList.pltId}'),
                 );
               },
               childCount: collectedAlbums.length,
@@ -126,7 +126,8 @@ class _HomeMyCommonItem extends StatelessWidget {
   final String title;
   final int count;
 
-  _HomeMyCommonItem(this.icon, this.title, this.count, {Key key}) : super(key: key);
+  _HomeMyCommonItem(this.icon, this.title, this.count, {Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +183,8 @@ class _HomeMySongListTitle extends StatelessWidget {
   final bool isCreated;
   final int count;
 
-  _HomeMySongListTitle(this.title, this.isCreated, this.count, {Key key}) : super(key: key);
+  _HomeMySongListTitle(this.title, this.isCreated, this.count, {Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -242,15 +244,16 @@ class _HomeMySongListTitle extends StatelessWidget {
 class _HomeMySongListItem extends StatelessWidget {
   final SongList songList;
 
-  _HomeMySongListItem(this.songList, {Key key}) : super(key: key);
+  _HomeMySongListItem(this.songList, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return FlatButton(
         onPressed: () {
-          AppNavigator.instance.navigateTo(context, AppNavigator.song_list, params: {
+          AppNavigator.instance
+              .navigateTo(context, AppNavigator.song_list, params: {
             'plt': songList.plt,
-            'songListId': songList.id,
+            'songListId': songList.pltId,
             'songListType': songList.type,
           });
         },
@@ -262,7 +265,7 @@ class _HomeMySongListItem extends StatelessWidget {
             children: <Widget>[
               ClipRRect(
                 borderRadius: BorderRadius.all(Radius.circular(5)),
-                child: songList?.cover == null || songList.cover.isEmpty
+                child: songList.cover.isEmpty
                     ? Container(
                         width: 50,
                         height: 50,
@@ -296,11 +299,13 @@ class _HomeMySongListItem extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                          color: AppColors.text_title, fontSize: 16, fontWeight: FontWeight.normal),
+                          color: AppColors.text_title,
+                          fontSize: 16,
+                          fontWeight: FontWeight.normal),
                     ),
                     Text(
-                      stringsOf(context)
-                          .songListCountAndCreator(this.songList.songTotal, this.songList.userName),
+                      stringsOf(context).songListCountAndCreator(
+                          this.songList.songTotal, this.songList.userName),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

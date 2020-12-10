@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:second_music/model/enum.dart';
-import 'package:second_music/model/song.dart';
-import 'package:second_music/page/model.dart';
-import 'package:second_music/res/res.dart';
-import 'package:second_music/storage/database/music/dao.dart';
-import 'package:second_music/widget/material_icon_round.dart';
-import 'package:second_music/page/song_list/widget.dart';
+import 'package:second_music/entity/enum.dart';
+import 'package:second_music/entity/song.dart';
 import 'package:second_music/page/home/my_song_list/model.dart' as mySongList;
+import 'package:second_music/page/song_list/widget.dart';
+import 'package:second_music/repository/local/database/song/dao.dart';
+import 'package:second_music/res/res.dart';
+import 'package:second_music/service/music_service.dart';
+import 'package:second_music/widget/material_icon_round.dart';
 
 void showPlayingList(BuildContext context) {
   showModalBottomSheet(context: context, builder: (context) => _PlayingList());
@@ -43,21 +43,22 @@ class _PlayingList extends StatelessWidget {
 
   Widget _buildSongList(BuildContext context) {
     return StreamBuilder(
-      initialData: PlayControlModel.instance.showingList,
-      stream: PlayControlModel.instance.showingListStream,
+      initialData: MusicService.instance.showingSongList,
+      stream: MusicService.instance.showingSongListStream,
       builder: (context, AsyncSnapshot<List<Song>> snapshotShowingList) {
         return StreamBuilder(
-            initialData: PlayControlModel.instance.currentSong,
-            stream: PlayControlModel.instance.currentSongStream,
-            builder: (context, AsyncSnapshot<Song> snapshotCurrentSong) {
+            initialData: MusicService.instance.currentIndex,
+            stream: MusicService.instance.currentIndexStream,
+            builder: (context, AsyncSnapshot<int> snapshotCurrentSong) {
               return ListView.separated(
                   itemBuilder: (context, index) {
-                    var song = snapshotShowingList.data[index];
-                    var isPlaying = snapshotCurrentSong.data == snapshotShowingList.data[index];
-                    return _PlayingListSong(song, isPlaying, key: Key(song.plt + song.id));
+                    var song = snapshotShowingList.data![index];
+                    var isPlaying = snapshotCurrentSong.data == index;
+                    return _PlayingListSong(index, song, isPlaying,
+                        key: Key(song.uniqueId));
                   },
                   separatorBuilder: (context, index) => _PlayingListDivider(),
-                  itemCount: snapshotShowingList.data.length);
+                  itemCount: snapshotShowingList.data!.length);
             });
       },
     );
@@ -75,19 +76,19 @@ class _PlayingListTitle extends StatelessWidget {
           child: Row(
             children: <Widget>[
               StreamBuilder(
-                initialData: PlayControlModel.instance.playMode,
-                stream: PlayControlModel.instance.playModeStream,
+                initialData: MusicService.instance.playMode,
+                stream: MusicService.instance.playModeStream,
                 builder: (context, AsyncSnapshot<PlayMode> snapshot) {
                   return FlatButton.icon(
                       onPressed: () {
-                        PlayControlModel.instance.switchPlayMode();
+                        MusicService.instance.switchPlayMode();
                       },
                       icon: MdrIcon(
-                        AppImages.playModeIcon(snapshot.data),
+                        AppImages.playModeIcon(snapshot.data!),
                         color: AppColors.tint_rounded,
                       ),
                       label: Text(
-                        stringsOf(context).playMode(snapshot.data),
+                        stringsOf(context).playMode(snapshot.data!),
                         style: TextStyle(
                           color: AppColors.text_title,
                           fontSize: 16,
@@ -115,7 +116,8 @@ class _PlayingListTitle extends StatelessWidget {
                     ),
                   )),
               FlatButton(
-                onPressed: PlayControlModel.instance.clear,
+                onPressed:
+                    MusicService.instance.clearPlaylistWithoutCurrentSong,
                 padding: EdgeInsets.symmetric(horizontal: 10),
                 child: MdrIcon(
                   "delete_outline",
@@ -128,20 +130,26 @@ class _PlayingListTitle extends StatelessWidget {
   }
 
   void _addAllToSongList(BuildContext context) async {
-    var songList = await selectSongList(context);
     var mySongListDao = MySongListDao();
-    var songs = PlayControlModel.instance.showingList;
-    await mySongListDao.addSongsToSongList(songList.plt, songList.id, songList.type, songs);
-    mySongListDao.close();
+    var songLists = await mySongListDao.queryAllSongListWithoutSongs(
+        plt: MusicPlatforms.local);
+    var songList = await selectSongList(context, songLists);
+    if (songList == null) {
+      return;
+    }
+    var songs = MusicService.instance.showingSongList;
+    await mySongListDao.addSongsToSongList(songList.id, songs);
     mySongList.notifyMySongListChanged();
   }
 }
 
 class _PlayingListSong extends StatelessWidget {
+  final int index;
   final Song song;
   final bool isPlaying;
 
-  _PlayingListSong(this.song, this.isPlaying, {Key key}) : super(key: key);
+  _PlayingListSong(this.index, this.song, this.isPlaying, {Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -153,8 +161,7 @@ class _PlayingListSong extends StatelessWidget {
           child: FlatButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                var index = PlayControlModel.instance.playingList.indexOf(song);
-                PlayControlModel.instance.playIndexWithoutAnimation(index);
+                MusicService.instance.playSong(song);
               },
               padding: EdgeInsets.zero,
               child: Row(
@@ -176,18 +183,23 @@ class _PlayingListSong extends StatelessWidget {
                       TextSpan(
                         children: <TextSpan>[
                           TextSpan(
-                            text: song.name ?? '',
+                            text: song.name,
                             style: TextStyle(
-                                color: isPlaying ? AppColors.text_accent : AppColors.text_title,
+                                color: isPlaying
+                                    ? AppColors.text_accent
+                                    : AppColors.text_title,
                                 fontSize: 16,
                                 fontWeight: FontWeight.normal),
                           ),
                           TextSpan(
-                            text: song.singer?.name != null && song.singer.name.isNotEmpty
-                                ? ' - ${song.singer.name}'
+                            text: song.singer?.name != null &&
+                                    song.singer!.name.isNotEmpty
+                                ? ' - ${song.singer!.name}'
                                 : '',
                             style: TextStyle(
-                                color: isPlaying ? AppColors.text_accent : AppColors.text_light,
+                                color: isPlaying
+                                    ? AppColors.text_accent
+                                    : AppColors.text_light,
                                 fontSize: 12,
                                 fontWeight: FontWeight.normal),
                           ),
@@ -197,14 +209,16 @@ class _PlayingListSong extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  FlatButton(
-                    onPressed: () => PlayControlModel.instance.deleteSongFromList(song),
-                    padding: EdgeInsets.symmetric(horizontal: 10),
-                    child: MdrIcon(
-                      "close",
-                      color: AppColors.tint_rounded,
+                  if (!isPlaying)
+                    FlatButton(
+                      onPressed: () =>
+                          MusicService.instance.deleteSongFromPlaylist(song),
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: MdrIcon(
+                        "close",
+                        color: AppColors.tint_rounded,
+                      ),
                     ),
-                  ),
                   SizedBox(
                     width: 5,
                   ),

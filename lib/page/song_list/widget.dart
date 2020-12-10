@@ -1,21 +1,22 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:second_music/model/enum.dart';
-import 'package:second_music/model/song.dart';
-import 'package:second_music/model/song_list.dart';
+import 'package:second_music/entity/enum.dart';
+import 'package:second_music/entity/song.dart';
+import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/page/basic_types.dart';
 import 'package:second_music/page/home/my_song_list/model.dart';
-import 'package:second_music/page/model.dart';
 import 'package:second_music/page/navigator.dart';
 import 'package:second_music/page/play_control/page.dart';
 import 'package:second_music/page/song_list/model.dart';
+import 'package:second_music/repository/local/database/song/dao.dart';
 import 'package:second_music/res/res.dart';
-import 'package:second_music/storage/database/music/dao.dart';
 import 'package:second_music/widget/material_icon_round.dart';
 
-void showSongMenu(BuildContext context, Song song, SongList songList, SongListModel songListModel) {
+void showSongMenu(BuildContext context, Song song, SongList? songList,
+    SongListModel? songListModel) {
   showModalBottomSheet(
-      context: context, builder: (context) => _SongMenu(song, songList, songListModel));
+      context: context,
+      builder: (context) => _SongMenu(song, songList, songListModel));
 }
 
 //下一首播放
@@ -25,34 +26,37 @@ void showSongMenu(BuildContext context, Song song, SongList songList, SongListMo
 //删除（从歌单中删除）
 class _SongMenu extends StatelessWidget {
   final Song song;
-  final SongList songList;
-  final SongListModel songListModel;
+  final SongList? songList;
+  final SongListModel? songListModel;
 
   _SongMenu(this.song, this.songList, this.songListModel);
 
   @override
   Widget build(BuildContext context) {
     final items = [
-      ['playNext', 'play_circle_outline', stringsOf(context).playNext],
+      // ['playNext', 'play_circle_outline', stringsOf(context).playNext],
       ['addToSongList', 'library_add', stringsOf(context).collectToPlaylist]
     ];
 
     if (song.isSingerAvailable) {
-      items.add(['singer', 'portrait', stringsOf(context).singerTitle(song.singer)]);
+      items.add(
+          ['singer', 'portrait', stringsOf(context).singerTitle(song.singer)]);
     }
 
     if (song.isAlbumAvailable) {
       items.add(['album', 'album', stringsOf(context).albumTitle(song.album)]);
     }
 
-    if (songList?.plt == MusicPlatforms.LOCAL) {
-      items.add(['deleteFromSongList', 'delete_outline', stringsOf(context).delete]);
+    if (songList?.plt == MusicPlatforms.local) {
+      items.add(
+          ['deleteFromSongList', 'delete_outline', stringsOf(context).delete]);
     }
 
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).padding.bottom + PlayController.BAR_HEIGHT),
+            bottom: MediaQuery.of(context).padding.bottom +
+                PlayController.BAR_HEIGHT),
         child: Column(children: _buildMenuItems(context, items)),
       ),
     );
@@ -96,30 +100,38 @@ class _SongMenu extends StatelessWidget {
     }
   }
 
-  void _playNext() {
-    PlayControlModel.instance.addToNext(song);
-  }
+  void _playNext() {}
 
   void _addToSongList(BuildContext context) async {
-    var _songList = await selectSongList(context);
-    var _mySongListDao = MySongListDao();
-    await _mySongListDao.addSongToSongList(_songList.plt, _songList.id, _songList.type, song);
-    _mySongListDao.close();
+    var mySongListDao = MySongListDao();
+    var songLists = await mySongListDao.queryAllSongListWithoutSongs(
+        plt: MusicPlatforms.local);
+    var songList = await selectSongList(context, songLists);
+    if (songList == null) {
+      return;
+    }
+    final result =
+        (await mySongListDao.addSongsToSongList(songList.id, [song])) > 0;
+    debugPrint("songMenu.addToSongList, result = $result");
     notifyMySongListChanged();
   }
 
   void _deleteFromSongList() async {
+    if (songList == null || songListModel == null) {
+      return;
+    }
     var _mySongListDao = MySongListDao();
-    await _mySongListDao.deleteSongFromSongList(
-        songList.plt, songList.id, songList.type, song.plt, song.id);
-    _mySongListDao.close();
-    songListModel.refresh();
+    await _mySongListDao.deleteSongFromSongList(songList!.id, song.id);
+    songListModel!.refresh();
     notifyMySongListChanged();
   }
 
   void _openAlbum(BuildContext context) {
-    AppNavigator.instance.navigateTo(context, AppNavigator.song_list,
-        params: {"plt": song.plt, "songListId": song.album.id, "songListType": SongListType.album});
+    AppNavigator.instance.navigateTo(context, AppNavigator.song_list, params: {
+      "plt": song.plt.name,
+      "songListId": song.album?.id,
+      "songListType": SongListType.album
+    });
   }
 }
 
@@ -129,7 +141,8 @@ class _SongMenuItem extends StatelessWidget {
   final String title;
   final ValueCallback<String> callback;
 
-  _SongMenuItem(this.type, this.logo, this.title, this.callback, {Key key}) : super(key: key);
+  _SongMenuItem(this.type, this.logo, this.title, this.callback, {Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -150,14 +163,18 @@ class _SongMenuItem extends StatelessWidget {
             SizedBox(
               width: 10,
             ),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                color: AppColors.text_title,
-                fontWeight: FontWeight.normal,
+            Expanded(
+              flex: 1,
+              child: Text(
+                title,
+                maxLines: 2,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: AppColors.text_title,
+                  fontWeight: FontWeight.normal,
+                ),
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -166,7 +183,7 @@ class _SongMenuItem extends StatelessWidget {
 }
 
 class _SongMenuDivider extends StatelessWidget {
-  _SongMenuDivider({Key key}) : super(key: key);
+  _SongMenuDivider({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -179,11 +196,9 @@ class _SongMenuDivider extends StatelessWidget {
 }
 
 // 选择歌单
-Future<SongList> selectSongList(BuildContext context) async {
-  var mySongListDao = MySongListDao();
-  var songLists = await mySongListDao.queryAllWithoutSongs(plt: MusicPlatforms.LOCAL);
-  mySongListDao.close();
-  return await showDialog(
+Future<SongList?> selectSongList(
+    BuildContext context, List<SongList> songLists) async {
+  return await showDialog<SongList>(
       context: context,
       builder: (context) => AlertDialog(
             title: Container(
@@ -204,7 +219,8 @@ Future<SongList> selectSongList(BuildContext context) async {
               child: ListBody(
                   children: List.generate(songLists.length, (index) {
                 var songList = songLists[index];
-                return _SelectSongListContentItem(songList, key: ValueKey(songList.id));
+                return _SelectSongListContentItem(songList,
+                    key: ValueKey(songList.pltId));
               })),
             ),
             contentPadding: EdgeInsets.zero,
@@ -214,7 +230,7 @@ Future<SongList> selectSongList(BuildContext context) async {
 class _SelectSongListContentItem extends StatelessWidget {
   final SongList songList;
 
-  _SelectSongListContentItem(this.songList, {Key key}) : super(key: key);
+  _SelectSongListContentItem(this.songList, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -230,7 +246,7 @@ class _SelectSongListContentItem extends StatelessWidget {
             children: <Widget>[
               ClipRRect(
                 borderRadius: BorderRadius.all(Radius.circular(5)),
-                child: songList?.cover == null || songList.cover.isEmpty
+                child: songList.cover.isEmpty
                     ? Container(
                         width: 50,
                         height: 50,
@@ -264,11 +280,13 @@ class _SelectSongListContentItem extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                          color: AppColors.text_title, fontSize: 16, fontWeight: FontWeight.normal),
+                          color: AppColors.text_title,
+                          fontSize: 16,
+                          fontWeight: FontWeight.normal),
                     ),
                     Text(
-                      stringsOf(context)
-                          .songListCountAndCreator(this.songList.songTotal, this.songList.userName),
+                      stringsOf(context).songListCountAndCreator(
+                          this.songList.songTotal, this.songList.userName),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -286,8 +304,7 @@ class _SelectSongListContentItem extends StatelessWidget {
   }
 }
 
-
-void showSongListDescriptionDialog(BuildContext context, String desc){
+void showSongListDescriptionDialog(BuildContext context, String desc) {
   showDialog(
       context: context,
       builder: (context) {
@@ -303,7 +320,7 @@ void showSongListDescriptionDialog(BuildContext context, String desc){
           titlePadding: EdgeInsets.fromLTRB(20, 10, 20, 0),
           content: SingleChildScrollView(
             child: Text(
-              desc ?? stringsOf(context).nullText,
+              desc.isEmpty ? stringsOf(context).nullText : desc,
               style: TextStyle(
                 fontSize: 14,
                 color: AppColors.text_title,
