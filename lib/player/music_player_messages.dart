@@ -43,24 +43,6 @@ class PlayModeMessage {
   }
 }
 
-class StreamUrlMessage {
-  String streamUrl;
-
-  // ignore: unused_element
-  Object encode() {
-    final Map<Object, Object> pigeonMap = <Object, Object>{};
-    pigeonMap['streamUrl'] = streamUrl;
-    return pigeonMap;
-  }
-
-  // ignore: unused_element
-  static StreamUrlMessage decode(Object message) {
-    final Map<Object, Object> pigeonMap = message as Map<Object, Object>;
-    return StreamUrlMessage()
-      ..streamUrl = pigeonMap['streamUrl'] as String;
-  }
-}
-
 class SongMessage {
   String plt;
   String id;
@@ -117,11 +99,13 @@ class SongMessage {
 
 class PositionMessage {
   int position;
+  int duration;
 
   // ignore: unused_element
   Object encode() {
     final Map<Object, Object> pigeonMap = <Object, Object>{};
     pigeonMap['position'] = position;
+    pigeonMap['duration'] = duration;
     return pigeonMap;
   }
 
@@ -129,7 +113,26 @@ class PositionMessage {
   static PositionMessage decode(Object message) {
     final Map<Object, Object> pigeonMap = message as Map<Object, Object>;
     return PositionMessage()
-      ..position = pigeonMap['position'] as int;
+      ..position = pigeonMap['position'] as int
+      ..duration = pigeonMap['duration'] as int;
+  }
+}
+
+class StreamUrlMessage {
+  String streamUrl;
+
+  // ignore: unused_element
+  Object encode() {
+    final Map<Object, Object> pigeonMap = <Object, Object>{};
+    pigeonMap['streamUrl'] = streamUrl;
+    return pigeonMap;
+  }
+
+  // ignore: unused_element
+  static StreamUrlMessage decode(Object message) {
+    final Map<Object, Object> pigeonMap = message as Map<Object, Object>;
+    return StreamUrlMessage()
+      ..streamUrl = pigeonMap['streamUrl'] as String;
   }
 }
 
@@ -148,24 +151,6 @@ class StateMessage {
     final Map<Object, Object> pigeonMap = message as Map<Object, Object>;
     return StateMessage()
       ..state = pigeonMap['state'] as String;
-  }
-}
-
-class DurationMessage {
-  int duration;
-
-  // ignore: unused_element
-  Object encode() {
-    final Map<Object, Object> pigeonMap = <Object, Object>{};
-    pigeonMap['duration'] = duration;
-    return pigeonMap;
-  }
-
-  // ignore: unused_element
-  static DurationMessage decode(Object message) {
-    final Map<Object, Object> pigeonMap = message as Map<Object, Object>;
-    return DurationMessage()
-      ..duration = pigeonMap['duration'] as int;
   }
 }
 
@@ -259,28 +244,6 @@ class PlaylistControllerApi {
       );
     } else {
       // noop
-    }
-  }
-}
-
-abstract class MusicPlayerDelegateApi {
-  StreamUrlMessage retrieveStreamUrl(SongMessage arg);
-  static void setup(MusicPlayerDelegateApi api) {
-    {
-      const BasicMessageChannel<Object> channel =
-          BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerDelegateApi.retrieveStreamUrl', StandardMessageCodec());
-      if (api == null) {
-        channel.setMessageHandler(null);
-      } else {
-        channel.setMessageHandler((Object message) async {
-          if (message == null) {
-            return null;
-          }
-          final SongMessage input = SongMessage.decode(message);
-          final StreamUrlMessage output = api.retrieveStreamUrl(input);
-          return output.encode();
-        });
-      }
     }
   }
 }
@@ -399,11 +362,32 @@ class MusicPlayerControllerApi {
   }
 }
 
+abstract class MusicPlayerDelegateApi {
+  StreamUrlMessage retrieveStreamUrl(SongMessage arg);
+  static void setup(MusicPlayerDelegateApi api) {
+    {
+      const BasicMessageChannel<Object> channel =
+          BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerDelegateApi.retrieveStreamUrl', StandardMessageCodec());
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object message) async {
+          if (message == null) {
+            return null;
+          }
+          final SongMessage input = SongMessage.decode(message);
+          final StreamUrlMessage output = api.retrieveStreamUrl(input);
+          return output.encode();
+        });
+      }
+    }
+  }
+}
+
 abstract class MusicPlayerCallbackApi {
   void onPlayerStateChanged(StateMessage arg);
   void onSongChanged(SongMessage arg);
   void onPositionChanged(PositionMessage arg);
-  void onDurationChanged(DurationMessage arg);
   static void setup(MusicPlayerCallbackApi api) {
     {
       const BasicMessageChannel<Object> channel =
@@ -449,22 +433,6 @@ abstract class MusicPlayerCallbackApi {
           }
           final PositionMessage input = PositionMessage.decode(message);
           api.onPositionChanged(input);
-          return;
-        });
-      }
-    }
-    {
-      const BasicMessageChannel<Object> channel =
-          BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerCallbackApi.onDurationChanged', StandardMessageCodec());
-      if (api == null) {
-        channel.setMessageHandler(null);
-      } else {
-        channel.setMessageHandler((Object message) async {
-          if (message == null) {
-            return;
-          }
-          final DurationMessage input = DurationMessage.decode(message);
-          api.onDurationChanged(input);
           return;
         });
       }

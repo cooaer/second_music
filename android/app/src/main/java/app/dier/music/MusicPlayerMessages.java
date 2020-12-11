@@ -52,25 +52,6 @@ public class MusicPlayerMessages {
   }
 
   /** Generated class from Pigeon that represents data sent in messages. */
-  public static class StreamUrlMessage {
-    private String streamUrl;
-    public String getStreamUrl() { return streamUrl; }
-    public void setStreamUrl(String setterArg) { this.streamUrl = setterArg; }
-
-    HashMap toMap() {
-      HashMap<String, Object> toMapResult = new HashMap<>();
-      toMapResult.put("streamUrl", streamUrl);
-      return toMapResult;
-    }
-    static StreamUrlMessage fromMap(HashMap map) {
-      StreamUrlMessage fromMapResult = new StreamUrlMessage();
-      Object streamUrl = map.get("streamUrl");
-      fromMapResult.streamUrl = (String)streamUrl;
-      return fromMapResult;
-    }
-  }
-
-  /** Generated class from Pigeon that represents data sent in messages. */
   public static class SongMessage {
     private String plt;
     public String getPlt() { return plt; }
@@ -179,15 +160,41 @@ public class MusicPlayerMessages {
     public Long getPosition() { return position; }
     public void setPosition(Long setterArg) { this.position = setterArg; }
 
+    private Long duration;
+    public Long getDuration() { return duration; }
+    public void setDuration(Long setterArg) { this.duration = setterArg; }
+
     HashMap toMap() {
       HashMap<String, Object> toMapResult = new HashMap<>();
       toMapResult.put("position", position);
+      toMapResult.put("duration", duration);
       return toMapResult;
     }
     static PositionMessage fromMap(HashMap map) {
       PositionMessage fromMapResult = new PositionMessage();
       Object position = map.get("position");
       fromMapResult.position = (position == null) ? null : ((position instanceof Integer) ? (Integer)position : (Long)position);
+      Object duration = map.get("duration");
+      fromMapResult.duration = (duration == null) ? null : ((duration instanceof Integer) ? (Integer)duration : (Long)duration);
+      return fromMapResult;
+    }
+  }
+
+  /** Generated class from Pigeon that represents data sent in messages. */
+  public static class StreamUrlMessage {
+    private String streamUrl;
+    public String getStreamUrl() { return streamUrl; }
+    public void setStreamUrl(String setterArg) { this.streamUrl = setterArg; }
+
+    HashMap toMap() {
+      HashMap<String, Object> toMapResult = new HashMap<>();
+      toMapResult.put("streamUrl", streamUrl);
+      return toMapResult;
+    }
+    static StreamUrlMessage fromMap(HashMap map) {
+      StreamUrlMessage fromMapResult = new StreamUrlMessage();
+      Object streamUrl = map.get("streamUrl");
+      fromMapResult.streamUrl = (String)streamUrl;
       return fromMapResult;
     }
   }
@@ -207,25 +214,6 @@ public class MusicPlayerMessages {
       StateMessage fromMapResult = new StateMessage();
       Object state = map.get("state");
       fromMapResult.state = (String)state;
-      return fromMapResult;
-    }
-  }
-
-  /** Generated class from Pigeon that represents data sent in messages. */
-  public static class DurationMessage {
-    private Long duration;
-    public Long getDuration() { return duration; }
-    public void setDuration(Long setterArg) { this.duration = setterArg; }
-
-    HashMap toMap() {
-      HashMap<String, Object> toMapResult = new HashMap<>();
-      toMapResult.put("duration", duration);
-      return toMapResult;
-    }
-    static DurationMessage fromMap(HashMap map) {
-      DurationMessage fromMapResult = new DurationMessage();
-      Object duration = map.get("duration");
-      fromMapResult.duration = (duration == null) ? null : ((duration instanceof Integer) ? (Integer)duration : (Long)duration);
       return fromMapResult;
     }
   }
@@ -323,28 +311,6 @@ public class MusicPlayerMessages {
           channel.setMessageHandler(null);
         }
       }
-    }
-  }
-
-  /** Generated class from Pigeon that represents Flutter messages that can be called from Java.*/
-  public static class MusicPlayerDelegateApi {
-    private final BinaryMessenger binaryMessenger;
-    public MusicPlayerDelegateApi(BinaryMessenger argBinaryMessenger){
-      this.binaryMessenger = argBinaryMessenger;
-    }
-    public interface Reply<T> {
-      void reply(T reply);
-    }
-    public void retrieveStreamUrl(SongMessage argInput, Reply<StreamUrlMessage> callback) {
-      BasicMessageChannel<Object> channel =
-          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerDelegateApi.retrieveStreamUrl", new StandardMessageCodec());
-      HashMap inputMap = argInput.toMap();
-      channel.send(inputMap, channelReply -> {
-        HashMap outputMap = (HashMap)channelReply;
-        @SuppressWarnings("ConstantConditions")
-        StreamUrlMessage output = StreamUrlMessage.fromMap(outputMap);
-        callback.reply(output);
-      });
     }
   }
 
@@ -461,6 +427,28 @@ public class MusicPlayerMessages {
   }
 
   /** Generated class from Pigeon that represents Flutter messages that can be called from Java.*/
+  public static class MusicPlayerDelegateApi {
+    private final BinaryMessenger binaryMessenger;
+    public MusicPlayerDelegateApi(BinaryMessenger argBinaryMessenger){
+      this.binaryMessenger = argBinaryMessenger;
+    }
+    public interface Reply<T> {
+      void reply(T reply);
+    }
+    public void retrieveStreamUrl(SongMessage argInput, Reply<StreamUrlMessage> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerDelegateApi.retrieveStreamUrl", new StandardMessageCodec());
+      HashMap inputMap = argInput.toMap();
+      channel.send(inputMap, channelReply -> {
+        HashMap outputMap = (HashMap)channelReply;
+        @SuppressWarnings("ConstantConditions")
+        StreamUrlMessage output = StreamUrlMessage.fromMap(outputMap);
+        callback.reply(output);
+      });
+    }
+  }
+
+  /** Generated class from Pigeon that represents Flutter messages that can be called from Java.*/
   public static class MusicPlayerCallbackApi {
     private final BinaryMessenger binaryMessenger;
     public MusicPlayerCallbackApi(BinaryMessenger argBinaryMessenger){
@@ -488,14 +476,6 @@ public class MusicPlayerMessages {
     public void onPositionChanged(PositionMessage argInput, Reply<Void> callback) {
       BasicMessageChannel<Object> channel =
           new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerCallbackApi.onPositionChanged", new StandardMessageCodec());
-      HashMap inputMap = argInput.toMap();
-      channel.send(inputMap, channelReply -> {
-        callback.reply(null);
-      });
-    }
-    public void onDurationChanged(DurationMessage argInput, Reply<Void> callback) {
-      BasicMessageChannel<Object> channel =
-          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerCallbackApi.onDurationChanged", new StandardMessageCodec());
       HashMap inputMap = argInput.toMap();
       channel.send(inputMap, channelReply -> {
         callback.reply(null);

@@ -13,12 +13,12 @@ class SongControllerModel {
   static final initialPage = 1000000;
 
   static int realIndexOf(int index) {
-    var listCount = PlayControlModel.instance.playingList.length;
+    var listCount = PlayMusicModel.instance.playingList.length;
     return (index - initialPage) % listCount;
   }
 
   SongControllerModel() {
-    PlayControlModel.instance.registerSongControllerModel(this);
+    PlayMusicModel.instance.registerSongControllerModel(this);
   }
 
   PageController _songPageController;
@@ -26,7 +26,7 @@ class SongControllerModel {
   PageController get currentPageController => _songPageController;
 
   PageController newSongPageController() {
-    var page = initialPage + PlayControlModel.instance.currentIndex;
+    var page = initialPage + PlayMusicModel.instance.currentIndex;
     _songPageController = PageController(initialPage: page, keepPage: true);
     return _songPageController;
   }
@@ -34,21 +34,21 @@ class SongControllerModel {
   void jumpToCurrent() {
     if (_songPageController == null) return;
 
-    var listCount = PlayControlModel.instance.playingList.length;
+    var listCount = PlayMusicModel.instance.playingList.length;
     if (listCount == 0) return;
 
-    var listIndex = PlayControlModel.instance.currentIndex;
+    var listIndex = PlayMusicModel.instance.currentIndex;
     var controllerIndex = realIndexOf(_songPageController.page.round());
     print('jumpToCurrent, currentIndex : ${_songPageController.page.round()}');
     if (listIndex == controllerIndex) return;
 
-    _songPageController.jumpToPage(initialPage + PlayControlModel.instance.currentIndex);
+    _songPageController.jumpToPage(initialPage + PlayMusicModel.instance.currentIndex);
   }
 
   void jumpTo(int index){
     if (_songPageController == null) return;
 
-    var listCount = PlayControlModel.instance.playingList.length;
+    var listCount = PlayMusicModel.instance.playingList.length;
     if (listCount == 0) return;
 
     _songPageController.jumpToPage(initialPage + index);
@@ -57,10 +57,10 @@ class SongControllerModel {
   void scrollToNext() {
     if (_songPageController == null) return;
 
-    var listCount = PlayControlModel.instance.playingList.length;
+    var listCount = PlayMusicModel.instance.playingList.length;
     if (listCount == 0) return;
 
-    var listIndex = PlayControlModel.instance.currentIndex;
+    var listIndex = PlayMusicModel.instance.currentIndex;
     var controllerIndex = realIndexOf(_songPageController.page.round());
     if (listIndex != controllerIndex) {
       _songPageController.jumpToPage(initialPage + listIndex + 1);
@@ -72,10 +72,10 @@ class SongControllerModel {
   void scrollToPrev() {
     if (_songPageController == null) return;
 
-    var listCount = PlayControlModel.instance.playingList.length;
+    var listCount = PlayMusicModel.instance.playingList.length;
     if (listCount == 0) return;
 
-    var listIndex = PlayControlModel.instance.currentIndex;
+    var listIndex = PlayMusicModel.instance.currentIndex;
     var controllerIndex = realIndexOf(_songPageController.page.round());
     if (listIndex != controllerIndex) {
       _songPageController.jumpToPage(initialPage + listIndex - 1);
@@ -85,7 +85,7 @@ class SongControllerModel {
   }
 
   void dispose() {
-    PlayControlModel.instance.unregisterSongControllerModel(this);
+    PlayMusicModel.instance.unregisterSongControllerModel(this);
     _songPageController.dispose();
   }
 }

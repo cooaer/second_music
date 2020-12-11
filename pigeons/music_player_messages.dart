@@ -24,9 +24,6 @@ class SongsMessage {
 
 class PositionMessage {
   int position;
-}
-
-class DurationMessage {
   int duration;
 }
 
@@ -69,8 +66,6 @@ abstract class MusicPlayerCallbackApi {
   void onSongChanged(SongMessage message);
 
   void onPositionChanged(PositionMessage message);
-
-  void onDurationChanged(DurationMessage message);
 }
 
 class StreamUrlMessage {

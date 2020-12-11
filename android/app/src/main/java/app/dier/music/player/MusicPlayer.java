@@ -8,15 +8,15 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Message;
+import android.os.Looper;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 import app.dier.music.MusicPlayerMessages;
-import app.dier.music.MusicPlayerMessages.DurationMessage;
 import app.dier.music.MusicPlayerMessages.SongMessage;
 import app.dier.music.MusicPlayerMessages.StateMessage;
+import app.dier.music.MusicPlayerMessages.MusicPlayerCallbackApi;
 
 public class MusicPlayer implements MusicPlayerMessages.MusicPlayerControllerApi, AudioManager.OnAudioFocusChangeListener {
 
@@ -32,7 +32,7 @@ public class MusicPlayer implements MusicPlayerMessages.MusicPlayerControllerApi
 
     }
 
-    private Context context;
+    private final Context context;
     private MediaPlayer player;
     private AudioManager audioManager;
     private AudioFocusRequest audioFocusRequest;
@@ -41,9 +41,11 @@ public class MusicPlayer implements MusicPlayerMessages.MusicPlayerControllerApi
     private boolean isPrepared = false;
     private int shouldSeekTo = -1;
 
-    private DurationHandler durationHandler;
-    private MusicPlayerMessages.MusicPlayerCallbackApi callbackApi;
+    private Handler durationHandler;
+    private MusicPlayerCallbackApi callbackApi;
     private MusicPlayerDelegate delegate;
+
+    private UpdatePositionCallback updatePositionCallback;
 
     public MusicPlayer(Context context) {
         this.context = context;
@@ -52,7 +54,7 @@ public class MusicPlayer implements MusicPlayerMessages.MusicPlayerControllerApi
 
     private void initMediaPlayer() {
         player = new MediaPlayer();
-        durationHandler = new DurationHandler(this);
+        durationHandler = new Handler(Looper.myLooper());
 
         player.setOnPreparedListener(this::onPlayerPrepared);
         player.setOnCompletionListener(this::onPlayerCompletion);
@@ -78,6 +80,11 @@ public class MusicPlayer implements MusicPlayerMessages.MusicPlayerControllerApi
             shouldSeekTo = -1;
         }
 
+        if (isPlaying) {
+            player.start();
+            listenPositionChanged();
+        }
+
         if (callbackApi != null) {
             StateMessage stateMessage = new StateMessage();
             stateMessage.setState("prepared");
@@ -87,6 +94,12 @@ public class MusicPlayer implements MusicPlayerMessages.MusicPlayerControllerApi
     }
 
     private void onPlayerCompletion(MediaPlayer player) {
+        isPlaying = false;
+        SongMessage nextSong = delegate.nextSong();
+        if (nextSong != null) {
+            playSong(nextSong);
+        }
+
         if (callbackApi != null) {
             StateMessage stateMessage = new StateMessage();
             stateMessage.setState("completed");
@@ -114,20 +127,17 @@ public class MusicPlayer implements MusicPlayerMessages.MusicPlayerControllerApi
         return false;
     }
 
-    private void onDurationChanged() {
-        if (callbackApi != null) {
-            long duration = player.getDuration();
-            DurationMessage durationMessage = new DurationMessage();
-            durationMessage.setDuration(duration);
-            callbackApi.onDurationChanged(durationMessage, reply -> {
-            });
-        }
-    }
-
     @Override
     public void onAudioFocusChange(int focusChange) {
-        if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
-            playInternal();
+        switch (focusChange) {
+            case AudioManager.AUDIOFOCUS_GAIN:
+            case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
+                playInternal();
+                break;
+            case AudioManager.AUDIOFOCUS_LOSS:
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                pause();
+                break;
         }
     }
 
@@ -183,6 +193,7 @@ public class MusicPlayer implements MusicPlayerMessages.MusicPlayerControllerApi
             player.prepareAsync();
         } else {
             player.start();
+            listenPositionChanged();
         }
     }
 
@@ -200,6 +211,7 @@ public class MusicPlayer implements MusicPlayerMessages.MusicPlayerControllerApi
         if (isPlaying) {
             isPlaying = false;
             player.pause();
+            removePositionChangedCallback();
         }
     }
 
@@ -215,6 +227,7 @@ public class MusicPlayer implements MusicPlayerMessages.MusicPlayerControllerApi
         player.stop();
         isPlaying = false;
         isPrepared = false;
+        removePositionChangedCallback();
     }
 
     @Override
@@ -229,36 +242,47 @@ public class MusicPlayer implements MusicPlayerMessages.MusicPlayerControllerApi
     //=========== Media Player Controller ===========
 
     // listen duration change
-
-    private void listenDurationChanged() {
-        durationHandler.postDelayed(durationRunnable, 300);
-    }
-
-    private void removeDurationListener() {
-        durationHandler.removeCallbacks(durationRunnable);
-    }
-
-    private final Runnable durationRunnable = new Runnable() {
-        @Override
-        public void run() {
-            onDurationChanged();
-            listenDurationChanged();
+    private void listenPositionChanged() {
+        if (updatePositionCallback != null) {
+            return;
         }
-    };
+        updatePositionCallback = new UpdatePositionCallback(this);
+        durationHandler.postDelayed(updatePositionCallback, 300);
+    }
 
-    private static class DurationHandler extends Handler {
+    private void removePositionChangedCallback() {
+        durationHandler.removeCallbacks(updatePositionCallback);
+    }
+
+    private void updatePosition() {
+        if (callbackApi != null) {
+            MusicPlayerMessages.PositionMessage message = new MusicPlayerMessages.PositionMessage();
+            message.setPosition((long) player.getCurrentPosition());
+            message.setDuration((long) player.getDuration());
+            callbackApi.onPositionChanged(message, reply -> {
+            });
+        }
+    }
+
+    private static class UpdatePositionCallback implements Runnable {
 
         private final WeakReference<MusicPlayer> ref;
 
-        public DurationHandler(MusicPlayer musicPlayer) {
+        public UpdatePositionCallback(MusicPlayer musicPlayer) {
             this.ref = new WeakReference<>(musicPlayer);
         }
 
         @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-
+        public void run() {
+            if (ref.get() == null) {
+                return;
+            }
+            ref.get().updatePosition();
+            ref.get().listenPositionChanged();
         }
     }
+
+    ;
+
 
 }

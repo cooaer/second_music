@@ -9,11 +9,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class FLTSongsMessage;
 @class FLTPlayModeMessage;
-@class FLTStreamUrlMessage;
 @class FLTSongMessage;
 @class FLTPositionMessage;
+@class FLTStreamUrlMessage;
 @class FLTStateMessage;
-@class FLTDurationMessage;
 
 @interface FLTSongsMessage : NSObject
 @property(nonatomic, strong, nullable) NSArray * songs;
@@ -21,10 +20,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FLTPlayModeMessage : NSObject
 @property(nonatomic, copy, nullable) NSString * playMode;
-@end
-
-@interface FLTStreamUrlMessage : NSObject
-@property(nonatomic, copy, nullable) NSString * streamUrl;
 @end
 
 @interface FLTSongMessage : NSObject
@@ -45,14 +40,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FLTPositionMessage : NSObject
 @property(nonatomic, strong, nullable) NSNumber * position;
+@property(nonatomic, strong, nullable) NSNumber * duration;
+@end
+
+@interface FLTStreamUrlMessage : NSObject
+@property(nonatomic, copy, nullable) NSString * streamUrl;
 @end
 
 @interface FLTStateMessage : NSObject
 @property(nonatomic, copy, nullable) NSString * state;
-@end
-
-@interface FLTDurationMessage : NSObject
-@property(nonatomic, strong, nullable) NSNumber * duration;
 @end
 
 @protocol FLTPlaylistControllerApi
@@ -64,10 +60,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 extern void FLTPlaylistControllerApiSetup(id<FlutterBinaryMessenger> binaryMessenger, id<FLTPlaylistControllerApi> _Nullable api);
 
-@interface FLTMusicPlayerDelegateApi : NSObject
-- (instancetype)initWithBinaryMessenger:(id<FlutterBinaryMessenger>)binaryMessenger;
-- (void)retrieveStreamUrl:(FLTSongMessage*)input completion:(void(^)(FLTStreamUrlMessage*, NSError* _Nullable))completion;
-@end
 @protocol FLTMusicPlayerControllerApi
 -(void)playSong:(FLTSongMessage*)input error:(FlutterError *_Nullable *_Nonnull)error;
 -(void)play:(FlutterError *_Nullable *_Nonnull)error;
@@ -78,11 +70,14 @@ extern void FLTPlaylistControllerApiSetup(id<FlutterBinaryMessenger> binaryMesse
 
 extern void FLTMusicPlayerControllerApiSetup(id<FlutterBinaryMessenger> binaryMessenger, id<FLTMusicPlayerControllerApi> _Nullable api);
 
+@interface FLTMusicPlayerDelegateApi : NSObject
+- (instancetype)initWithBinaryMessenger:(id<FlutterBinaryMessenger>)binaryMessenger;
+- (void)retrieveStreamUrl:(FLTSongMessage*)input completion:(void(^)(FLTStreamUrlMessage*, NSError* _Nullable))completion;
+@end
 @interface FLTMusicPlayerCallbackApi : NSObject
 - (instancetype)initWithBinaryMessenger:(id<FlutterBinaryMessenger>)binaryMessenger;
 - (void)onPlayerStateChanged:(FLTStateMessage*)input completion:(void(^)(NSError* _Nullable))completion;
 - (void)onSongChanged:(FLTSongMessage*)input completion:(void(^)(NSError* _Nullable))completion;
 - (void)onPositionChanged:(FLTPositionMessage*)input completion:(void(^)(NSError* _Nullable))completion;
-- (void)onDurationChanged:(FLTDurationMessage*)input completion:(void(^)(NSError* _Nullable))completion;
 @end
 NS_ASSUME_NONNULL_END

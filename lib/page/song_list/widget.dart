@@ -97,7 +97,7 @@ class _SongMenu extends StatelessWidget {
   }
 
   void _playNext() {
-    PlayControlModel.instance.addToNext(song);
+    PlayMusicModel.instance.addToNext(song);
   }
 
   void _addToSongList(BuildContext context) async {

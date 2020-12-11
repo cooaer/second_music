@@ -30,10 +30,6 @@ static NSDictionary* wrapResult(NSDictionary *result, FlutterError *error) {
 +(FLTPlayModeMessage*)fromMap:(NSDictionary*)dict;
 -(NSDictionary*)toMap;
 @end
-@interface FLTStreamUrlMessage ()
-+(FLTStreamUrlMessage*)fromMap:(NSDictionary*)dict;
--(NSDictionary*)toMap;
-@end
 @interface FLTSongMessage ()
 +(FLTSongMessage*)fromMap:(NSDictionary*)dict;
 -(NSDictionary*)toMap;
@@ -42,12 +38,12 @@ static NSDictionary* wrapResult(NSDictionary *result, FlutterError *error) {
 +(FLTPositionMessage*)fromMap:(NSDictionary*)dict;
 -(NSDictionary*)toMap;
 @end
-@interface FLTStateMessage ()
-+(FLTStateMessage*)fromMap:(NSDictionary*)dict;
+@interface FLTStreamUrlMessage ()
++(FLTStreamUrlMessage*)fromMap:(NSDictionary*)dict;
 -(NSDictionary*)toMap;
 @end
-@interface FLTDurationMessage ()
-+(FLTDurationMessage*)fromMap:(NSDictionary*)dict;
+@interface FLTStateMessage ()
++(FLTStateMessage*)fromMap:(NSDictionary*)dict;
 -(NSDictionary*)toMap;
 @end
 
@@ -76,20 +72,6 @@ static NSDictionary* wrapResult(NSDictionary *result, FlutterError *error) {
 }
 -(NSDictionary*)toMap {
   return [NSDictionary dictionaryWithObjectsAndKeys:(self.playMode ? self.playMode : [NSNull null]), @"playMode", nil];
-}
-@end
-
-@implementation FLTStreamUrlMessage
-+(FLTStreamUrlMessage*)fromMap:(NSDictionary*)dict {
-  FLTStreamUrlMessage* result = [[FLTStreamUrlMessage alloc] init];
-  result.streamUrl = dict[@"streamUrl"];
-  if ((NSNull *)result.streamUrl == [NSNull null]) {
-    result.streamUrl = nil;
-  }
-  return result;
-}
--(NSDictionary*)toMap {
-  return [NSDictionary dictionaryWithObjectsAndKeys:(self.streamUrl ? self.streamUrl : [NSNull null]), @"streamUrl", nil];
 }
 @end
 
@@ -162,10 +144,28 @@ static NSDictionary* wrapResult(NSDictionary *result, FlutterError *error) {
   if ((NSNull *)result.position == [NSNull null]) {
     result.position = nil;
   }
+  result.duration = dict[@"duration"];
+  if ((NSNull *)result.duration == [NSNull null]) {
+    result.duration = nil;
+  }
   return result;
 }
 -(NSDictionary*)toMap {
-  return [NSDictionary dictionaryWithObjectsAndKeys:(self.position ? self.position : [NSNull null]), @"position", nil];
+  return [NSDictionary dictionaryWithObjectsAndKeys:(self.position ? self.position : [NSNull null]), @"position", (self.duration ? self.duration : [NSNull null]), @"duration", nil];
+}
+@end
+
+@implementation FLTStreamUrlMessage
++(FLTStreamUrlMessage*)fromMap:(NSDictionary*)dict {
+  FLTStreamUrlMessage* result = [[FLTStreamUrlMessage alloc] init];
+  result.streamUrl = dict[@"streamUrl"];
+  if ((NSNull *)result.streamUrl == [NSNull null]) {
+    result.streamUrl = nil;
+  }
+  return result;
+}
+-(NSDictionary*)toMap {
+  return [NSDictionary dictionaryWithObjectsAndKeys:(self.streamUrl ? self.streamUrl : [NSNull null]), @"streamUrl", nil];
 }
 @end
 
@@ -180,20 +180,6 @@ static NSDictionary* wrapResult(NSDictionary *result, FlutterError *error) {
 }
 -(NSDictionary*)toMap {
   return [NSDictionary dictionaryWithObjectsAndKeys:(self.state ? self.state : [NSNull null]), @"state", nil];
-}
-@end
-
-@implementation FLTDurationMessage
-+(FLTDurationMessage*)fromMap:(NSDictionary*)dict {
-  FLTDurationMessage* result = [[FLTDurationMessage alloc] init];
-  result.duration = dict[@"duration"];
-  if ((NSNull *)result.duration == [NSNull null]) {
-    result.duration = nil;
-  }
-  return result;
-}
--(NSDictionary*)toMap {
-  return [NSDictionary dictionaryWithObjectsAndKeys:(self.duration ? self.duration : [NSNull null]), @"duration", nil];
 }
 @end
 
@@ -267,32 +253,6 @@ void FLTPlaylistControllerApiSetup(id<FlutterBinaryMessenger> binaryMessenger, i
     }
   }
 }
-@interface FLTMusicPlayerDelegateApi ()
-@property (nonatomic, strong) NSObject<FlutterBinaryMessenger>* binaryMessenger;
-@end
-
-@implementation FLTMusicPlayerDelegateApi
-- (instancetype)initWithBinaryMessenger:(NSObject<FlutterBinaryMessenger>*)binaryMessenger {
-  self = [super init];
-  if (self) {
-    self.binaryMessenger = binaryMessenger;
-  }
-  return self;
-}
-
-- (void)retrieveStreamUrl:(FLTSongMessage*)input completion:(void(^)(FLTStreamUrlMessage*, NSError* _Nullable))completion {
-  FlutterBasicMessageChannel *channel =
-    [FlutterBasicMessageChannel
-      messageChannelWithName:@"dev.flutter.pigeon.MusicPlayerDelegateApi.retrieveStreamUrl"
-      binaryMessenger:self.binaryMessenger];
-  NSDictionary* inputMap = [input toMap];
-  [channel sendMessage:inputMap reply:^(id reply) {
-    NSDictionary* outputMap = reply;
-    FLTStreamUrlMessage * output = [FLTStreamUrlMessage fromMap:outputMap];
-    completion(output, nil);
-  }];
-}
-@end
 void FLTMusicPlayerControllerApiSetup(id<FlutterBinaryMessenger> binaryMessenger, id<FLTMusicPlayerControllerApi> api) {
   {
     FlutterBasicMessageChannel *channel =
@@ -377,6 +337,32 @@ void FLTMusicPlayerControllerApiSetup(id<FlutterBinaryMessenger> binaryMessenger
     }
   }
 }
+@interface FLTMusicPlayerDelegateApi ()
+@property (nonatomic, strong) NSObject<FlutterBinaryMessenger>* binaryMessenger;
+@end
+
+@implementation FLTMusicPlayerDelegateApi
+- (instancetype)initWithBinaryMessenger:(NSObject<FlutterBinaryMessenger>*)binaryMessenger {
+  self = [super init];
+  if (self) {
+    self.binaryMessenger = binaryMessenger;
+  }
+  return self;
+}
+
+- (void)retrieveStreamUrl:(FLTSongMessage*)input completion:(void(^)(FLTStreamUrlMessage*, NSError* _Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.MusicPlayerDelegateApi.retrieveStreamUrl"
+      binaryMessenger:self.binaryMessenger];
+  NSDictionary* inputMap = [input toMap];
+  [channel sendMessage:inputMap reply:^(id reply) {
+    NSDictionary* outputMap = reply;
+    FLTStreamUrlMessage * output = [FLTStreamUrlMessage fromMap:outputMap];
+    completion(output, nil);
+  }];
+}
+@end
 @interface FLTMusicPlayerCallbackApi ()
 @property (nonatomic, strong) NSObject<FlutterBinaryMessenger>* binaryMessenger;
 @end
@@ -414,16 +400,6 @@ void FLTMusicPlayerControllerApiSetup(id<FlutterBinaryMessenger> binaryMessenger
   FlutterBasicMessageChannel *channel =
     [FlutterBasicMessageChannel
       messageChannelWithName:@"dev.flutter.pigeon.MusicPlayerCallbackApi.onPositionChanged"
-      binaryMessenger:self.binaryMessenger];
-  NSDictionary* inputMap = [input toMap];
-  [channel sendMessage:inputMap reply:^(id reply) {
-    completion(nil);
-  }];
-}
-- (void)onDurationChanged:(FLTDurationMessage*)input completion:(void(^)(NSError* _Nullable))completion {
-  FlutterBasicMessageChannel *channel =
-    [FlutterBasicMessageChannel
-      messageChannelWithName:@"dev.flutter.pigeon.MusicPlayerCallbackApi.onDurationChanged"
       binaryMessenger:self.binaryMessenger];
   NSDictionary* inputMap = [input toMap];
   [channel sendMessage:inputMap reply:^(id reply) {

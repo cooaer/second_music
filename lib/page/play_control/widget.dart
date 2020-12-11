@@ -43,12 +43,12 @@ class _PlayingList extends StatelessWidget {
 
   Widget _buildSongList(BuildContext context) {
     return StreamBuilder(
-      initialData: PlayControlModel.instance.showingList,
-      stream: PlayControlModel.instance.showingListStream,
+      initialData: PlayMusicModel.instance.showingList,
+      stream: PlayMusicModel.instance.showingListStream,
       builder: (context, AsyncSnapshot<List<Song>> snapshotShowingList) {
         return StreamBuilder(
-            initialData: PlayControlModel.instance.currentSong,
-            stream: PlayControlModel.instance.currentSongStream,
+            initialData: PlayMusicModel.instance.currentSong,
+            stream: PlayMusicModel.instance.currentSongStream,
             builder: (context, AsyncSnapshot<Song> snapshotCurrentSong) {
               return ListView.separated(
                   itemBuilder: (context, index) {
@@ -75,12 +75,12 @@ class _PlayingListTitle extends StatelessWidget {
           child: Row(
             children: <Widget>[
               StreamBuilder(
-                initialData: PlayControlModel.instance.playMode,
-                stream: PlayControlModel.instance.playModeStream,
+                initialData: PlayMusicModel.instance.playMode,
+                stream: PlayMusicModel.instance.playModeStream,
                 builder: (context, AsyncSnapshot<PlayMode> snapshot) {
                   return FlatButton.icon(
                       onPressed: () {
-                        PlayControlModel.instance.switchPlayMode();
+                        PlayMusicModel.instance.switchPlayMode();
                       },
                       icon: MdrIcon(
                         AppImages.playModeIcon(snapshot.data),
@@ -115,7 +115,7 @@ class _PlayingListTitle extends StatelessWidget {
                     ),
                   )),
               FlatButton(
-                onPressed: PlayControlModel.instance.clear,
+                onPressed: PlayMusicModel.instance.clear,
                 padding: EdgeInsets.symmetric(horizontal: 10),
                 child: MdrIcon(
                   "delete_outline",
@@ -130,7 +130,7 @@ class _PlayingListTitle extends StatelessWidget {
   void _addAllToSongList(BuildContext context) async {
     var songList = await selectSongList(context);
     var mySongListDao = MySongListDao();
-    var songs = PlayControlModel.instance.showingList;
+    var songs = PlayMusicModel.instance.showingList;
     await mySongListDao.addSongsToSongList(songList.plt, songList.id, songList.type, songs);
     mySongListDao.close();
     mySongList.notifyMySongListChanged();
@@ -153,8 +153,8 @@ class _PlayingListSong extends StatelessWidget {
           child: FlatButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                var index = PlayControlModel.instance.playingList.indexOf(song);
-                PlayControlModel.instance.playIndexWithoutAnimation(index);
+                var index = PlayMusicModel.instance.playingList.indexOf(song);
+                PlayMusicModel.instance.playIndexWithoutAnimation(index);
               },
               padding: EdgeInsets.zero,
               child: Row(
@@ -198,7 +198,7 @@ class _PlayingListSong extends StatelessWidget {
                     ),
                   ),
                   FlatButton(
-                    onPressed: () => PlayControlModel.instance.deleteSongFromList(song),
+                    onPressed: () => PlayMusicModel.instance.deleteSongFromList(song),
                     padding: EdgeInsets.symmetric(horizontal: 10),
                     child: MdrIcon(
                       "close",

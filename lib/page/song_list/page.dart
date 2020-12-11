@@ -354,7 +354,7 @@ class _ControlBar extends StatelessWidget {
           height: 50,
           child: FlatButton(
               onPressed: () {
-                PlayControlModel.instance.playAndReplaceSongList(songList.songs);
+                PlayMusicModel.instance.playAndReplaceSongList(songList.songs);
               },
               padding: EdgeInsets.symmetric(horizontal: 10),
               child: Row(

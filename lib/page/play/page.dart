@@ -58,7 +58,7 @@ class _PlayPageState extends State<PlayPage> with AfterLayoutMixin{
   @override
   void afterFirstLayout(BuildContext context) {
     if(widget.song != null){
-      PlayControlModel.instance.playSongNow(widget.song);
+      PlayMusicModel.instance.playSongNow(widget.song);
     }
   }
 
@@ -72,8 +72,8 @@ class _PlayBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-        initialData: PlayControlModel.instance.currentSong,
-        stream: PlayControlModel.instance.currentSongStream,
+        initialData: PlayMusicModel.instance.currentSong,
+        stream: PlayMusicModel.instance.currentSongStream,
         builder: (context, AsyncSnapshot<Song> snapshot) {
           return _buildContent(context, snapshot.data?.cover);
         });
@@ -115,8 +115,8 @@ class _PlayTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      initialData: PlayControlModel.instance.currentSong,
-      stream: PlayControlModel.instance.currentSongStream,
+      initialData: PlayMusicModel.instance.currentSong,
+      stream: PlayMusicModel.instance.currentSongStream,
       builder: (context, AsyncSnapshot<Song> snapshot) {
         return _buildContent(context, snapshot.data);
       },
@@ -199,12 +199,12 @@ class _PlayCoverContainerState extends State<_PlayCoverContainer> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      initialData: PlayControlModel.instance.playingList,
-      stream: PlayControlModel.instance.playingListStream,
+      initialData: PlayMusicModel.instance.playingList,
+      stream: PlayMusicModel.instance.playingListStream,
       builder: (context, AsyncSnapshot<List<Song>> snapshot) {
         return StreamBuilder(
-          initialData: PlayControlModel.instance.currentSong,
-          stream: PlayControlModel.instance.currentSongStream,
+          initialData: PlayMusicModel.instance.currentSong,
+          stream: PlayMusicModel.instance.currentSongStream,
           builder: (context, AsyncSnapshot<Song> snapshot2) {
             return _buildContent(context, snapshot.data, snapshot2.data);
           },
@@ -269,7 +269,7 @@ class _PlayCoverContainerState extends State<_PlayCoverContainer> {
   bool _handleSongListScrollEndNotification(ScrollEndNotification notification) {
     int index = _songControllerModel.currentPageController.page.round();
     var realIndex = SongControllerModel.realIndexOf(index);
-    PlayControlModel.instance.playIndexWithoutAnimation(realIndex, withoutModel: _songControllerModel);
+    PlayMusicModel.instance.playIndexWithoutAnimation(realIndex, withoutModel: _songControllerModel);
   }
 
   Widget _buildFavorIcon(BuildContext context, SongModel songModel, bool isFavorite) {
@@ -359,12 +359,12 @@ class _PlayControl extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           StreamBuilder(
-              initialData: PlayControlModel.instance.currentDuration,
-              stream: PlayControlModel.instance.currentDurationStream,
+              initialData: PlayMusicModel.instance.currentDuration,
+              stream: PlayMusicModel.instance.currentDurationStream,
               builder: (context, AsyncSnapshot<int> snapshotDuration) {
                 return StreamBuilder(
-                  initialData: PlayControlModel.instance.currentPosition,
-                  stream: PlayControlModel.instance.currentPositionStream,
+                  initialData: PlayMusicModel.instance.currentPosition,
+                  stream: PlayMusicModel.instance.currentPositionStream,
                   builder: (context, AsyncSnapshot<int> snapshotPosition) {
                     return _buildPlayProgress(
                         context, snapshotPosition.data, snapshotDuration.data);
@@ -374,8 +374,8 @@ class _PlayControl extends StatelessWidget {
           Row(
             children: <Widget>[
               StreamBuilder(
-                initialData: PlayControlModel.instance.playMode,
-                stream: PlayControlModel.instance.playModeStream,
+                initialData: PlayMusicModel.instance.playMode,
+                stream: PlayMusicModel.instance.playModeStream,
                 builder: (context, AsyncSnapshot<PlayMode> snapshot) {
                   return _buildPlayControlIcon(
                       context, 'play_mode', AppImages.playModeIcon(snapshot.data), 32);
@@ -383,8 +383,8 @@ class _PlayControl extends StatelessWidget {
               ),
               _buildPlayControlIcon(context, 'play_pre', 'skip_previous', 40),
               StreamBuilder(
-                initialData: PlayControlModel.instance.playerState,
-                stream: PlayControlModel.instance.playerStateStream,
+                initialData: PlayMusicModel.instance.playerState,
+                stream: PlayMusicModel.instance.playerStateStream,
                 builder: (context, AsyncSnapshot<AudioPlayerState> snapshot) {
                   if (snapshot.data == AudioPlayerState.PLAYING) {
                     return _buildPlayControlIcon(context, 'playOrPause', 'pause_circle_filled', 70);
@@ -422,7 +422,7 @@ class _PlayControl extends StatelessWidget {
             min: 0,
             max: maxDuration.toDouble(),
             onChanged: (value) {
-              PlayControlModel.instance.seekTo(value.round());
+              PlayMusicModel.instance.seekTo(value.round());
             },
           ),
         ),
@@ -458,16 +458,16 @@ class _PlayControl extends StatelessWidget {
   void _onTapControlIcon(BuildContext context, String iconName) {
     switch (iconName) {
       case 'play_mode':
-        PlayControlModel.instance.switchPlayMode();
+        PlayMusicModel.instance.switchPlayMode();
         break;
       case 'play_pre':
-        PlayControlModel.instance.playPre();
+        PlayMusicModel.instance.playPre();
         break;
       case 'playOrPause':
-        PlayControlModel.instance.playOrPause();
+        PlayMusicModel.instance.playOrPause();
         break;
       case 'play_next':
-        PlayControlModel.instance.playNext();
+        PlayMusicModel.instance.playNext();
         break;
       case 'playing_list':
         showPlayingList(context);

@@ -81,8 +81,8 @@ class _PlayControllerState extends State<PlayController> {
 
   Widget _buildSongList(BuildContext context) {
     return StreamBuilder(
-      initialData: PlayControlModel.instance.playingList,
-      stream: PlayControlModel.instance.playingListStream,
+      initialData: PlayMusicModel.instance.playingList,
+      stream: PlayMusicModel.instance.playingListStream,
       builder: (context, AsyncSnapshot<List<Song>> snapshot) {
         var count = snapshot.data.length;
         return count == 0
@@ -106,14 +106,14 @@ class _PlayControllerState extends State<PlayController> {
   bool _handleSongListScrollEndNotification(ScrollEndNotification notification){
     int index = _songControllerModel.currentPageController.page.round();
     var realIndex = SongControllerModel.realIndexOf(index);
-    PlayControlModel.instance.playIndexWithoutAnimation(realIndex, withoutModel: _songControllerModel);
+    PlayMusicModel.instance.playIndexWithoutAnimation(realIndex, withoutModel: _songControllerModel);
     return true;
   }
 
   Widget _buildPlayIcon(BuildContext context) {
     return StreamBuilder(
-      initialData: PlayControlModel.instance.playerState,
-      stream: PlayControlModel.instance.playerStateStream,
+      initialData: PlayMusicModel.instance.playerState,
+      stream: PlayMusicModel.instance.playerStateStream,
       builder: (context, AsyncSnapshot<AudioPlayerState> snapshot) {
         return Container(
           width: 48,
@@ -121,7 +121,7 @@ class _PlayControllerState extends State<PlayController> {
           alignment: Alignment.center,
           child: FlatButton(
             padding: EdgeInsets.zero,
-            onPressed: () => PlayControlModel.instance.playOrPause(),
+            onPressed: () => PlayMusicModel.instance.playOrPause(),
             shape: CircleBorder(),
             child: MdrIcon(
               AppImages.playIcon(snapshot.data),
@@ -151,7 +151,7 @@ class _PlayControllerSong extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
-        PlayControlModel.instance.play();
+        PlayMusicModel.instance.play();
         AppNavigator.instance.navigateTo(context, AppNavigator.play, overlay: true);
       },
       child: Row(
