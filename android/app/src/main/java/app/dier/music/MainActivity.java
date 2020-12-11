@@ -63,11 +63,12 @@ public class MainActivity extends FlutterActivity {
             MusicPlayerMessages.MusicPlayerControllerApi.setup(
                     binaryMessenger,
                     binder.getMusicPlayer());
+            MusicPlayerMessages.PlaylistControllerApi.setup(binaryMessenger, binder.getPlaylist());
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-
+            
         }
     }
 

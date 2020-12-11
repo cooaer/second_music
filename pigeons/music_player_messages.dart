@@ -35,7 +35,7 @@ class PlayModeMessage {
 }
 
 @HostApi()
-abstract class MusicPlayerControllerApi {
+abstract class PlaylistControllerApi {
   void addToPlaylist(SongsMessage message);
 
   void removeFromPlaylist(SongsMessage message);
@@ -43,12 +43,15 @@ abstract class MusicPlayerControllerApi {
   void replacePlaylist(SongsMessage message);
 
   void setPlayMode(PlayModeMessage message);
+}
 
-  void play(SongMessage message);
+@HostApi()
+abstract class MusicPlayerControllerApi {
+  void playSong(SongMessage message);
+
+  void play();
 
   void pause();
-
-  void resume();
 
   void stop();
 
@@ -59,21 +62,24 @@ class StateMessage {
   String state;
 }
 
-class StreamUrlMessage {
-  String streamUrl;
-}
-
 @FlutterApi()
 abstract class MusicPlayerCallbackApi {
-  StreamUrlMessage streamUrl(SongMessage message);
-
-  void onPlayerStateChange(StateMessage message);
+  void onPlayerStateChanged(StateMessage message);
 
   void onSongChanged(SongMessage message);
 
   void onPositionChanged(PositionMessage message);
 
   void onDurationChanged(DurationMessage message);
+}
+
+class StreamUrlMessage {
+  String streamUrl;
+}
+
+@FlutterApi()
+abstract class MusicPlayerDelegateApi {
+  StreamUrlMessage retrieveStreamUrl(SongMessage message);
 }
 
 //回调歌曲播放进度、歌曲总时长、当前播放的歌曲
