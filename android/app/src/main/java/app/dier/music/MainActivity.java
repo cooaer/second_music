@@ -59,11 +59,10 @@ public class MainActivity extends FlutterActivity {
             PlayMusicService.PlayMusicBinder binder = (PlayMusicService.PlayMusicBinder) service;
             BinaryMessenger binaryMessenger = getFlutterEngine().getDartExecutor();
             binder.getMusicPlayer().setCallbackApi(
-                    new MusicPlayerMessages.MusicPlayerCallbackApi(binaryMessenger));
-            MusicPlayerMessages.MusicPlayerControllerApi.setup(
+                    new MusicMessages.MusicPlayerCallbackApi(binaryMessenger));
+            MusicMessages.MusicPlayerControllerApi.setup(
                     binaryMessenger,
                     binder.getMusicPlayer());
-            MusicPlayerMessages.PlaylistControllerApi.setup(binaryMessenger, binder.getPlaylist());
         }
 
         @Override

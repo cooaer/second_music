@@ -8,12 +8,12 @@ import 'package:second_music/page/play/model.dart';
 import 'package:second_music/storage/preference/playing.dart';
 
 //播放控制
-class PlayControlModel {
-  static PlayControlModel _instance;
+class PlayMusicModel {
+  static PlayMusicModel _instance;
 
-  static PlayControlModel get instance {
+  static PlayMusicModel get instance {
     if (_instance == null) {
-      _instance = PlayControlModel._();
+      _instance = PlayMusicModel._();
       AudioPlayer.logEnabled = true;
     }
     return _instance;
@@ -21,7 +21,7 @@ class PlayControlModel {
 
   var _audioPlayer = AudioPlayer();
 
-  PlayControlModel._() {
+  PlayMusicModel._() {
     initAudioPlayer();
     initSongList();
   }

@@ -17,7 +17,7 @@ import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 
 import app.dier.music.Constants;
-import app.dier.music.MusicPlayerMessages;
+import app.dier.music.MusicMessages;
 import app.dier.music.R;
 import app.dier.music.utils.DisplayUtils;
 
@@ -31,7 +31,7 @@ public class NotificationHelper {
         this.context = context;
     }
 
-    public Notification createPlayMusicNotification(MusicPlayerMessages.SongMessage song,
+    public Notification createPlayMusicNotification(MusicMessages.SongMessage song,
                                                     Bitmap coverBitmap,
                                                     boolean isPlaying,
                                                     MediaSession.Token session) {
@@ -86,11 +86,11 @@ public class NotificationHelper {
         return builder.build();
     }
 
-    private void updatePlayMusicNotification(MusicPlayerMessages.SongMessage song) {
+    private void updatePlayMusicNotification(MusicMessages.SongMessage song) {
         int dp100 = DisplayUtils.dp2px(100);
         Glide.with(context)
                 .asBitmap()
-                .load(song.getAlbumCover())
+                .load(song.getCover())
                 .centerCrop()
                 .into(new CustomTarget<Bitmap>(dp100, dp100) {
                     @Override

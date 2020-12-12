@@ -16,9 +16,9 @@ import java.lang.ref.WeakReference;
 import app.dier.music.MusicPlayerMessages;
 import app.dier.music.MusicPlayerMessages.SongMessage;
 import app.dier.music.MusicPlayerMessages.StateMessage;
-import app.dier.music.MusicPlayerMessages.MusicPlayerCallbackApi;
+import app.dier.music.MusicMessages.MusicPlayerCallbackApi;
 
-public class MusicPlayer implements MusicPlayerMessages.MusicPlayerControllerApi, AudioManager.OnAudioFocusChangeListener {
+public class MusicPlayer implements MusicPlayerControllerApi, AudioManager.OnAudioFocusChangeListener {
 
     public interface MusicPlayerDelegate {
 
@@ -62,7 +62,7 @@ public class MusicPlayer implements MusicPlayerMessages.MusicPlayerControllerApi
         player.setOnSeekCompleteListener(this::onPlayerSeekComplete);
     }
 
-    public void setCallbackApi(MusicPlayerMessages.MusicPlayerCallbackApi callbackApi) {
+    public void setCallbackApi(MusicPlayerCallbackApi callbackApi) {
         this.callbackApi = callbackApi;
     }
 

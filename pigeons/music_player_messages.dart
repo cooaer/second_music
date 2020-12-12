@@ -4,18 +4,10 @@ class SongMessage {
   String plt; //netease,qq,xiami,kugou,kuwo
   String id; //歌曲ID
   String name;
-  String subtitle; //子标题
   String cover;
   String streamUrl; //歌曲播放流地址
-  String description; //描述
-
-  String albumId;
   String albumName;
-  String albumCover;
-
-  String singerId;
   String singerName;
-  String singerAvatar;
 }
 
 class SongsMessage {
@@ -27,23 +19,10 @@ class PositionMessage {
   int duration;
 }
 
-class PlayModeMessage {
-  String playMode;
-}
-
-@HostApi()
-abstract class PlaylistControllerApi {
-  void addToPlaylist(SongsMessage message);
-
-  void removeFromPlaylist(SongsMessage message);
-
-  void replacePlaylist(SongsMessage message);
-
-  void setPlayMode(PlayModeMessage message);
-}
-
 @HostApi()
 abstract class MusicPlayerControllerApi {
+  void syncPlaylist(SongsMessage message);
+
   void playSong(SongMessage message);
 
   void play();
@@ -81,13 +60,13 @@ abstract class MusicPlayerDelegateApi {
 //回调获取最新的歌曲播放地址
 
 // 输出配置
-// flutter pub run pigeon --input pigeons/music_player_messages.dart
+// flutter pub run pigeon --input pigeons/music_messages.dart
 void configurePigeon(PigeonOptions opts) {
-  opts.dartOut = './lib/player/music_player_messages.dart';
-  opts.objcHeaderOut = 'ios/Runner/MusicPlayerMessages.h';
-  opts.objcSourceOut = 'ios/Runner/MusicPlayerMessages.m';
+  opts.dartOut = './lib/player/music_messages.dart';
+  opts.objcHeaderOut = 'ios/Runner/MusicMessages.h';
+  opts.objcSourceOut = 'ios/Runner/MusicMessages.m';
   opts.objcOptions.prefix = 'FLT';
   opts.javaOut =
-      'android/app/src/main/java/app/dier/music/MusicPlayerMessages.java';
+      'android/app/src/main/java/app/dier/music/MusicMessages.java';
   opts.javaOptions.package = 'app.dier.music';
 }
