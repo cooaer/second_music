@@ -7,7 +7,6 @@ import android.os.IBinder;
 
 import app.dier.music.Constants;
 import app.dier.music.player.MusicPlayer;
-import app.dier.music.player.Playlist;
 
 
 public class PlayMusicService extends Service {
@@ -15,15 +14,12 @@ public class PlayMusicService extends Service {
     public static final int NOTIFICATION_ID_MUSIC = 1;
 
     private MusicPlayer musicPlayer;
-    private Playlist playlist;
     private NotificationHelper notificationHelper;
 
     @Override
     public void onCreate() {
         super.onCreate();
         musicPlayer = new MusicPlayer(this);
-        playlist = new Playlist();
-        musicPlayer.setDelegate(playlist);
         notificationHelper = new NotificationHelper(this);
     }
 
@@ -65,10 +61,6 @@ public class PlayMusicService extends Service {
 
         public MusicPlayer getMusicPlayer() {
             return musicPlayer;
-        }
-
-        public Playlist getPlaylist() {
-            return playlist;
         }
 
     }

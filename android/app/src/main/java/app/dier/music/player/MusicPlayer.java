@@ -12,30 +12,26 @@ import android.os.Looper;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 
-import app.dier.music.MusicPlayerMessages;
-import app.dier.music.MusicPlayerMessages.SongMessage;
-import app.dier.music.MusicPlayerMessages.StateMessage;
+import app.dier.music.MusicMessages;
+import app.dier.music.MusicMessages.SongMessage;
+import app.dier.music.MusicMessages.StateMessage;
 import app.dier.music.MusicMessages.MusicPlayerCallbackApi;
+import app.dier.music.MusicMessages.MusicPlayerControllerApi;
+import app.dier.music.MusicMessages.MusicPlayerDelegateApi;
 
 public class MusicPlayer implements MusicPlayerControllerApi, AudioManager.OnAudioFocusChangeListener {
-
-    public interface MusicPlayerDelegate {
-
-        void resetPlaylist();
-
-        SongMessage currentSong();
-
-        SongMessage nextSong();
-
-        void changeSong(SongMessage song);
-
-    }
 
     private final Context context;
     private MediaPlayer player;
     private AudioManager audioManager;
     private AudioFocusRequest audioFocusRequest;
+
+    private int currentIndex = -1;
+    private List<SongMessage> songs = new ArrayList<>();
+
 
     private boolean isPlaying = false;
     private boolean isPrepared = false;
@@ -43,7 +39,6 @@ public class MusicPlayer implements MusicPlayerControllerApi, AudioManager.OnAud
 
     private Handler durationHandler;
     private MusicPlayerCallbackApi callbackApi;
-    private MusicPlayerDelegate delegate;
 
     private UpdatePositionCallback updatePositionCallback;
 
@@ -66,8 +61,28 @@ public class MusicPlayer implements MusicPlayerControllerApi, AudioManager.OnAud
         this.callbackApi = callbackApi;
     }
 
-    public void setDelegate(MusicPlayerDelegate delegate) {
-        this.delegate = delegate;
+    private SongMessage currentSong() {
+        if (songs.isEmpty()) {
+            currentIndex = -1;
+            return null;
+        }
+        if (currentIndex < 0 || currentIndex > songs.size()) {
+            currentIndex = 0;
+        }
+        return songs.get(currentIndex);
+    }
+
+    private SongMessage nextSong() {
+        if (songs.isEmpty()) {
+            currentIndex = -1;
+            return null;
+        }
+        currentIndex = (currentIndex + 1) % songs.size();
+        return songs.get(currentIndex);
+    }
+
+    private void changeSong(SongMessage song) {
+        currentIndex = songs.indexOf(song);
     }
 
     //=========== Media Player Callback ===========
@@ -95,7 +110,7 @@ public class MusicPlayer implements MusicPlayerControllerApi, AudioManager.OnAud
 
     private void onPlayerCompletion(MediaPlayer player) {
         isPlaying = false;
-        SongMessage nextSong = delegate.nextSong();
+        SongMessage nextSong = nextSong();
         if (nextSong != null) {
             playSong(nextSong);
         }
@@ -146,13 +161,27 @@ public class MusicPlayer implements MusicPlayerControllerApi, AudioManager.OnAud
 
     //=========== Media Player Controller ===========
 
+
+    @Override
+    public void syncPlaylist(MusicMessages.SongsMessage arg) {
+        SongMessage currentSong = currentSong();
+        songs.clear();
+        if (arg.getSongs() != null) {
+            songs.addAll(arg.getSongs());
+            if (currentSong != null) {
+                currentIndex = songs.indexOf(currentSong);
+            }
+        }
+    }
+
     @Override
     public void playSong(SongMessage arg) {
-        if (!delegate.currentSong().equals(arg)) {
-            delegate.changeSong(arg);
-        }
-        if (!isPlaying) {
+        SongMessage currentSong = currentSong();
+        if (currentSong == null || !currentSong.equals(arg)) {
+            changeSong(arg);
             play();
+        } else {
+            playInternal();
         }
     }
 
@@ -198,7 +227,7 @@ public class MusicPlayer implements MusicPlayerControllerApi, AudioManager.OnAud
     }
 
     private void setSource() {
-        SongMessage song = delegate.currentSong();
+        SongMessage song = currentSong();
         try {
             player.setDataSource(context, Uri.parse(song.getStreamUrl()));
         } catch (IOException e) {
@@ -231,7 +260,7 @@ public class MusicPlayer implements MusicPlayerControllerApi, AudioManager.OnAud
     }
 
     @Override
-    public void seek(MusicPlayerMessages.PositionMessage arg) {
+    public void seek(MusicMessages.PositionMessage arg) {
         if (isPrepared) {
             player.seekTo(arg.getPosition().intValue());
         } else {
@@ -256,7 +285,7 @@ public class MusicPlayer implements MusicPlayerControllerApi, AudioManager.OnAud
 
     private void updatePosition() {
         if (callbackApi != null) {
-            MusicPlayerMessages.PositionMessage message = new MusicPlayerMessages.PositionMessage();
+            MusicMessages.PositionMessage message = new MusicMessages.PositionMessage();
             message.setPosition((long) player.getCurrentPosition());
             message.setDuration((long) player.getDuration());
             callbackApi.onPositionChanged(message, reply -> {
@@ -281,8 +310,5 @@ public class MusicPlayer implements MusicPlayerControllerApi, AudioManager.OnAud
             ref.get().listenPositionChanged();
         }
     }
-
-    ;
-
 
 }
