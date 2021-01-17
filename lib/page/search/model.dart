@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:second_music/model/enum.dart';
-import 'package:second_music/model/search.dart';
-import 'package:second_music/network/platform/music_provider.dart';
-import 'package:second_music/storage/preference/playing.dart';
+import 'package:second_music/entity/enum.dart';
+import 'package:second_music/entity/search.dart';
+import 'package:second_music/repository/remote/platform/music_provider.dart';
+import 'package:second_music/repository/local/preference/playing.dart';
 
 class SearchModel {
   List<String> _searchKeywords;

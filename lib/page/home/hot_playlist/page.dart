@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:second_music/model/playlist.dart';
-import 'package:second_music/model/playlist_set.dart';
-import 'package:second_music/model/song_list.dart';
+import 'package:second_music/entity/playlist.dart';
+import 'package:second_music/entity/playlist_set.dart';
+import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/page/home/hot_playlist/model.dart';
 import 'package:second_music/page/navigator.dart';
 import 'package:second_music/res/res.dart';

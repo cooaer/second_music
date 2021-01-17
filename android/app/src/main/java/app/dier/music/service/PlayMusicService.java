@@ -6,20 +6,20 @@ import android.os.Binder;
 import android.os.IBinder;
 
 import app.dier.music.Constants;
-import app.dier.music.player.MusicPlayer;
+import app.dier.music.player.MusicPlayerController;
 
 
 public class PlayMusicService extends Service {
 
     public static final int NOTIFICATION_ID_MUSIC = 1;
 
-    private MusicPlayer musicPlayer;
+    private MusicPlayerController musicPlayerController;
     private NotificationHelper notificationHelper;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        musicPlayer = new MusicPlayer(this);
+        musicPlayerController = new MusicPlayerController(this);
         notificationHelper = new NotificationHelper(this);
     }
 
@@ -31,6 +31,9 @@ public class PlayMusicService extends Service {
 
     private void handleNotificationAction(Intent intent) {
         String action = intent.getAction();
+        if(action == null){
+            return;
+        }
         switch (action) {
             case Constants.NotificationAction.PLAY:
 
@@ -48,7 +51,6 @@ public class PlayMusicService extends Service {
     }
 
     private void showNotification() {
-
 //        startForeground(NOTIFICATION_ID_MUSIC, notificationHelper.create);
     }
 
@@ -59,8 +61,8 @@ public class PlayMusicService extends Service {
 
     public class PlayMusicBinder extends Binder {
 
-        public MusicPlayer getMusicPlayer() {
-            return musicPlayer;
+        public MusicPlayerController getMusicPlayerController() {
+            return musicPlayerController;
         }
 
     }

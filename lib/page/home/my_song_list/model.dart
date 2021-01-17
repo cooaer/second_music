@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:second_music/common/date.dart';
 import 'package:second_music/common/md5.dart';
-import 'package:second_music/model/enum.dart';
-import 'package:second_music/model/song.dart';
-import 'package:second_music/model/song_list.dart';
-import 'package:second_music/storage/database/music/dao.dart';
-import 'package:second_music/storage/database/music/table.dart';
+import 'package:second_music/entity/enum.dart';
+import 'package:second_music/entity/song.dart';
+import 'package:second_music/entity/song_list.dart';
+import 'package:second_music/repository/local/database/music/dao.dart';
+import 'package:second_music/repository/local/database/music/table.dart';
 
 void notifyMySongListChanged() {
   MySongListModel.instance.refresh();

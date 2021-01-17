@@ -2,14 +2,14 @@ import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:second_music/model/enum.dart';
-import 'package:second_music/model/song.dart';
-import 'package:second_music/model/song_list.dart';
-import 'package:second_music/page/model.dart';
+import 'package:second_music/entity/enum.dart';
+import 'package:second_music/entity/song.dart';
+import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/page/navigator.dart';
 import 'package:second_music/page/play_control/page.dart';
 import 'package:second_music/page/song_list/model.dart';
 import 'package:second_music/page/song_list/widget.dart';
+import 'package:second_music/player/music_player.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/widget/material_icon_round.dart';
 
@@ -18,7 +18,8 @@ class SongListPage extends StatefulWidget {
   final String songListId;
   final SongListType songListType;
 
-  SongListPage(this.plt, this.songListId, this.songListType, {Key key}) : super(key: key);
+  SongListPage(this.plt, this.songListId, this.songListType, {Key key})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _SongListPageState();
@@ -71,7 +72,10 @@ class _SongListPageState extends State<SongListPage> {
             ),
           ),
           centerTitle: true,
-          expandedHeight: MediaQuery.of(context).padding.top + 220,
+          expandedHeight: MediaQuery
+              .of(context)
+              .padding
+              .top + 220,
           forceElevated: true,
           flexibleSpace: FlexibleSpaceBar(
             collapseMode: CollapseMode.pin,
@@ -101,13 +105,17 @@ class _SongListPageState extends State<SongListPage> {
         if (songList?.songs != null && songList.songs.isNotEmpty)
           SliverPadding(
             padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).padding.bottom + PlayController.BAR_HEIGHT),
+                bottom: MediaQuery
+                    .of(context)
+                    .padding
+                    .bottom + PlayController.BAR_HEIGHT),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
-                (context, index) {
+                    (context, index) {
                   var song = songList.songs[index];
                   return _SongListItem(
-                      index, song, songList, () => showSongMenu(context, song, songList, _model),
+                      index, song, songList, () =>
+                      showSongMenu(context, song, songList, _model),
                       key: Key(song.id));
                 },
                 childCount: songList?.songs?.length,
@@ -128,7 +136,8 @@ class _SongListPageState extends State<SongListPage> {
 class _SongListModelProvider extends InheritedWidget {
   final SongListModel model;
 
-  _SongListModelProvider(this.model, {Key key, Widget child}) : super(key: key, child: child);
+  _SongListModelProvider(this.model, {Key key, Widget child})
+      : super(key: key, child: child);
 
   @override
   bool updateShouldNotify(InheritedWidget oldWidget) => true;
@@ -149,7 +158,8 @@ class _SongListHeader extends StatelessWidget {
       decoration: BoxDecoration(
         image: songList != null && songList.hasDisplayCover
             ? DecorationImage(
-                image: CachedNetworkImageProvider(songList?.displayCover), fit: BoxFit.fill)
+            image: CachedNetworkImageProvider(songList?.displayCover),
+            fit: BoxFit.fill)
             : null,
       ),
       child: Stack(
@@ -166,7 +176,10 @@ class _SongListHeader extends StatelessWidget {
           Container(
             alignment: Alignment.center,
             padding:
-                EdgeInsets.only(top: MediaQuery.of(context).padding.top + 44, left: 15, right: 15),
+            EdgeInsets.only(top: MediaQuery
+                .of(context)
+                .padding
+                .top + 44, left: 15, right: 15),
             child: Row(
               children: <Widget>[
                 //封面
@@ -181,11 +194,11 @@ class _SongListHeader extends StatelessWidget {
                           color: AppColors.cover_bg,
                           child: songList != null && songList.hasDisplayCover
                               ? CachedNetworkImage(
-                                  width: 140,
-                                  height: 140,
-                                  imageUrl: songList?.displayCover,
-                                  fit: BoxFit.cover,
-                                )
+                            width: 140,
+                            height: 140,
+                            imageUrl: songList?.displayCover,
+                            fit: BoxFit.cover,
+                          )
                               : null,
                         )),
                     if (songList?.playCount != null)
@@ -198,7 +211,8 @@ class _SongListHeader extends StatelessWidget {
                             color: AppColors.text_embed,
                           ),
                           Text(
-                            stringsOf(context).displayPlayCount(songList?.playCount),
+                            stringsOf(context).displayPlayCount(
+                                songList?.playCount),
                             style: TextStyle(
                               color: AppColors.text_embed,
                               fontSize: 12,
@@ -238,9 +252,11 @@ class _SongListHeader extends StatelessWidget {
                           //创建者
                           if (songList != null && songList.isUserAvailable)
                             GestureDetector(
-                              onTap: () => AppNavigator.instance.navigateTo(
-                                  context, AppNavigator.web_view,
-                                  params: {'url': songList.userSource}, overlay: true),
+                              onTap: () =>
+                                  AppNavigator.instance.navigateTo(
+                                      context, AppNavigator.web_view,
+                                      params: {'url': songList.userSource},
+                                      overlay: true),
                               child: Row(
                                 children: <Widget>[
                                   ClipRRect(
@@ -249,13 +265,15 @@ class _SongListHeader extends StatelessWidget {
                                       width: 32,
                                       height: 32,
                                       imageUrl: songList.userAvatar,
-                                      placeholder: (context, url) => Container(
-                                        width: 32,
-                                        height: 32,
-                                        decoration: BoxDecoration(
-                                            color: AppColors.main_bg,
-                                            borderRadius: BorderRadius.circular(16)),
-                                      ),
+                                      placeholder: (context, url) =>
+                                          Container(
+                                            width: 32,
+                                            height: 32,
+                                            decoration: BoxDecoration(
+                                                color: AppColors.main_bg,
+                                                borderRadius: BorderRadius
+                                                    .circular(16)),
+                                          ),
                                     ),
                                   ),
                                   SizedBox(
@@ -285,7 +303,8 @@ class _SongListHeader extends StatelessWidget {
                           if (songList?.description != null)
                             GestureDetector(
                               onTap: () =>
-                                  showSongListDescriptionDialog(context, songList?.description),
+                                  showSongListDescriptionDialog(
+                                      context, songList?.description),
                               child: Row(
                                 children: <Widget>[
                                   Expanded(
@@ -326,12 +345,14 @@ class _ControlBarDelegate extends SliverPersistentHeaderDelegate {
   _ControlBarDelegate(this.songList);
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(BuildContext context, double shrinkOffset,
+      bool overlapsContent) {
     return _ControlBar(songList);
   }
 
   @override
-  bool shouldRebuild(_ControlBarDelegate oldDelegate) => oldDelegate.songList != this.songList;
+  bool shouldRebuild(_ControlBarDelegate oldDelegate) =>
+      oldDelegate.songList != this.songList;
 
   @override
   double get maxExtent => 50;
@@ -354,7 +375,7 @@ class _ControlBar extends StatelessWidget {
           height: 50,
           child: FlatButton(
               onPressed: () {
-                PlayMusicModel.instance.playAndReplaceSongList(songList.songs);
+                MusicPlayer.instance.playSongList(songList.songs);
               },
               padding: EdgeInsets.symmetric(horizontal: 10),
               child: Row(
@@ -387,7 +408,10 @@ class _ControlBar extends StatelessWidget {
                   if (songList?.plt != MusicPlatforms.LOCAL)
                     StreamBuilder(
                       initialData: null,
-                      stream: _SongListModelProvider.of(context).model.isCollectedStream,
+                      stream: _SongListModelProvider
+                          .of(context)
+                          .model
+                          .isCollectedStream,
                       builder: (context, AsyncSnapshot<bool> snapshot) {
                         var _isCollectedEnable = snapshot.data != null;
                         var _isCollected = snapshot.data == true;
@@ -395,13 +419,19 @@ class _ControlBar extends StatelessWidget {
                           height: 40,
                           child: RaisedButton(
                             onPressed: _isCollectedEnable
-                                ? _SongListModelProvider.of(context).model.togglePlaylistCollection
+                                ? _SongListModelProvider
+                                .of(context)
+                                .model
+                                .togglePlaylistCollection
                                 : null,
                             padding: EdgeInsets.symmetric(horizontal: 10),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                            color: _isCollected ? AppColors.disabled : AppColors.accent,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20)),
+                            color: _isCollected ? AppColors.disabled : AppColors
+                                .accent,
                             child: Text(
-                              stringsOf(context).collectAll(_isCollected, songList?.favorCount),
+                              stringsOf(context).collectAll(_isCollected,
+                                  songList?.favorCount),
                               style: TextStyle(
                                 color: AppColors.text_embed,
                                 fontSize: 14,
@@ -424,7 +454,8 @@ class _SongListItem extends StatelessWidget {
   final SongList songList;
   final VoidCallback onTapMenu;
 
-  _SongListItem(this.index, this.song, this.songList, this.onTapMenu, {Key key}) : super(key: key);
+  _SongListItem(this.index, this.song, this.songList, this.onTapMenu, {Key key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -434,7 +465,8 @@ class _SongListItem extends StatelessWidget {
       child: FlatButton(
         onPressed: () {
           AppNavigator.instance
-              .navigateTo(context, AppNavigator.play, params: {'song': song}, overlay: true);
+              .navigateTo(context, AppNavigator.play, params: {'song': song},
+              overlay: true);
         },
         padding: EdgeInsets.zero,
         child: Row(
@@ -477,7 +509,8 @@ class _SongListItem extends StatelessWidget {
                     height: 6,
                   ),
                   Text(
-                    stringsOf(context).singerAndAlbum(song?.singer?.name, song?.album?.name),
+                    stringsOf(context).singerAndAlbum(
+                        song?.singer?.name, song?.album?.name),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(

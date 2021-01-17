@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:second_music/model/enum.dart';
+import 'package:second_music/entity/enum.dart';
 
 class AppColors {
   static final primary = Colors.white;

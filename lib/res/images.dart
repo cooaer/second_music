@@ -1,5 +1,5 @@
-import 'package:audioplayers/audioplayers.dart';
-import 'package:second_music/model/enum.dart';
+import 'package:second_music/entity/enum.dart';
+import 'package:second_music/player/music_player.dart';
 
 class AppImages {
   static const test_002 = 'assets/images/test_002.jpg';
@@ -20,14 +20,14 @@ class AppImages {
     return isFavor ? 'favorite' : 'favorite_border';
   }
 
-  static String playIcon(AudioPlayerState state) {
+  static String playIcon(PlayerState state) {
     switch (state) {
-      case AudioPlayerState.PLAYING:
+      case PlayerState.PLAYING:
         return 'pause_circle_outline';
         break;
-      case AudioPlayerState.STOPPED:
-      case AudioPlayerState.PAUSED:
-      case AudioPlayerState.COMPLETED:
+      case PlayerState.STOPPED:
+      case PlayerState.PAUSED:
+      case PlayerState.COMPLETED:
         return 'play_circle_outline';
         break;
     }

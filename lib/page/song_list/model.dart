@@ -3,11 +3,11 @@ import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:palette_generator/palette_generator.dart';
-import 'package:second_music/model/enum.dart';
-import 'package:second_music/model/song_list.dart';
-import 'package:second_music/network/platform/music_provider.dart';
+import 'package:second_music/entity/enum.dart';
+import 'package:second_music/entity/song_list.dart';
+import 'package:second_music/repository/remote/platform/music_provider.dart';
 import 'package:second_music/page/home/my_song_list/model.dart';
-import 'package:second_music/storage/database/music/dao.dart';
+import 'package:second_music/repository/local/database/music/dao.dart';
 
 class SongListModel {
   final String plt;

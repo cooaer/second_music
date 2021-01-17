@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:second_music/model/playlist_set.dart';
-import 'package:second_music/network/platform/music_provider.dart';
+import 'package:second_music/entity/playlist_set.dart';
+import 'package:second_music/repository/remote/platform/music_provider.dart';
 
 class HotPlaylistModel {
   final String plt;

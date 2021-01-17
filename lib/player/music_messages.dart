@@ -7,43 +7,13 @@ import 'dart:typed_data' show Uint8List, Int32List, Int64List, Float64List;
 
 import 'package:flutter/services.dart';
 
-class StreamUrlMessage {
-  String streamUrl;
-
-  // ignore: unused_element
-  Object encode() {
-    final Map<Object, Object> pigeonMap = <Object, Object>{};
-    pigeonMap['streamUrl'] = streamUrl;
-    return pigeonMap;
-  }
-
-  // ignore: unused_element
-  static StreamUrlMessage decode(Object message) {
-    final Map<Object, Object> pigeonMap = message as Map<Object, Object>;
-    return StreamUrlMessage()
-      ..streamUrl = pigeonMap['streamUrl'] as String;
-  }
-}
-
 class SongMessage {
-  String plt;
-  String id;
-  String name;
-  String cover;
-  String streamUrl;
-  String albumName;
-  String singerName;
+  Map<Object, Object> song;
 
   // ignore: unused_element
   Object encode() {
     final Map<Object, Object> pigeonMap = <Object, Object>{};
-    pigeonMap['plt'] = plt;
-    pigeonMap['id'] = id;
-    pigeonMap['name'] = name;
-    pigeonMap['cover'] = cover;
-    pigeonMap['streamUrl'] = streamUrl;
-    pigeonMap['albumName'] = albumName;
-    pigeonMap['singerName'] = singerName;
+    pigeonMap['song'] = song;
     return pigeonMap;
   }
 
@@ -51,13 +21,43 @@ class SongMessage {
   static SongMessage decode(Object message) {
     final Map<Object, Object> pigeonMap = message as Map<Object, Object>;
     return SongMessage()
-      ..plt = pigeonMap['plt'] as String
-      ..id = pigeonMap['id'] as String
-      ..name = pigeonMap['name'] as String
-      ..cover = pigeonMap['cover'] as String
-      ..streamUrl = pigeonMap['streamUrl'] as String
-      ..albumName = pigeonMap['albumName'] as String
-      ..singerName = pigeonMap['singerName'] as String;
+      ..song = pigeonMap['song'] as Map<Object, Object>;
+  }
+}
+
+class InitializeMessage {
+  int callbackHandle;
+
+  // ignore: unused_element
+  Object encode() {
+    final Map<Object, Object> pigeonMap = <Object, Object>{};
+    pigeonMap['callbackHandle'] = callbackHandle;
+    return pigeonMap;
+  }
+
+  // ignore: unused_element
+  static InitializeMessage decode(Object message) {
+    final Map<Object, Object> pigeonMap = message as Map<Object, Object>;
+    return InitializeMessage()
+      ..callbackHandle = pigeonMap['callbackHandle'] as int;
+  }
+}
+
+class PlayModeMessage {
+  String playMode;
+
+  // ignore: unused_element
+  Object encode() {
+    final Map<Object, Object> pigeonMap = <Object, Object>{};
+    pigeonMap['playMode'] = playMode;
+    return pigeonMap;
+  }
+
+  // ignore: unused_element
+  static PlayModeMessage decode(Object message) {
+    final Map<Object, Object> pigeonMap = message as Map<Object, Object>;
+    return PlayModeMessage()
+      ..playMode = pigeonMap['playMode'] as String;
   }
 }
 
@@ -118,33 +118,59 @@ class StateMessage {
   }
 }
 
-abstract class MusicPlayerDelegateApi {
-  StreamUrlMessage retrieveStreamUrl(SongMessage arg);
-  static void setup(MusicPlayerDelegateApi api) {
-    {
-      const BasicMessageChannel<Object> channel =
-          BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerDelegateApi.retrieveStreamUrl', StandardMessageCodec());
-      if (api == null) {
-        channel.setMessageHandler(null);
-      } else {
-        channel.setMessageHandler((Object message) async {
-          if (message == null) {
-            return null;
-          }
-          final SongMessage input = SongMessage.decode(message);
-          final StreamUrlMessage output = api.retrieveStreamUrl(input);
-          return output.encode();
-        });
-      }
+class StreamUrlCallbackApi {
+  Future<void> setStreamUrl(SongMessage arg) async {
+    final Object encoded = arg.encode();
+    const BasicMessageChannel<Object> channel =
+        BasicMessageChannel<Object>('dev.flutter.pigeon.StreamUrlCallbackApi.setStreamUrl', StandardMessageCodec());
+    final Map<Object, Object> replyMap = await channel.send(encoded) as Map<Object, Object>;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+        details: null,
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object, Object> error = replyMap['error'] as Map<Object, Object>;
+      throw PlatformException(
+        code: error['code'] as String,
+        message: error['message'] as String,
+        details: error['details'],
+      );
+    } else {
+      // noop
     }
   }
 }
 
 class MusicPlayerControllerApi {
-  Future<void> syncPlaylist(SongsMessage arg) async {
+  Future<void> initialize(InitializeMessage arg) async {
     final Object encoded = arg.encode();
     const BasicMessageChannel<Object> channel =
-        BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerControllerApi.syncPlaylist', StandardMessageCodec());
+        BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerControllerApi.initialize', StandardMessageCodec());
+    final Map<Object, Object> replyMap = await channel.send(encoded) as Map<Object, Object>;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+        details: null,
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object, Object> error = replyMap['error'] as Map<Object, Object>;
+      throw PlatformException(
+        code: error['code'] as String,
+        message: error['message'] as String,
+        details: error['details'],
+      );
+    } else {
+      // noop
+    }
+  }
+
+  Future<void> setPlayMode(PlayModeMessage arg) async {
+    final Object encoded = arg.encode();
+    const BasicMessageChannel<Object> channel =
+        BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerControllerApi.setPlayMode', StandardMessageCodec());
     final Map<Object, Object> replyMap = await channel.send(encoded) as Map<Object, Object>;
     if (replyMap == null) {
       throw PlatformException(
@@ -169,6 +195,73 @@ class MusicPlayerControllerApi {
     const BasicMessageChannel<Object> channel =
         BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerControllerApi.playSong', StandardMessageCodec());
     final Map<Object, Object> replyMap = await channel.send(encoded) as Map<Object, Object>;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+        details: null,
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object, Object> error = replyMap['error'] as Map<Object, Object>;
+      throw PlatformException(
+        code: error['code'] as String,
+        message: error['message'] as String,
+        details: error['details'],
+      );
+    } else {
+      // noop
+    }
+  }
+
+  Future<void> playSongList(SongsMessage arg) async {
+    final Object encoded = arg.encode();
+    const BasicMessageChannel<Object> channel =
+        BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerControllerApi.playSongList', StandardMessageCodec());
+    final Map<Object, Object> replyMap = await channel.send(encoded) as Map<Object, Object>;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+        details: null,
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object, Object> error = replyMap['error'] as Map<Object, Object>;
+      throw PlatformException(
+        code: error['code'] as String,
+        message: error['message'] as String,
+        details: error['details'],
+      );
+    } else {
+      // noop
+    }
+  }
+
+  Future<void> playPrev() async {
+    const BasicMessageChannel<Object> channel =
+        BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerControllerApi.playPrev', StandardMessageCodec());
+    final Map<Object, Object> replyMap = await channel.send(null) as Map<Object, Object>;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+        details: null,
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object, Object> error = replyMap['error'] as Map<Object, Object>;
+      throw PlatformException(
+        code: error['code'] as String,
+        message: error['message'] as String,
+        details: error['details'],
+      );
+    } else {
+      // noop
+    }
+  }
+
+  Future<void> playNext() async {
+    const BasicMessageChannel<Object> channel =
+        BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerControllerApi.playNext', StandardMessageCodec());
+    final Map<Object, Object> replyMap = await channel.send(null) as Map<Object, Object>;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -231,10 +324,11 @@ class MusicPlayerControllerApi {
     }
   }
 
-  Future<void> stop() async {
+  Future<void> seekTo(PositionMessage arg) async {
+    final Object encoded = arg.encode();
     const BasicMessageChannel<Object> channel =
-        BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerControllerApi.stop', StandardMessageCodec());
-    final Map<Object, Object> replyMap = await channel.send(null) as Map<Object, Object>;
+        BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerControllerApi.seekTo', StandardMessageCodec());
+    final Map<Object, Object> replyMap = await channel.send(encoded) as Map<Object, Object>;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -253,11 +347,56 @@ class MusicPlayerControllerApi {
     }
   }
 
-  Future<void> seek(PositionMessage arg) async {
+  Future<void> addSongToPlaylistNext(SongMessage arg) async {
     final Object encoded = arg.encode();
     const BasicMessageChannel<Object> channel =
-        BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerControllerApi.seek', StandardMessageCodec());
+        BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerControllerApi.addSongToPlaylistNext', StandardMessageCodec());
     final Map<Object, Object> replyMap = await channel.send(encoded) as Map<Object, Object>;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+        details: null,
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object, Object> error = replyMap['error'] as Map<Object, Object>;
+      throw PlatformException(
+        code: error['code'] as String,
+        message: error['message'] as String,
+        details: error['details'],
+      );
+    } else {
+      // noop
+    }
+  }
+
+  Future<void> deleteSongFromPlaylist(SongMessage arg) async {
+    final Object encoded = arg.encode();
+    const BasicMessageChannel<Object> channel =
+        BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerControllerApi.deleteSongFromPlaylist', StandardMessageCodec());
+    final Map<Object, Object> replyMap = await channel.send(encoded) as Map<Object, Object>;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+        details: null,
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object, Object> error = replyMap['error'] as Map<Object, Object>;
+      throw PlatformException(
+        code: error['code'] as String,
+        message: error['message'] as String,
+        details: error['details'],
+      );
+    } else {
+      // noop
+    }
+  }
+
+  Future<void> clearPlaylist() async {
+    const BasicMessageChannel<Object> channel =
+        BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerControllerApi.clearPlaylist', StandardMessageCodec());
+    final Map<Object, Object> replyMap = await channel.send(null) as Map<Object, Object>;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -277,11 +416,67 @@ class MusicPlayerControllerApi {
   }
 }
 
+abstract class StreamUrlServiceApi {
+  void retrieveStreamUrl(SongMessage arg);
+  static void setup(StreamUrlServiceApi api) {
+    {
+      const BasicMessageChannel<Object> channel =
+          BasicMessageChannel<Object>('dev.flutter.pigeon.StreamUrlServiceApi.retrieveStreamUrl', StandardMessageCodec());
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object message) async {
+          if (message == null) {
+            return;
+          }
+          final SongMessage input = SongMessage.decode(message);
+          api.retrieveStreamUrl(input);
+          return;
+        });
+      }
+    }
+  }
+}
+
 abstract class MusicPlayerCallbackApi {
+  void onShowingSongListChanged(SongsMessage arg);
+  void onPlayingSongListChanged(SongsMessage arg);
   void onPlayerStateChanged(StateMessage arg);
-  void onSongChanged(SongMessage arg);
+  void onPlayingSongChanged(SongMessage arg);
   void onPositionChanged(PositionMessage arg);
   static void setup(MusicPlayerCallbackApi api) {
+    {
+      const BasicMessageChannel<Object> channel =
+          BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerCallbackApi.onShowingSongListChanged', StandardMessageCodec());
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object message) async {
+          if (message == null) {
+            return;
+          }
+          final SongsMessage input = SongsMessage.decode(message);
+          api.onShowingSongListChanged(input);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object> channel =
+          BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerCallbackApi.onPlayingSongListChanged', StandardMessageCodec());
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object message) async {
+          if (message == null) {
+            return;
+          }
+          final SongsMessage input = SongsMessage.decode(message);
+          api.onPlayingSongListChanged(input);
+          return;
+        });
+      }
+    }
     {
       const BasicMessageChannel<Object> channel =
           BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerCallbackApi.onPlayerStateChanged', StandardMessageCodec());
@@ -300,7 +495,7 @@ abstract class MusicPlayerCallbackApi {
     }
     {
       const BasicMessageChannel<Object> channel =
-          BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerCallbackApi.onSongChanged', StandardMessageCodec());
+          BasicMessageChannel<Object>('dev.flutter.pigeon.MusicPlayerCallbackApi.onPlayingSongChanged', StandardMessageCodec());
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
@@ -309,7 +504,7 @@ abstract class MusicPlayerCallbackApi {
             return;
           }
           final SongMessage input = SongMessage.decode(message);
-          api.onSongChanged(input);
+          api.onPlayingSongChanged(input);
           return;
         });
       }

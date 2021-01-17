@@ -2,19 +2,19 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:second_music/model/album.dart';
-import 'package:second_music/model/enum.dart';
-import 'package:second_music/model/playlist.dart';
-import 'package:second_music/model/search.dart';
-import 'package:second_music/model/singer.dart';
-import 'package:second_music/model/song.dart';
-import 'package:second_music/model/song_list.dart';
+import 'package:second_music/entity/album.dart';
+import 'package:second_music/entity/enum.dart';
+import 'package:second_music/entity/playlist.dart';
+import 'package:second_music/entity/search.dart';
+import 'package:second_music/entity/singer.dart';
+import 'package:second_music/entity/song.dart';
+import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/page/navigator.dart';
 import 'package:second_music/page/play_control/page.dart';
 import 'package:second_music/page/search/model.dart';
 import 'package:second_music/page/song_list/widget.dart';
 import 'package:second_music/res/res.dart';
-import 'package:second_music/storage/preference/config.dart';
+import 'package:second_music/repository/local/preference/config.dart';
 import 'package:second_music/widget/loading_more.dart';
 import 'package:second_music/widget/material_icon_round.dart';
 

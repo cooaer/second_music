@@ -2,30 +2,27 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:after_layout/after_layout.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:second_music/model/enum.dart';
-import 'package:second_music/model/song.dart';
-import 'package:second_music/page/model.dart';
+import 'package:second_music/entity/enum.dart';
+import 'package:second_music/entity/playing_progress.dart';
+import 'package:second_music/entity/song.dart';
 import 'package:second_music/page/play/model.dart';
 import 'package:second_music/page/play_control/widget.dart';
+import 'package:second_music/player/music_player.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/widget/material_icon_round.dart';
 
 class PlayPage extends StatefulWidget {
-
   final Song song;
 
   PlayPage(this.song);
 
   @override
   State<StatefulWidget> createState() => _PlayPageState();
-
 }
 
-class _PlayPageState extends State<PlayPage> with AfterLayoutMixin{
-
+class _PlayPageState extends State<PlayPage> with AfterLayoutMixin {
   @override
   void initState() {
     super.initState();
@@ -57,14 +54,11 @@ class _PlayPageState extends State<PlayPage> with AfterLayoutMixin{
 
   @override
   void afterFirstLayout(BuildContext context) {
-    if(widget.song != null){
-      PlayMusicModel.instance.playSongNow(widget.song);
+    if (widget.song != null) {
+      MusicPlayer.instance.playSong(widget.song);
     }
   }
-
 }
-
-
 
 class _PlayBackground extends StatelessWidget {
   _PlayBackground({Key key}) : super(key: key);
@@ -72,8 +66,8 @@ class _PlayBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-        initialData: PlayMusicModel.instance.currentSong,
-        stream: PlayMusicModel.instance.currentSongStream,
+        initialData: MusicPlayer.instance.currentSong,
+        stream: MusicPlayer.instance.currentSongStream,
         builder: (context, AsyncSnapshot<Song> snapshot) {
           return _buildContent(context, snapshot.data?.cover);
         });
@@ -115,8 +109,8 @@ class _PlayTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      initialData: PlayMusicModel.instance.currentSong,
-      stream: PlayMusicModel.instance.currentSongStream,
+      initialData: MusicPlayer.instance.currentSong,
+      stream:MusicPlayer.instance.currentSongStream,
       builder: (context, AsyncSnapshot<Song> snapshot) {
         return _buildContent(context, snapshot.data);
       },
@@ -134,7 +128,9 @@ class _PlayTopBar extends StatelessWidget {
           children: <Widget>[
             Text(song?.name ?? '',
                 style: TextStyle(
-                    color: AppColors.text_embed, fontSize: 16, fontWeight: FontWeight.w600)),
+                    color: AppColors.text_embed,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600)),
             Text(song?.singer?.name ?? '',
                 style: TextStyle(
                     color: AppColors.text_embed_half_transparent,
@@ -199,12 +195,12 @@ class _PlayCoverContainerState extends State<_PlayCoverContainer> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      initialData: PlayMusicModel.instance.playingList,
-      stream: PlayMusicModel.instance.playingListStream,
+      initialData: MusicPlayer.instance.playingSongList,
+      stream: MusicPlayer.instance.playingSongListStream,
       builder: (context, AsyncSnapshot<List<Song>> snapshot) {
         return StreamBuilder(
-          initialData: PlayMusicModel.instance.currentSong,
-          stream: PlayMusicModel.instance.currentSongStream,
+          initialData:MusicPlayer.instance.currentSong,
+          stream:MusicPlayer.instance.currentSongStream,
           builder: (context, AsyncSnapshot<Song> snapshot2) {
             return _buildContent(context, snapshot.data, snapshot2.data);
           },
@@ -213,7 +209,8 @@ class _PlayCoverContainerState extends State<_PlayCoverContainer> {
     );
   }
 
-  Widget _buildContent(BuildContext context, List<Song> songs, Song currentSong) {
+  Widget _buildContent(
+      BuildContext context, List<Song> songs, Song currentSong) {
     var screenWidth = MediaQuery.of(context).size.width;
     var songCount = songs.length;
     var songModel = SongModel(currentSong);
@@ -266,13 +263,16 @@ class _PlayCoverContainerState extends State<_PlayCoverContainer> {
     );
   }
 
-  bool _handleSongListScrollEndNotification(ScrollEndNotification notification) {
+  bool _handleSongListScrollEndNotification(
+      ScrollEndNotification notification) {
     int index = _songControllerModel.currentPageController.page.round();
     var realIndex = SongControllerModel.realIndexOf(index);
-    PlayMusicModel.instance.playIndexWithoutAnimation(realIndex, withoutModel: _songControllerModel);
+    MusicPlayer.instance.playIndexWithoutAnimation(realIndex,
+        withoutModel: _songControllerModel);
   }
 
-  Widget _buildFavorIcon(BuildContext context, SongModel songModel, bool isFavorite) {
+  Widget _buildFavorIcon(
+      BuildContext context, SongModel songModel, bool isFavorite) {
     return Container(
       height: 80,
       width: MediaQuery.of(context).size.width / 5,
@@ -316,8 +316,9 @@ class _PlayingSongCover extends StatelessWidget {
             ? Container(
                 width: 240,
                 height: 240,
-                decoration:
-                    BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(120)),
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(120)),
               )
             : ClipRRect(
                 borderRadius: BorderRadius.circular(120),
@@ -337,16 +338,13 @@ class _PlayLyricContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      height: double.infinity,
-      alignment: Alignment.center,
-      child:Text(
-        '暂不支持显示歌词',
-        style: TextStyle(
-          color: AppColors.text_embed
-        ),
-      )
-    );
+        width: double.infinity,
+        height: double.infinity,
+        alignment: Alignment.center,
+        child: Text(
+          '暂不支持显示歌词',
+          style: TextStyle(color: AppColors.text_embed),
+        ));
   }
 }
 
@@ -359,42 +357,40 @@ class _PlayControl extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           StreamBuilder(
-              initialData: PlayMusicModel.instance.currentDuration,
-              stream: PlayMusicModel.instance.currentDurationStream,
-              builder: (context, AsyncSnapshot<int> snapshotDuration) {
-                return StreamBuilder(
-                  initialData: PlayMusicModel.instance.currentPosition,
-                  stream: PlayMusicModel.instance.currentPositionStream,
-                  builder: (context, AsyncSnapshot<int> snapshotPosition) {
+              initialData: MusicPlayer.instance.playingProgress,
+              stream: MusicPlayer.instance.playingProgressStream,
+              builder: (context, AsyncSnapshot<PlayingProgress> snapshot) {
                     return _buildPlayProgress(
-                        context, snapshotPosition.data, snapshotDuration.data);
-                  },
-                );
+                        context, snapshot.data.position, snapshot.data.duration);
+
               }),
           Row(
             children: <Widget>[
               StreamBuilder(
-                initialData: PlayMusicModel.instance.playMode,
-                stream: PlayMusicModel.instance.playModeStream,
+                initialData: MusicPlayer.instance.playMode,
+                stream:MusicPlayer.instance.playModeStream,
                 builder: (context, AsyncSnapshot<PlayMode> snapshot) {
-                  return _buildPlayControlIcon(
-                      context, 'play_mode', AppImages.playModeIcon(snapshot.data), 32);
+                  return _buildPlayControlIcon(context, 'play_mode',
+                      AppImages.playModeIcon(snapshot.data), 32);
                 },
               ),
               _buildPlayControlIcon(context, 'play_pre', 'skip_previous', 40),
               StreamBuilder(
-                initialData: PlayMusicModel.instance.playerState,
-                stream: PlayMusicModel.instance.playerStateStream,
-                builder: (context, AsyncSnapshot<AudioPlayerState> snapshot) {
-                  if (snapshot.data == AudioPlayerState.PLAYING) {
-                    return _buildPlayControlIcon(context, 'playOrPause', 'pause_circle_filled', 70);
+                initialData: MusicPlayer.instance.playerState,
+                stream: MusicPlayer.instance.playerStateStream,
+                builder: (context, AsyncSnapshot<PlayerState> snapshot) {
+                  if (snapshot.data == PlayerState.PLAYING) {
+                    return _buildPlayControlIcon(
+                        context, 'playOrPause', 'pause_circle_filled', 70);
                   } else {
-                    return _buildPlayControlIcon(context, 'playOrPause', 'play_circle_filled', 70);
+                    return _buildPlayControlIcon(
+                        context, 'playOrPause', 'play_circle_filled', 70);
                   }
                 },
               ),
               _buildPlayControlIcon(context, 'play_next', 'skip_next', 40),
-              _buildPlayControlIcon(context, 'playing_list', 'playlist_play', 40),
+              _buildPlayControlIcon(
+                  context, 'playing_list', 'playlist_play', 40),
             ],
           )
         ],
@@ -422,7 +418,7 @@ class _PlayControl extends StatelessWidget {
             min: 0,
             max: maxDuration.toDouble(),
             onChanged: (value) {
-              PlayMusicModel.instance.seekTo(value.round());
+              MusicPlayer.instance.seekTo(value.round());
             },
           ),
         ),
@@ -437,7 +433,8 @@ class _PlayControl extends StatelessWidget {
     );
   }
 
-  Widget _buildPlayControlIcon(BuildContext context, String tag, String iconName, double iconSize) {
+  Widget _buildPlayControlIcon(
+      BuildContext context, String tag, String iconName, double iconSize) {
     return Expanded(
       flex: 1,
       child: Container(
@@ -458,16 +455,16 @@ class _PlayControl extends StatelessWidget {
   void _onTapControlIcon(BuildContext context, String iconName) {
     switch (iconName) {
       case 'play_mode':
-        PlayMusicModel.instance.switchPlayMode();
+        MusicPlayer.instance.switchPlayMode();
         break;
       case 'play_pre':
-        PlayMusicModel.instance.playPre();
+        MusicPlayer.instance.playPrev();
         break;
       case 'playOrPause':
-        PlayMusicModel.instance.playOrPause();
+        MusicPlayer.instance.playOrPause();
         break;
       case 'play_next':
-        PlayMusicModel.instance.playNext();
+        MusicPlayer.instance.playNext();
         break;
       case 'playing_list':
         showPlayingList(context);

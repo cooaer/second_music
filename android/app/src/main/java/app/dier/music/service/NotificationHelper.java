@@ -19,6 +19,7 @@ import com.bumptech.glide.request.transition.Transition;
 import app.dier.music.Constants;
 import app.dier.music.MusicMessages;
 import app.dier.music.R;
+import app.dier.music.entity.Song;
 import app.dier.music.utils.DisplayUtils;
 
 public class NotificationHelper {
@@ -31,10 +32,10 @@ public class NotificationHelper {
         this.context = context;
     }
 
-    public Notification createPlayMusicNotification(MusicMessages.SongMessage song,
+    public Notification createPlayMusicNotification(Song song,
                                                     Bitmap coverBitmap,
                                                     boolean isPlaying,
-                                                    MediaSession.Token session) {
+                                                    MediaSession.Token sessionToken) {
         Notification.Builder builder;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             builder = new Notification.Builder(context, CHANNEL_ID_PLAY_MUSIC);
@@ -44,8 +45,8 @@ public class NotificationHelper {
 
         builder.setOnlyAlertOnce(true)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(song.getName())
-                .setContentText(song.getSingerName() + " - " + song.getAlbumName())
+                .setContentTitle(song.name)
+                .setContentText(song.singerName + " - " + song.albumName)
                 .addAction(new Notification.Action(android.R.drawable.ic_media_play,
                         context.getString(R.string.notification_action_play),
                         PendingIntent.getService(context,
@@ -73,7 +74,7 @@ public class NotificationHelper {
 
         Notification.MediaStyle style = new Notification.MediaStyle();
         if (isPlaying) {
-            style.setMediaSession(session);
+            style.setMediaSession(sessionToken);
             style.setShowActionsInCompactView(2, 0, 3);
         } else {
             style.setShowActionsInCompactView(2, 1, 3);
@@ -86,11 +87,11 @@ public class NotificationHelper {
         return builder.build();
     }
 
-    private void updatePlayMusicNotification(MusicMessages.SongMessage song) {
+    private void updatePlayMusicNotification(Song song) {
         int dp100 = DisplayUtils.dp2px(100);
         Glide.with(context)
                 .asBitmap()
-                .load(song.getCover())
+                .load(song.cover)
                 .centerCrop()
                 .into(new CustomTarget<Bitmap>(dp100, dp100) {
                     @Override

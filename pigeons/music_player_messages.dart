@@ -1,17 +1,15 @@
 import 'package:pigeon/pigeon.dart';
 
+class InitializeMessage {
+  int callbackHandle;
+}
+
 class SongMessage {
-  String plt; //netease,qq,xiami,kugou,kuwo
-  String id; //歌曲ID
-  String name;
-  String cover;
-  String streamUrl; //歌曲播放流地址
-  String albumName;
-  String singerName;
+  Map<String, String> song;
 }
 
 class SongsMessage {
-  List<SongMessage> songs;
+  List<Map<String, Object>> songs;
 }
 
 class PositionMessage {
@@ -19,54 +17,80 @@ class PositionMessage {
   int duration;
 }
 
-@HostApi()
-abstract class MusicPlayerControllerApi {
-  void syncPlaylist(SongsMessage message);
-
-  void playSong(SongMessage message);
-
-  void play();
-
-  void pause();
-
-  void stop();
-
-  void seek(PositionMessage message);
+class PlayModeMessage {
+  String playMode;
 }
 
 class StateMessage {
   String state;
 }
 
+@HostApi()
+abstract class MusicPlayerControllerApi {
+  //初始化音乐控制器
+  void initialize(InitializeMessage message);
+
+  void setPlayMode(PlayModeMessage message);
+
+  void playSong(SongMessage message);
+
+  void playSongList(SongsMessage message);
+
+  void playPrev();
+
+  void playNext();
+
+  void play();
+
+  void pause();
+
+  void seekTo(PositionMessage message);
+
+  //添加歌曲到播放列表下一个播放的位置
+  void addSongToPlaylistNext(SongMessage message);
+
+  //从播放列表中删除歌曲
+  void deleteSongFromPlaylist(SongMessage message);
+
+  //清空播放列表
+  void clearPlaylist();
+}
+
 @FlutterApi()
 abstract class MusicPlayerCallbackApi {
+  void onShowingSongListChanged(SongsMessage message);
+
+  void onPlayingSongListChanged(SongsMessage message);
+
   void onPlayerStateChanged(StateMessage message);
 
-  void onSongChanged(SongMessage message);
+  void onPlayingSongChanged(SongMessage message);
 
   void onPositionChanged(PositionMessage message);
 }
 
-class StreamUrlMessage {
-  String streamUrl;
+@FlutterApi()
+abstract class StreamUrlServiceApi {
+  //调用Dart实现的能力获取歌曲的地址
+  void retrieveStreamUrl(SongMessage message);
 }
 
-@FlutterApi()
-abstract class MusicPlayerDelegateApi {
-  StreamUrlMessage retrieveStreamUrl(SongMessage message);
+@HostApi()
+abstract class StreamUrlCallbackApi {
+  //当获取歌曲地址后，通过该接口回调本地
+  void setStreamUrl(SongMessage message);
 }
 
 //回调歌曲播放进度、歌曲总时长、当前播放的歌曲
 //回调获取最新的歌曲播放地址
 
 // 输出配置
-// flutter pub run pigeon --input pigeons/music_messages.dart
+// flutter pub run pigeon --input pigeons/music_player_messages.dart
 void configurePigeon(PigeonOptions opts) {
   opts.dartOut = './lib/player/music_messages.dart';
   opts.objcHeaderOut = 'ios/Runner/MusicMessages.h';
   opts.objcSourceOut = 'ios/Runner/MusicMessages.m';
   opts.objcOptions.prefix = 'FLT';
-  opts.javaOut =
-      'android/app/src/main/java/app/dier/music/MusicMessages.java';
+  opts.javaOut = 'android/app/src/main/java/app/dier/music/MusicMessages.java';
   opts.javaOptions.package = 'app.dier.music';
 }

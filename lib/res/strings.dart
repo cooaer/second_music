@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:second_music/model/album.dart';
-import 'package:second_music/model/enum.dart';
-import 'package:second_music/model/singer.dart';
-import 'package:second_music/model/song_list.dart';
+import 'package:second_music/entity/album.dart';
+import 'package:second_music/entity/enum.dart';
+import 'package:second_music/entity/singer.dart';
+import 'package:second_music/entity/song_list.dart';
 
 AppLocalizations stringsOf(BuildContext context) {
   return AppLocalizations.of(context);

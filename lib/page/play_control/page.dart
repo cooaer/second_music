@@ -1,11 +1,10 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:second_music/model/song.dart';
-import 'package:second_music/page/model.dart';
+import 'package:second_music/entity/song.dart';
 import 'package:second_music/page/navigator.dart';
 import 'package:second_music/page/play/model.dart';
 import 'package:second_music/page/play_control/widget.dart';
+import 'package:second_music/player/music_player.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/widget/material_icon_round.dart';
 
@@ -81,8 +80,8 @@ class _PlayControllerState extends State<PlayController> {
 
   Widget _buildSongList(BuildContext context) {
     return StreamBuilder(
-      initialData: PlayMusicModel.instance.playingList,
-      stream: PlayMusicModel.instance.playingListStream,
+      initialData: MusicPlayer.instance.playingSongList,
+      stream: MusicPlayer.instance.playingSongListStream,
       builder: (context, AsyncSnapshot<List<Song>> snapshot) {
         var count = snapshot.data.length;
         return count == 0
@@ -95,7 +94,8 @@ class _PlayControllerState extends State<PlayController> {
                   itemBuilder: (context, index) {
                     var realIndex = SongControllerModel.realIndexOf(index);
                     var song = snapshot.data[realIndex];
-                    return _PlayControllerSong(song, key: Key(song.plt + song.id));
+                    return _PlayControllerSong(song,
+                        key: Key(song.plt + song.id));
                   },
                 ),
               );
@@ -103,25 +103,27 @@ class _PlayControllerState extends State<PlayController> {
     );
   }
 
-  bool _handleSongListScrollEndNotification(ScrollEndNotification notification){
+  bool _handleSongListScrollEndNotification(
+      ScrollEndNotification notification) {
     int index = _songControllerModel.currentPageController.page.round();
     var realIndex = SongControllerModel.realIndexOf(index);
-    PlayMusicModel.instance.playIndexWithoutAnimation(realIndex, withoutModel: _songControllerModel);
+    MusicPlayer.instance.playIndexWithoutAnimation(realIndex,
+        withoutModel: _songControllerModel);
     return true;
   }
 
   Widget _buildPlayIcon(BuildContext context) {
     return StreamBuilder(
-      initialData: PlayMusicModel.instance.playerState,
-      stream: PlayMusicModel.instance.playerStateStream,
-      builder: (context, AsyncSnapshot<AudioPlayerState> snapshot) {
+      initialData: MusicPlayer.instance.playerState,
+      stream: MusicPlayer.instance.playerStateStream,
+      builder: (context, AsyncSnapshot<PlayerState> snapshot) {
         return Container(
           width: 48,
           height: 48,
           alignment: Alignment.center,
           child: FlatButton(
             padding: EdgeInsets.zero,
-            onPressed: () => PlayMusicModel.instance.playOrPause(),
+            onPressed: () => MusicPlayer.instance.playOrPause(),
             shape: CircleBorder(),
             child: MdrIcon(
               AppImages.playIcon(snapshot.data),
@@ -151,8 +153,9 @@ class _PlayControllerSong extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
-        PlayMusicModel.instance.play();
-        AppNavigator.instance.navigateTo(context, AppNavigator.play, overlay: true);
+        MusicPlayer.instance.play();
+        AppNavigator.instance
+            .navigateTo(context, AppNavigator.play, overlay: true);
       },
       child: Row(
         children: <Widget>[
@@ -161,12 +164,16 @@ class _PlayControllerSong extends StatelessWidget {
             height: 48,
             alignment: Alignment.center,
             margin: EdgeInsets.only(left: 6, bottom: 6),
-            decoration:
-                BoxDecoration(color: AppColors.cover_bg, borderRadius: BorderRadius.circular(24)),
+            decoration: BoxDecoration(
+                color: AppColors.cover_bg,
+                borderRadius: BorderRadius.circular(24)),
             child: song?.cover != null && song.cover.isNotEmpty
                 ? ClipOval(
                     child: CachedNetworkImage(
-                        width: 44, height: 44, fit: BoxFit.cover, imageUrl: song.cover),
+                        width: 44,
+                        height: 44,
+                        fit: BoxFit.cover,
+                        imageUrl: song.cover),
                   )
                 : null,
           ),
@@ -189,7 +196,8 @@ class _PlayControllerSong extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    song?.singer?.name ?? stringsOf(context).defaultPlayControlDescription,
+                    song?.singer?.name ??
+                        stringsOf(context).defaultPlayControlDescription,
                     style: TextStyle(
                       color: AppColors.text_light,
                       fontSize: 11,

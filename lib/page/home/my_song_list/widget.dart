@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:second_music/model/song_list.dart';
+import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/page/basic_types.dart';
 import 'package:second_music/page/home/my_song_list/model.dart';
 import 'package:second_music/page/play_control/page.dart';
 import 'package:second_music/res/res.dart';
-import 'package:second_music/storage/database/music/dao.dart';
+import 'package:second_music/repository/local/database/music/dao.dart';
 import 'package:second_music/widget/material_icon_round.dart';
 
 void showCreatePlaylistDialog(BuildContext context) {

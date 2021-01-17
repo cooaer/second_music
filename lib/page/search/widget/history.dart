@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:second_music/page/search/page.dart';
 import 'package:second_music/res/res.dart';
-import 'package:second_music/storage/preference/playing.dart';
+import 'package:second_music/repository/local/preference/playing.dart';
 import 'package:second_music/widget/material_icon_round.dart';
 
 class SearchHistoryWidget extends StatelessWidget {

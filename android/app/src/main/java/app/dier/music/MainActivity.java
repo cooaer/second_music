@@ -58,11 +58,11 @@ public class MainActivity extends FlutterActivity {
         public void onServiceConnected(ComponentName name, IBinder service) {
             PlayMusicService.PlayMusicBinder binder = (PlayMusicService.PlayMusicBinder) service;
             BinaryMessenger binaryMessenger = getFlutterEngine().getDartExecutor();
-            binder.getMusicPlayer().setCallbackApi(
+            binder.getMusicPlayerController().setCallbackApi(
                     new MusicMessages.MusicPlayerCallbackApi(binaryMessenger));
             MusicMessages.MusicPlayerControllerApi.setup(
                     binaryMessenger,
-                    binder.getMusicPlayer());
+                    binder.getMusicPlayerController());
         }
 
         @Override

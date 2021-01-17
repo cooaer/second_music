@@ -1,16 +1,16 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:second_music/model/enum.dart';
-import 'package:second_music/model/song.dart';
-import 'package:second_music/model/song_list.dart';
+import 'package:second_music/entity/enum.dart';
+import 'package:second_music/entity/song.dart';
+import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/page/basic_types.dart';
 import 'package:second_music/page/home/my_song_list/model.dart';
-import 'package:second_music/page/model.dart';
 import 'package:second_music/page/navigator.dart';
 import 'package:second_music/page/play_control/page.dart';
 import 'package:second_music/page/song_list/model.dart';
+import 'package:second_music/player/music_player.dart';
 import 'package:second_music/res/res.dart';
-import 'package:second_music/storage/database/music/dao.dart';
+import 'package:second_music/repository/local/database/music/dao.dart';
 import 'package:second_music/widget/material_icon_round.dart';
 
 void showSongMenu(BuildContext context, Song song, SongList songList, SongListModel songListModel) {
@@ -97,7 +97,7 @@ class _SongMenu extends StatelessWidget {
   }
 
   void _playNext() {
-    PlayMusicModel.instance.addToNext(song);
+    MusicPlayer.instance.addSongToPlaylistNext(song);
   }
 
   void _addToSongList(BuildContext context) async {

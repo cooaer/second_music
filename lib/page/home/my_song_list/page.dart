@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:second_music/model/song_list.dart';
+import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/page/home/my_song_list/model.dart';
 import 'package:second_music/page/home/my_song_list/widget.dart';
 import 'package:second_music/page/navigator.dart';

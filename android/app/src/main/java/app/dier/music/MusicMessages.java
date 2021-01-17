@@ -14,81 +14,58 @@ import java.util.HashMap;
 public class MusicMessages {
 
   /** Generated class from Pigeon that represents data sent in messages. */
-  public static class StreamUrlMessage {
-    private String streamUrl;
-    public String getStreamUrl() { return streamUrl; }
-    public void setStreamUrl(String setterArg) { this.streamUrl = setterArg; }
+  public static class SongMessage {
+    private HashMap song;
+    public HashMap getSong() { return song; }
+    public void setSong(HashMap setterArg) { this.song = setterArg; }
 
     HashMap toMap() {
       HashMap<String, Object> toMapResult = new HashMap<>();
-      toMapResult.put("streamUrl", streamUrl);
+      toMapResult.put("song", song);
       return toMapResult;
     }
-    static StreamUrlMessage fromMap(HashMap map) {
-      StreamUrlMessage fromMapResult = new StreamUrlMessage();
-      Object streamUrl = map.get("streamUrl");
-      fromMapResult.streamUrl = (String)streamUrl;
+    static SongMessage fromMap(HashMap map) {
+      SongMessage fromMapResult = new SongMessage();
+      Object song = map.get("song");
+      fromMapResult.song = (HashMap)song;
       return fromMapResult;
     }
   }
 
   /** Generated class from Pigeon that represents data sent in messages. */
-  public static class SongMessage {
-    private String plt;
-    public String getPlt() { return plt; }
-    public void setPlt(String setterArg) { this.plt = setterArg; }
-
-    private String id;
-    public String getId() { return id; }
-    public void setId(String setterArg) { this.id = setterArg; }
-
-    private String name;
-    public String getName() { return name; }
-    public void setName(String setterArg) { this.name = setterArg; }
-
-    private String cover;
-    public String getCover() { return cover; }
-    public void setCover(String setterArg) { this.cover = setterArg; }
-
-    private String streamUrl;
-    public String getStreamUrl() { return streamUrl; }
-    public void setStreamUrl(String setterArg) { this.streamUrl = setterArg; }
-
-    private String albumName;
-    public String getAlbumName() { return albumName; }
-    public void setAlbumName(String setterArg) { this.albumName = setterArg; }
-
-    private String singerName;
-    public String getSingerName() { return singerName; }
-    public void setSingerName(String setterArg) { this.singerName = setterArg; }
+  public static class InitializeMessage {
+    private Long callbackHandle;
+    public Long getCallbackHandle() { return callbackHandle; }
+    public void setCallbackHandle(Long setterArg) { this.callbackHandle = setterArg; }
 
     HashMap toMap() {
       HashMap<String, Object> toMapResult = new HashMap<>();
-      toMapResult.put("plt", plt);
-      toMapResult.put("id", id);
-      toMapResult.put("name", name);
-      toMapResult.put("cover", cover);
-      toMapResult.put("streamUrl", streamUrl);
-      toMapResult.put("albumName", albumName);
-      toMapResult.put("singerName", singerName);
+      toMapResult.put("callbackHandle", callbackHandle);
       return toMapResult;
     }
-    static SongMessage fromMap(HashMap map) {
-      SongMessage fromMapResult = new SongMessage();
-      Object plt = map.get("plt");
-      fromMapResult.plt = (String)plt;
-      Object id = map.get("id");
-      fromMapResult.id = (String)id;
-      Object name = map.get("name");
-      fromMapResult.name = (String)name;
-      Object cover = map.get("cover");
-      fromMapResult.cover = (String)cover;
-      Object streamUrl = map.get("streamUrl");
-      fromMapResult.streamUrl = (String)streamUrl;
-      Object albumName = map.get("albumName");
-      fromMapResult.albumName = (String)albumName;
-      Object singerName = map.get("singerName");
-      fromMapResult.singerName = (String)singerName;
+    static InitializeMessage fromMap(HashMap map) {
+      InitializeMessage fromMapResult = new InitializeMessage();
+      Object callbackHandle = map.get("callbackHandle");
+      fromMapResult.callbackHandle = (callbackHandle == null) ? null : ((callbackHandle instanceof Integer) ? (Integer)callbackHandle : (Long)callbackHandle);
+      return fromMapResult;
+    }
+  }
+
+  /** Generated class from Pigeon that represents data sent in messages. */
+  public static class PlayModeMessage {
+    private String playMode;
+    public String getPlayMode() { return playMode; }
+    public void setPlayMode(String setterArg) { this.playMode = setterArg; }
+
+    HashMap toMap() {
+      HashMap<String, Object> toMapResult = new HashMap<>();
+      toMapResult.put("playMode", playMode);
+      return toMapResult;
+    }
+    static PlayModeMessage fromMap(HashMap map) {
+      PlayModeMessage fromMapResult = new PlayModeMessage();
+      Object playMode = map.get("playMode");
+      fromMapResult.playMode = (String)playMode;
       return fromMapResult;
     }
   }
@@ -157,49 +134,84 @@ public class MusicMessages {
     }
   }
 
-  /** Generated class from Pigeon that represents Flutter messages that can be called from Java.*/
-  public static class MusicPlayerDelegateApi {
-    private final BinaryMessenger binaryMessenger;
-    public MusicPlayerDelegateApi(BinaryMessenger argBinaryMessenger){
-      this.binaryMessenger = argBinaryMessenger;
-    }
-    public interface Reply<T> {
-      void reply(T reply);
-    }
-    public void retrieveStreamUrl(SongMessage argInput, Reply<StreamUrlMessage> callback) {
-      BasicMessageChannel<Object> channel =
-          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerDelegateApi.retrieveStreamUrl", new StandardMessageCodec());
-      HashMap inputMap = argInput.toMap();
-      channel.send(inputMap, channelReply -> {
-        HashMap outputMap = (HashMap)channelReply;
-        @SuppressWarnings("ConstantConditions")
-        StreamUrlMessage output = StreamUrlMessage.fromMap(outputMap);
-        callback.reply(output);
-      });
-    }
-  }
-
   /** Generated interface from Pigeon that represents a handler of messages from Flutter.*/
-  public interface MusicPlayerControllerApi {
-    void syncPlaylist(SongsMessage arg);
-    void playSong(SongMessage arg);
-    void play();
-    void pause();
-    void stop();
-    void seek(PositionMessage arg);
+  public interface StreamUrlCallbackApi {
+    void setStreamUrl(SongMessage arg);
 
-    /** Sets up an instance of `MusicPlayerControllerApi` to handle messages through the `binaryMessenger` */
-    static void setup(BinaryMessenger binaryMessenger, MusicPlayerControllerApi api) {
+    /** Sets up an instance of `StreamUrlCallbackApi` to handle messages through the `binaryMessenger` */
+    static void setup(BinaryMessenger binaryMessenger, StreamUrlCallbackApi api) {
       {
         BasicMessageChannel<Object> channel =
-            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerControllerApi.syncPlaylist", new StandardMessageCodec());
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.StreamUrlCallbackApi.setStreamUrl", new StandardMessageCodec());
         if (api != null) {
           channel.setMessageHandler((message, reply) -> {
             HashMap<String, HashMap> wrapped = new HashMap<>();
             try {
               @SuppressWarnings("ConstantConditions")
-              SongsMessage input = SongsMessage.fromMap((HashMap)message);
-              api.syncPlaylist(input);
+              SongMessage input = SongMessage.fromMap((HashMap)message);
+              api.setStreamUrl(input);
+              wrapped.put("result", null);
+            }
+            catch (Exception exception) {
+              wrapped.put("error", wrapError(exception));
+            }
+            reply.reply(wrapped);
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+    }
+  }
+
+  /** Generated interface from Pigeon that represents a handler of messages from Flutter.*/
+  public interface MusicPlayerControllerApi {
+    void initialize(InitializeMessage arg);
+    void setPlayMode(PlayModeMessage arg);
+    void playSong(SongMessage arg);
+    void playSongList(SongsMessage arg);
+    void playPrev();
+    void playNext();
+    void play();
+    void pause();
+    void seekTo(PositionMessage arg);
+    void addSongToPlaylistNext(SongMessage arg);
+    void deleteSongFromPlaylist(SongMessage arg);
+    void clearPlaylist();
+
+    /** Sets up an instance of `MusicPlayerControllerApi` to handle messages through the `binaryMessenger` */
+    static void setup(BinaryMessenger binaryMessenger, MusicPlayerControllerApi api) {
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerControllerApi.initialize", new StandardMessageCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            HashMap<String, HashMap> wrapped = new HashMap<>();
+            try {
+              @SuppressWarnings("ConstantConditions")
+              InitializeMessage input = InitializeMessage.fromMap((HashMap)message);
+              api.initialize(input);
+              wrapped.put("result", null);
+            }
+            catch (Exception exception) {
+              wrapped.put("error", wrapError(exception));
+            }
+            reply.reply(wrapped);
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerControllerApi.setPlayMode", new StandardMessageCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            HashMap<String, HashMap> wrapped = new HashMap<>();
+            try {
+              @SuppressWarnings("ConstantConditions")
+              PlayModeMessage input = PlayModeMessage.fromMap((HashMap)message);
+              api.setPlayMode(input);
               wrapped.put("result", null);
             }
             catch (Exception exception) {
@@ -221,6 +233,65 @@ public class MusicMessages {
               @SuppressWarnings("ConstantConditions")
               SongMessage input = SongMessage.fromMap((HashMap)message);
               api.playSong(input);
+              wrapped.put("result", null);
+            }
+            catch (Exception exception) {
+              wrapped.put("error", wrapError(exception));
+            }
+            reply.reply(wrapped);
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerControllerApi.playSongList", new StandardMessageCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            HashMap<String, HashMap> wrapped = new HashMap<>();
+            try {
+              @SuppressWarnings("ConstantConditions")
+              SongsMessage input = SongsMessage.fromMap((HashMap)message);
+              api.playSongList(input);
+              wrapped.put("result", null);
+            }
+            catch (Exception exception) {
+              wrapped.put("error", wrapError(exception));
+            }
+            reply.reply(wrapped);
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerControllerApi.playPrev", new StandardMessageCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            HashMap<String, HashMap> wrapped = new HashMap<>();
+            try {
+              api.playPrev();
+              wrapped.put("result", null);
+            }
+            catch (Exception exception) {
+              wrapped.put("error", wrapError(exception));
+            }
+            reply.reply(wrapped);
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerControllerApi.playNext", new StandardMessageCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            HashMap<String, HashMap> wrapped = new HashMap<>();
+            try {
+              api.playNext();
               wrapped.put("result", null);
             }
             catch (Exception exception) {
@@ -272,12 +343,14 @@ public class MusicMessages {
       }
       {
         BasicMessageChannel<Object> channel =
-            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerControllerApi.stop", new StandardMessageCodec());
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerControllerApi.seekTo", new StandardMessageCodec());
         if (api != null) {
           channel.setMessageHandler((message, reply) -> {
             HashMap<String, HashMap> wrapped = new HashMap<>();
             try {
-              api.stop();
+              @SuppressWarnings("ConstantConditions")
+              PositionMessage input = PositionMessage.fromMap((HashMap)message);
+              api.seekTo(input);
               wrapped.put("result", null);
             }
             catch (Exception exception) {
@@ -291,14 +364,54 @@ public class MusicMessages {
       }
       {
         BasicMessageChannel<Object> channel =
-            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerControllerApi.seek", new StandardMessageCodec());
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerControllerApi.addSongToPlaylistNext", new StandardMessageCodec());
         if (api != null) {
           channel.setMessageHandler((message, reply) -> {
             HashMap<String, HashMap> wrapped = new HashMap<>();
             try {
               @SuppressWarnings("ConstantConditions")
-              PositionMessage input = PositionMessage.fromMap((HashMap)message);
-              api.seek(input);
+              SongMessage input = SongMessage.fromMap((HashMap)message);
+              api.addSongToPlaylistNext(input);
+              wrapped.put("result", null);
+            }
+            catch (Exception exception) {
+              wrapped.put("error", wrapError(exception));
+            }
+            reply.reply(wrapped);
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerControllerApi.deleteSongFromPlaylist", new StandardMessageCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            HashMap<String, HashMap> wrapped = new HashMap<>();
+            try {
+              @SuppressWarnings("ConstantConditions")
+              SongMessage input = SongMessage.fromMap((HashMap)message);
+              api.deleteSongFromPlaylist(input);
+              wrapped.put("result", null);
+            }
+            catch (Exception exception) {
+              wrapped.put("error", wrapError(exception));
+            }
+            reply.reply(wrapped);
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerControllerApi.clearPlaylist", new StandardMessageCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            HashMap<String, HashMap> wrapped = new HashMap<>();
+            try {
+              api.clearPlaylist();
               wrapped.put("result", null);
             }
             catch (Exception exception) {
@@ -314,6 +427,25 @@ public class MusicMessages {
   }
 
   /** Generated class from Pigeon that represents Flutter messages that can be called from Java.*/
+  public static class StreamUrlServiceApi {
+    private final BinaryMessenger binaryMessenger;
+    public StreamUrlServiceApi(BinaryMessenger argBinaryMessenger){
+      this.binaryMessenger = argBinaryMessenger;
+    }
+    public interface Reply<T> {
+      void reply(T reply);
+    }
+    public void retrieveStreamUrl(SongMessage argInput, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.StreamUrlServiceApi.retrieveStreamUrl", new StandardMessageCodec());
+      HashMap inputMap = argInput.toMap();
+      channel.send(inputMap, channelReply -> {
+        callback.reply(null);
+      });
+    }
+  }
+
+  /** Generated class from Pigeon that represents Flutter messages that can be called from Java.*/
   public static class MusicPlayerCallbackApi {
     private final BinaryMessenger binaryMessenger;
     public MusicPlayerCallbackApi(BinaryMessenger argBinaryMessenger){
@@ -321,6 +453,22 @@ public class MusicMessages {
     }
     public interface Reply<T> {
       void reply(T reply);
+    }
+    public void onShowingSongListChanged(SongsMessage argInput, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerCallbackApi.onShowingSongListChanged", new StandardMessageCodec());
+      HashMap inputMap = argInput.toMap();
+      channel.send(inputMap, channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void onPlayingSongListChanged(SongsMessage argInput, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerCallbackApi.onPlayingSongListChanged", new StandardMessageCodec());
+      HashMap inputMap = argInput.toMap();
+      channel.send(inputMap, channelReply -> {
+        callback.reply(null);
+      });
     }
     public void onPlayerStateChanged(StateMessage argInput, Reply<Void> callback) {
       BasicMessageChannel<Object> channel =
@@ -330,9 +478,9 @@ public class MusicMessages {
         callback.reply(null);
       });
     }
-    public void onSongChanged(SongMessage argInput, Reply<Void> callback) {
+    public void onPlayingSongChanged(SongMessage argInput, Reply<Void> callback) {
       BasicMessageChannel<Object> channel =
-          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerCallbackApi.onSongChanged", new StandardMessageCodec());
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MusicPlayerCallbackApi.onPlayingSongChanged", new StandardMessageCodec());
       HashMap inputMap = argInput.toMap();
       channel.send(inputMap, channelReply -> {
         callback.reply(null);

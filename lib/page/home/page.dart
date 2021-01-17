@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:second_music/model/enum.dart';
+import 'package:second_music/entity/enum.dart';
 import 'package:second_music/page/home/hot_playlist/page.dart';
 import 'package:second_music/page/home/my_song_list/page.dart';
 import 'package:second_music/page/navigator.dart';

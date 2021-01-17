@@ -7,7 +7,7 @@ import 'package:second_music/common/path.dart';
 import 'package:second_music/page/home/page.dart';
 import 'package:second_music/page/ui_style.dart';
 import 'package:second_music/res/res.dart';
-import 'package:second_music/storage/preference/basic.dart';
+import 'package:second_music/repository/local/preference/basic.dart';
 
 void main() async {
   await initApp();

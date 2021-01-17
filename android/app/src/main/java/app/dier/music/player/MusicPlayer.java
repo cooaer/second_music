@@ -9,36 +9,39 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
 
 import app.dier.music.MusicMessages;
-import app.dier.music.MusicMessages.SongMessage;
-import app.dier.music.MusicMessages.StateMessage;
 import app.dier.music.MusicMessages.MusicPlayerCallbackApi;
-import app.dier.music.MusicMessages.MusicPlayerControllerApi;
-import app.dier.music.MusicMessages.MusicPlayerDelegateApi;
+import app.dier.music.MusicMessages.StateMessage;
+import app.dier.music.entity.Song;
 
-public class MusicPlayer implements MusicPlayerControllerApi, AudioManager.OnAudioFocusChangeListener {
+public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener {
+
+    public static final String TAG = MusicPlayer.class.getSimpleName();
+
+    public interface MusicPlayerSongDelegate {
+        Song currentPlayingSong();
+
+        Song nextPlayingSong();
+    }
 
     private final Context context;
     private MediaPlayer player;
     private AudioManager audioManager;
     private AudioFocusRequest audioFocusRequest;
 
-    private int currentIndex = -1;
-    private List<SongMessage> songs = new ArrayList<>();
-
-
     private boolean isPlaying = false;
+    private boolean isPausedByUser = false;
     private boolean isPrepared = false;
     private int shouldSeekTo = -1;
 
     private Handler durationHandler;
     private MusicPlayerCallbackApi callbackApi;
+    private MusicPlayerSongDelegate songDelegate;
 
     private UpdatePositionCallback updatePositionCallback;
 
@@ -61,28 +64,12 @@ public class MusicPlayer implements MusicPlayerControllerApi, AudioManager.OnAud
         this.callbackApi = callbackApi;
     }
 
-    private SongMessage currentSong() {
-        if (songs.isEmpty()) {
-            currentIndex = -1;
-            return null;
-        }
-        if (currentIndex < 0 || currentIndex > songs.size()) {
-            currentIndex = 0;
-        }
-        return songs.get(currentIndex);
+    public void setSongDelegate(MusicPlayerSongDelegate songDelegate) {
+        this.songDelegate = songDelegate;
     }
 
-    private SongMessage nextSong() {
-        if (songs.isEmpty()) {
-            currentIndex = -1;
-            return null;
-        }
-        currentIndex = (currentIndex + 1) % songs.size();
-        return songs.get(currentIndex);
-    }
-
-    private void changeSong(SongMessage song) {
-        currentIndex = songs.indexOf(song);
+    public boolean isPlaying() {
+        return isPlaying;
     }
 
     //=========== Media Player Callback ===========
@@ -97,49 +84,53 @@ public class MusicPlayer implements MusicPlayerControllerApi, AudioManager.OnAud
 
         if (isPlaying) {
             player.start();
+            onPlayerStateChanged("playing");
             listenPositionChanged();
         }
 
-        if (callbackApi != null) {
-            StateMessage stateMessage = new StateMessage();
-            stateMessage.setState("prepared");
-            callbackApi.onPlayerStateChanged(stateMessage, reply -> {
-            });
-        }
+        onPlayerStateChanged("prepared");
     }
 
     private void onPlayerCompletion(MediaPlayer player) {
-        isPlaying = false;
-        SongMessage nextSong = nextSong();
-        if (nextSong != null) {
-            playSong(nextSong);
-        }
+        stop();
+        onPlayerStateChanged("completed");
 
-        if (callbackApi != null) {
-            StateMessage stateMessage = new StateMessage();
-            stateMessage.setState("completed");
-            callbackApi.onPlayerStateChanged(stateMessage, reply -> {
-            });
+        if (songDelegate == null) {
+            Log.e(TAG, "onPlayerCompletion, songDelegate is null");
+            return;
         }
+        Song nextSong = songDelegate.nextPlayingSong();
+        if (nextSong == null) {
+            Log.w(TAG, "onPlayerCompletion, nextSong is null");
+            return;
+        }
+        onPlayingSongChanged(nextSong);
+        play();
     }
 
     private void onPlayerSeekComplete(MediaPlayer player) {
+        onPlayerStateChanged("seekCompleted");
+    }
+
+    private boolean onPlayerError(MediaPlayer player, int what, int extra) {
+        onPlayerStateChanged("error");
+        return false;
+    }
+
+    private void onPlayerStateChanged(String state) {
         if (callbackApi != null) {
             StateMessage stateMessage = new StateMessage();
-            stateMessage.setState("seekCompleted");
+            stateMessage.setState(state);
             callbackApi.onPlayerStateChanged(stateMessage, reply -> {
             });
         }
     }
 
-    private boolean onPlayerError(MediaPlayer player, int what, int extra) {
+    private void onPlayingSongChanged(Song song) {
         if (callbackApi != null) {
-            StateMessage stateMessage = new StateMessage();
-            stateMessage.setState("error");
-            callbackApi.onPlayerStateChanged(stateMessage, reply -> {
+            callbackApi.onPlayingSongChanged(song.toMessage(), reply -> {
             });
         }
-        return false;
     }
 
     @Override
@@ -147,45 +138,21 @@ public class MusicPlayer implements MusicPlayerControllerApi, AudioManager.OnAud
         switch (focusChange) {
             case AudioManager.AUDIOFOCUS_GAIN:
             case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
-                playInternal();
+                if (!isPausedByUser) {
+                    playInternal();
+                }
                 break;
             case AudioManager.AUDIOFOCUS_LOSS:
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-                pause();
+                pauseInternal(false);
                 break;
         }
     }
-
     //=========== Media Player Callback ===========
 
 
     //=========== Media Player Controller ===========
 
-
-    @Override
-    public void syncPlaylist(MusicMessages.SongsMessage arg) {
-        SongMessage currentSong = currentSong();
-        songs.clear();
-        if (arg.getSongs() != null) {
-            songs.addAll(arg.getSongs());
-            if (currentSong != null) {
-                currentIndex = songs.indexOf(currentSong);
-            }
-        }
-    }
-
-    @Override
-    public void playSong(SongMessage arg) {
-        SongMessage currentSong = currentSong();
-        if (currentSong == null || !currentSong.equals(arg)) {
-            changeSong(arg);
-            play();
-        } else {
-            playInternal();
-        }
-    }
-
-    @Override
     public void play() {
         AudioManager audioManager = getAudioManager();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -196,6 +163,7 @@ public class MusicPlayer implements MusicPlayerControllerApi, AudioManager.OnAud
                     .build())
                     .setOnAudioFocusChangeListener(this);
             this.audioFocusRequest = builder.build();
+            //再次注册会覆盖之前注册的音频焦点请求
             audioManager.requestAudioFocus(this.audioFocusRequest);
         } else {
             int result = audioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
@@ -217,34 +185,51 @@ public class MusicPlayer implements MusicPlayerControllerApi, AudioManager.OnAud
             return;
         }
         isPlaying = true;
+        isPausedByUser = false;
         if (!isPrepared) {
-            setSource();
-            player.prepareAsync();
+            if (setSource()) {
+                player.prepareAsync();
+            }
         } else {
             player.start();
+            onPlayerStateChanged("playing");
             listenPositionChanged();
         }
     }
 
-    private void setSource() {
-        SongMessage song = currentSong();
+    private boolean setSource() {
+        if (songDelegate == null) {
+            Log.e(TAG, "setSource, songDelegate is null");
+            return false;
+        }
+        Song song = songDelegate.currentPlayingSong();
+        if (song == null) {
+            Log.w(TAG, "current song is null");
+            return false;
+        }
+        onPlayingSongChanged(song);
         try {
-            player.setDataSource(context, Uri.parse(song.getStreamUrl()));
+            player.setDataSource(context, Uri.parse(song.streamUrl));
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return true;
     }
 
-    @Override
     public void pause() {
+        pauseInternal(true);
+    }
+
+    public void pauseInternal(boolean byUser) {
         if (isPlaying) {
             isPlaying = false;
+            isPausedByUser = byUser;
             player.pause();
+            onPlayerStateChanged("paused");
             removePositionChangedCallback();
         }
     }
 
-    @Override
     public void stop() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (audioFocusRequest != null) {
@@ -254,17 +239,17 @@ public class MusicPlayer implements MusicPlayerControllerApi, AudioManager.OnAud
             audioManager.abandonAudioFocus(this);
         }
         player.stop();
+        onPlayerStateChanged("stopped");
         isPlaying = false;
         isPrepared = false;
         removePositionChangedCallback();
     }
 
-    @Override
-    public void seek(MusicMessages.PositionMessage arg) {
+    public void seekTo(int position) {
         if (isPrepared) {
-            player.seekTo(arg.getPosition().intValue());
+            player.seekTo(position);
         } else {
-            shouldSeekTo = arg.getPosition().intValue();
+            shouldSeekTo = position;
         }
     }
 
