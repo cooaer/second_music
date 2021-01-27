@@ -7,8 +7,8 @@ class PlayingProgress{
   PlayingProgress(this.position, this.duration);
 
   PlayingProgress.fromMessage(PositionMessage message){
-    this.duration = message.duration;
     this.position = message.position;
+    this.duration = message.duration;
   }
 
 }

@@ -119,6 +119,8 @@ class Song extends Object {
 
   bool get isAlbumAvailable => album?.id != null && album?.name != null;
 
+  String get uniqueId => this.plt + this.id;
+
   @override
   bool operator ==(other) {
     return other != null && other is Song && plt == other.plt && id == other.id;

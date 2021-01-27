@@ -9,7 +9,7 @@ import 'package:second_music/repository/local/database/music/dao.dart';
 import 'package:second_music/repository/local/database/music/table.dart';
 import 'package:flutter/material.dart';
 
-class SongControllerModel {
+class PlayingSongListControllerModel implements SongListController{
   static final initialPage = 1000000;
 
   static int realIndexOf(int index) {
@@ -17,7 +17,7 @@ class SongControllerModel {
     return (index - initialPage) % listCount;
   }
 
-  SongControllerModel() {
+  PlayingSongListControllerModel() {
     MusicPlayer.instance.registerSongControllerModel(this);
   }
 

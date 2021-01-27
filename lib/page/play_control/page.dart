@@ -17,12 +17,12 @@ class PlayController extends StatefulWidget {
 }
 
 class _PlayControllerState extends State<PlayController> {
-  SongControllerModel _songControllerModel;
+  PlayingSongListControllerModel _songListControllerModel;
 
   @override
   void initState() {
     super.initState();
-    _songControllerModel = SongControllerModel();
+    _songListControllerModel = PlayingSongListControllerModel();
   }
 
   @override
@@ -89,10 +89,13 @@ class _PlayControllerState extends State<PlayController> {
             : NotificationListener<ScrollEndNotification>(
                 onNotification: _handleSongListScrollEndNotification,
                 child: PageView.builder(
-                  controller: _songControllerModel.newSongPageController(),
+                  controller: _songListControllerModel.newSongPageController(),
                   itemCount: double.maxFinite.floor(),
                   itemBuilder: (context, index) {
-                    var realIndex = SongControllerModel.realIndexOf(index);
+                    var realIndex =
+                        PlayingSongListControllerModel.realIndexOf(index);
+
+                    print("playControl: itemBuilder , index = $index, realIndex=$realIndex");
                     var song = snapshot.data[realIndex];
                     return _PlayControllerSong(song,
                         key: Key(song.plt + song.id));
@@ -105,41 +108,41 @@ class _PlayControllerState extends State<PlayController> {
 
   bool _handleSongListScrollEndNotification(
       ScrollEndNotification notification) {
-    int index = _songControllerModel.currentPageController.page.round();
-    var realIndex = SongControllerModel.realIndexOf(index);
+    int index = _songListControllerModel.currentPageController.page.round();
+    var realIndex = PlayingSongListControllerModel.realIndexOf(index);
+    print("playControl: _handleSongListScrollEndNotification , index = $index, realIndex = $realIndex");
     MusicPlayer.instance.playIndexWithoutAnimation(realIndex,
-        withoutModel: _songControllerModel);
+        withoutModel: _songListControllerModel);
     return true;
   }
 
   Widget _buildPlayIcon(BuildContext context) {
-    return StreamBuilder(
-      initialData: MusicPlayer.instance.playerState,
-      stream: MusicPlayer.instance.playerStateStream,
-      builder: (context, AsyncSnapshot<PlayerState> snapshot) {
-        return Container(
-          width: 48,
-          height: 48,
-          alignment: Alignment.center,
-          child: FlatButton(
-            padding: EdgeInsets.zero,
-            onPressed: () => MusicPlayer.instance.playOrPause(),
-            shape: CircleBorder(),
-            child: MdrIcon(
-              AppImages.playIcon(snapshot.data),
-              size: 30,
-              color: AppColors.text_light,
-            ),
-          ),
-        );
-      },
+    return Container(
+      width: 48,
+      height: 48,
+      alignment: Alignment.center,
+      child: FlatButton(
+          padding: EdgeInsets.zero,
+          onPressed: () => MusicPlayer.instance.playOrPause(),
+          shape: CircleBorder(),
+          child: StreamBuilder(
+            initialData: MusicPlayer.instance.playerState,
+            stream: MusicPlayer.instance.playerStateStream,
+            builder: (context, AsyncSnapshot<PlayerState> snapshot) {
+              return MdrIcon(
+                AppImages.playIcon(snapshot.data),
+                size: 30,
+                color: AppColors.text_light,
+              );
+            },
+          )),
     );
   }
 
   @override
   void dispose() {
     super.dispose();
-    _songControllerModel.dispose();
+    _songListControllerModel.dispose();
   }
 }
 

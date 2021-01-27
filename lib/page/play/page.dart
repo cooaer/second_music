@@ -12,6 +12,7 @@ import 'package:second_music/page/play_control/widget.dart';
 import 'package:second_music/player/music_player.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/widget/material_icon_round.dart';
+import 'package:second_music/widget/play_progress_slider.dart';
 
 class PlayPage extends StatefulWidget {
   final Song song;
@@ -110,7 +111,7 @@ class _PlayTopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder(
       initialData: MusicPlayer.instance.currentSong,
-      stream:MusicPlayer.instance.currentSongStream,
+      stream: MusicPlayer.instance.currentSongStream,
       builder: (context, AsyncSnapshot<Song> snapshot) {
         return _buildContent(context, snapshot.data);
       },
@@ -184,12 +185,12 @@ class _PlayCoverContainer extends StatefulWidget {
 }
 
 class _PlayCoverContainerState extends State<_PlayCoverContainer> {
-  SongControllerModel _songControllerModel;
+  PlayingSongListControllerModel _songListControllerModel;
 
   @override
   void initState() {
     super.initState();
-    _songControllerModel = SongControllerModel();
+    _songListControllerModel = PlayingSongListControllerModel();
   }
 
   @override
@@ -199,8 +200,8 @@ class _PlayCoverContainerState extends State<_PlayCoverContainer> {
       stream: MusicPlayer.instance.playingSongListStream,
       builder: (context, AsyncSnapshot<List<Song>> snapshot) {
         return StreamBuilder(
-          initialData:MusicPlayer.instance.currentSong,
-          stream:MusicPlayer.instance.currentSongStream,
+          initialData: MusicPlayer.instance.currentSong,
+          stream: MusicPlayer.instance.currentSongStream,
           builder: (context, AsyncSnapshot<Song> snapshot2) {
             return _buildContent(context, snapshot.data, snapshot2.data);
           },
@@ -213,7 +214,6 @@ class _PlayCoverContainerState extends State<_PlayCoverContainer> {
       BuildContext context, List<Song> songs, Song currentSong) {
     var screenWidth = MediaQuery.of(context).size.width;
     var songCount = songs.length;
-    var songModel = SongModel(currentSong);
     return Stack(
       alignment: Alignment.bottomCenter,
       children: <Widget>[
@@ -225,10 +225,14 @@ class _PlayCoverContainerState extends State<_PlayCoverContainer> {
                   onNotification: _handleSongListScrollEndNotification,
                   child: PageView.builder(
                     itemCount: double.maxFinite.floor(),
-                    controller: _songControllerModel.newSongPageController(),
+                    controller:
+                        _songListControllerModel.newSongPageController(),
                     itemBuilder: (context, index) {
-                      var realIndex = SongControllerModel.realIndexOf(index);
+                      var realIndex =
+                          PlayingSongListControllerModel.realIndexOf(index);
                       var cover = songs[realIndex].cover;
+                      print(
+                          "play: itemBuilder , index = $index, realIndex=$realIndex");
                       return _PlayingSongCover(cover, key: Key(cover));
                     },
                   ),
@@ -236,13 +240,7 @@ class _PlayCoverContainerState extends State<_PlayCoverContainer> {
         ),
         Row(
           children: <Widget>[
-            StreamBuilder(
-              initialData: false,
-              stream: songModel.isFavoriteStream,
-              builder: (context, AsyncSnapshot<bool> snapshot) {
-                return _buildFavorIcon(context, songModel, snapshot.data);
-              },
-            ),
+            _FavorIcon(currentSong),
             Spacer(),
             Container(
               height: 80,
@@ -265,33 +263,19 @@ class _PlayCoverContainerState extends State<_PlayCoverContainer> {
 
   bool _handleSongListScrollEndNotification(
       ScrollEndNotification notification) {
-    int index = _songControllerModel.currentPageController.page.round();
-    var realIndex = SongControllerModel.realIndexOf(index);
+    int index = _songListControllerModel.currentPageController.page.round();
+    var realIndex = PlayingSongListControllerModel.realIndexOf(index);
+    print(
+        "play: _handleSongListScrollEndNotification , index = $index, realIndex = $realIndex");
     MusicPlayer.instance.playIndexWithoutAnimation(realIndex,
-        withoutModel: _songControllerModel);
-  }
-
-  Widget _buildFavorIcon(
-      BuildContext context, SongModel songModel, bool isFavorite) {
-    return Container(
-      height: 80,
-      width: MediaQuery.of(context).size.width / 5,
-      alignment: Alignment.center,
-      child: GestureDetector(
-        onTap: songModel.toggleFavorite,
-        child: MdrIcon(
-          AppImages.favorIcon(isFavorite),
-          color: Colors.white70,
-          size: 30,
-        ),
-      ),
-    );
+        withoutModel: _songListControllerModel);
+    return true;
   }
 
   @override
   void dispose() {
     super.dispose();
-    _songControllerModel.dispose();
+    _songListControllerModel.dispose();
   }
 }
 
@@ -334,6 +318,61 @@ class _PlayingSongCover extends StatelessWidget {
   }
 }
 
+class _FavorIcon extends StatefulWidget {
+  final Song currentSong;
+
+  _FavorIcon(this.currentSong, {Key key}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() {
+    return _FavorIconState();
+  }
+}
+
+class _FavorIconState extends State<_FavorIcon> {
+  SongModel _songModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _songModel = SongModel(widget.currentSong);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      initialData: false,
+      stream: _songModel.isFavoriteStream,
+      builder: (context, AsyncSnapshot<bool> snapshot) {
+        return _buildFavorIcon(context, _songModel, snapshot.data);
+      },
+    );
+  }
+
+  Widget _buildFavorIcon(
+      BuildContext context, SongModel songModel, bool isFavorite) {
+    return Container(
+      height: 80,
+      width: MediaQuery.of(context).size.width / 5,
+      alignment: Alignment.center,
+      child: GestureDetector(
+        onTap: songModel.toggleFavorite,
+        child: MdrIcon(
+          AppImages.favorIcon(isFavorite),
+          color: Colors.white70,
+          size: 30,
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _songModel.dispose();
+  }
+}
+
 class _PlayLyricContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -360,15 +399,14 @@ class _PlayControl extends StatelessWidget {
               initialData: MusicPlayer.instance.playingProgress,
               stream: MusicPlayer.instance.playingProgressStream,
               builder: (context, AsyncSnapshot<PlayingProgress> snapshot) {
-                    return _buildPlayProgress(
-                        context, snapshot.data.position, snapshot.data.duration);
-
+                return _buildPlayProgress(
+                    context, snapshot.data.position, snapshot.data.duration);
               }),
           Row(
             children: <Widget>[
               StreamBuilder(
                 initialData: MusicPlayer.instance.playMode,
-                stream:MusicPlayer.instance.playModeStream,
+                stream: MusicPlayer.instance.playModeStream,
                 builder: (context, AsyncSnapshot<PlayMode> snapshot) {
                   return _buildPlayControlIcon(context, 'play_mode',
                       AppImages.playModeIcon(snapshot.data), 32);
@@ -410,18 +448,9 @@ class _PlayControl extends StatelessWidget {
           style: TextStyle(fontSize: 10, color: Colors.white30),
         ),
         Expanded(
-          flex: 1,
-          child: Slider(
-            value: position.toDouble(),
-            activeColor: Color(0x3fffffff),
-            inactiveColor: Color(0x7fffffff),
-            min: 0,
-            max: maxDuration.toDouble(),
-            onChanged: (value) {
-              MusicPlayer.instance.seekTo(value.round());
-            },
-          ),
-        ),
+            flex: 1,
+            child: PlayProgressSlider(position, duration,
+                (value) => MusicPlayer.instance.seekTo(value.toInt()))),
         Text(
           stringsOf(context).playPosition(duration),
           style: TextStyle(fontSize: 10, color: Colors.white30),

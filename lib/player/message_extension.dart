@@ -23,3 +23,7 @@ extension SongsMessageExtension on SongsMessage {
     return songs;
   }
 }
+
+extension SongMessageExtension on SongMessage {
+  String get uniqueId => song["plt"].toString() + song['id'].toString();
+}

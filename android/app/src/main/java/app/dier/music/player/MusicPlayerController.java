@@ -54,11 +54,15 @@ public class MusicPlayerController implements MusicPlayerControllerApi {
                 }
             } else {
                 playlist.changeSong(song);
+                musicPlayer.stop();
                 musicPlayer.play();
             }
         } else {
             playlist.addToNext(song);
             playlist.nextSong();
+            if(musicPlayer.isPlaying()){
+                musicPlayer.stop();
+            }
             musicPlayer.play();
         }
     }
@@ -67,6 +71,7 @@ public class MusicPlayerController implements MusicPlayerControllerApi {
     public void playSongList(SongsMessage message) {
         Logger.d("%s playSongList : " + message.getSongs(), TAG);
         Song currentSong = playlist.currentPlayingSong();
+        boolean isPlaying = musicPlayer.isPlaying();
         List<Song> songs = new ArrayList<>();
         if (message.getSongs() != null) {
             for (Object obj : message.getSongs()) {
@@ -76,7 +81,7 @@ public class MusicPlayerController implements MusicPlayerControllerApi {
             }
         }
         playlist.replaceAll(songs);
-        if (musicPlayer.isPlaying() && (currentSong == null || !songs.contains(currentSong))) {
+        if (!isPlaying || currentSong == null || !songs.contains(currentSong)) {
             musicPlayer.stop();
         }
         musicPlayer.play();

@@ -1,11 +1,12 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:second_music/entity/enum.dart';
 import 'package:second_music/entity/playing_progress.dart';
 import 'package:second_music/entity/song.dart';
-import 'package:second_music/page/play/model.dart';
 import 'package:second_music/player/music_messages.dart';
 import 'package:second_music/player/message_extension.dart';
+import 'package:second_music/repository/remote/platform/music_provider.dart';
 
 enum PlayerState {
   PREPARED,
@@ -27,6 +28,8 @@ class MusicPlayer implements MusicPlayerCallbackApi {
     return _instance;
   }
 
+  //缓存包含完整歌曲信息的原始歌曲
+  var _songsCache = SongsCache();
   var _musicPlayerApi = new MusicPlayerControllerApi();
 
   MusicPlayer._() {
@@ -71,13 +74,13 @@ class MusicPlayer implements MusicPlayerCallbackApi {
   }
 
   @override
-  void onPlayingSongListChanged(SongsMessage message) {
-    this._setPlayingSongList(message.toSongs());
+  void onShowingSongListChanged(SongsMessage message) {
+    this._setShowingSongList(_songsCache.getCachedSongs(message));
   }
 
   @override
-  void onShowingSongListChanged(SongsMessage message) {
-    this._setShowingSongList(message.toSongs());
+  void onPlayingSongListChanged(SongsMessage message) {
+    this._setPlayingSongList(_songsCache.getCachedSongs(message));
   }
 
   @override
@@ -88,13 +91,13 @@ class MusicPlayer implements MusicPlayerCallbackApi {
 
   @override
   void onPlayingSongChanged(SongMessage message) {
-    this._setCurrentSong(Song.fromMessage(message));
+    this._setCurrentSong(_songsCache.getCachedSong(message));
   }
 
   //=======  callback api  ======
 
-  //==============当前展示的播放列表===============
-  var _showingSongList = List<Song>.empty();
+  //==============当前展示的播放列表中的歌曲，按照加入的书序排列===============
+  var _showingSongList = <Song>[];
 
   List<Song> get showingSongList => _showingSongList;
   var _showingSongListController = StreamController<List<Song>>.broadcast();
@@ -110,9 +113,9 @@ class MusicPlayer implements MusicPlayerCallbackApi {
     _showingSongListController.add(songs);
   }
 
-  //==============当前真正播放中的歌曲列表=============
+  //==============当前真正播放中的歌曲列表，按照播放顺序排列=============
 
-  var _playingSongList = List<Song>.empty();
+  var _playingSongList = <Song>[];
 
   List<Song> get playingSongList => _playingSongList;
   var _playingSongListController = StreamController<List<Song>>.broadcast();
@@ -127,6 +130,8 @@ class MusicPlayer implements MusicPlayerCallbackApi {
     _playingSongList = songs;
     _playingSongListController.add(songs);
     _resetCurrentIndex();
+    print(
+        "musicPlayer: _setPlayingSongList, resetCurrentIndex, currentIndex=$_currentIndex, currentSong=${currentSong?.name}");
   }
 
   // ===============当前播放的歌曲================
@@ -146,6 +151,8 @@ class MusicPlayer implements MusicPlayerCallbackApi {
     this._currentSong = song;
     this._currentSongController.add(song);
     _resetCurrentIndex();
+    print(
+        "musicPlayer: setCurrentSong, resetCurrentIndex, currentIndex=$_currentIndex, currentSong=${song?.name}");
   }
 
   int _currentIndex;
@@ -212,38 +219,6 @@ class MusicPlayer implements MusicPlayerCallbackApi {
     _playingProgressController.add(progress);
   }
 
-  //当前播放歌曲的进度
-  var _currentPosition = 0;
-
-  int get currentPosition => _currentPosition;
-  var _currentPositionController = StreamController<int>.broadcast();
-
-  Stream<int> get currentPositionStream => _currentPositionController.stream;
-
-  void _setCurrentPosition(int positionInSeconds) {
-    if (_currentPosition == positionInSeconds) {
-      return;
-    }
-    _currentPosition = positionInSeconds;
-    _currentPositionController.add(positionInSeconds);
-  }
-
-  //当前播放的歌曲的时长
-  var _currentDuration = 0;
-
-  int get currentDuration => _currentDuration;
-  var _currentDurationController = StreamController<int>.broadcast();
-
-  Stream<int> get currentDurationStream => _currentDurationController.stream;
-
-  void _setCurrentDuration(int durationInSeconds) {
-    if (_currentDuration == durationInSeconds) {
-      return;
-    }
-    _currentDuration = durationInSeconds;
-    _currentDurationController.add(durationInSeconds);
-  }
-
   void seekTo(int seconds) {
     var positionMessage = new PositionMessage();
     positionMessage.position = seconds;
@@ -253,10 +228,15 @@ class MusicPlayer implements MusicPlayerCallbackApi {
   // ===========播放控制==========
   void playSongList(List<Song> songs) {
     _musicPlayerApi.playSongList(songs.toMessage());
+    _songsCache.replaceSongs(songs);
   }
 
-  void playSong(Song song) {
+  void playSong(Song song) async {
+    if (song.streamUrl == null || song.streamUrl.isEmpty) {
+      await MusicProvider(song.plt).parseTrack(song);
+    }
     _musicPlayerApi.playSong(song.toMessage());
+    _songsCache.addSong(song);
   }
 
   void playNext() {
@@ -292,35 +272,43 @@ class MusicPlayer implements MusicPlayerCallbackApi {
     _musicPlayerApi.setPlayMode(playModeMessage);
   }
 
-  void addSongToPlaylistNext(Song song) {
+  void addSongToPlaylistNext(Song song) async {
+    if (song.streamUrl == null || song.streamUrl.isEmpty) {
+      await MusicProvider(song.plt).parseTrack(song);
+    }
     _musicPlayerApi.addSongToPlaylistNext(song.toMessage());
+    _songsCache.addSong(song);
   }
 
   void deleteSongFromPlaylist(Song song) {
     _musicPlayerApi.deleteSongFromPlaylist(song.toMessage());
+    _songsCache.deleteSong(song);
   }
 
   void clearPlaylist() {
     _musicPlayerApi.clearPlaylist();
+    _songsCache.clear();
   }
 
   //PlayControllers
-  var _songControllerModels = <SongControllerModel>[];
+  var _playingSongListControllerModels = <SongListController>[];
 
-  void registerSongControllerModel(SongControllerModel model) {
-    _songControllerModels.add(model);
+  void registerSongControllerModel(SongListController model) {
+    _playingSongListControllerModels.add(model);
   }
 
-  void unregisterSongControllerModel(SongControllerModel model) {
-    _songControllerModels.remove(model);
+  void unregisterSongControllerModel(SongListController model) {
+    _playingSongListControllerModels.remove(model);
   }
 
   void playIndexWithoutAnimation(int index,
-      {SongControllerModel withoutModel}) async {
+      {SongListController withoutModel}) async {
     if (index == null || index >= _playingSongList.length) return;
     if (currentIndex == index) return;
 
-    for (var model in _songControllerModels) {
+    this._currentIndex = index;
+
+    for (var model in _playingSongListControllerModels) {
       if (model != withoutModel) {
         model.jumpTo(index);
       }
@@ -330,4 +318,53 @@ class MusicPlayer implements MusicPlayerCallbackApi {
   }
 //=============== utils ===============
 
+}
+
+abstract class SongListController {
+  void jumpTo(int index);
+}
+
+//歌曲缓存器
+class SongsCache {
+  var _unorderedSongs = LinkedHashMap<String, Song>();
+
+  Map<String, Song> get unorderedSongs => _unorderedSongs;
+
+  void replaceSongs(List<Song> songs) {
+    var newMap = LinkedHashMap<String, Song>();
+    for (var song in songs) {
+      newMap[song.uniqueId] = song;
+    }
+    _unorderedSongs.clear();
+    _unorderedSongs.addAll(newMap);
+  }
+
+  void addSong(Song song) {
+    _unorderedSongs[song.uniqueId] = song;
+  }
+
+  void deleteSong(Song song) {
+    _unorderedSongs.remove(song.uniqueId);
+  }
+
+  void clear() {
+    _unorderedSongs.clear();
+  }
+
+  List<Song> getCachedSongs(SongsMessage message) {
+    var cachedSongs = <Song>[];
+    for (var song in message.songs) {
+      if (song is Map) {
+        var uniqueId = song['plt'].toString() + song['id'].toString();
+        if (_unorderedSongs.containsKey(uniqueId)) {
+          cachedSongs.add(_unorderedSongs[uniqueId]);
+        }
+      }
+    }
+    return cachedSongs;
+  }
+
+  Song getCachedSong(SongMessage message) {
+    return _unorderedSongs[message.uniqueId];
+  }
 }

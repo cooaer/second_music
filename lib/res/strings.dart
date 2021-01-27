@@ -250,8 +250,9 @@ class AppLocalizations {
 
   // 播放
 
-  String playPosition(int seconds) {
-    seconds = seconds ?? 0;
+  String playPosition(int millSeconds) {
+    millSeconds = millSeconds != null || millSeconds >= 0 ? millSeconds : 0;
+    var seconds = (millSeconds / 1000).round();
     var minute = (seconds / 60).floor();
     var second = seconds % 60;
     return minute.toString().padLeft(2, '0') + ':' + second.toString().padLeft(2, '0');

@@ -11,6 +11,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import com.orhanobut.logger.Logger;
+
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 
@@ -37,6 +39,7 @@ public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener {
     private boolean isPlaying = false;
     private boolean isPausedByUser = false;
     private boolean isPrepared = false;
+    private boolean isReleased = false;
     private int shouldSeekTo = -1;
 
     private Handler durationHandler;
@@ -47,17 +50,16 @@ public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener {
 
     public MusicPlayer(Context context) {
         this.context = context;
-        initMediaPlayer();
+        durationHandler = new Handler(Looper.myLooper());
     }
 
-    private void initMediaPlayer() {
-        player = new MediaPlayer();
-        durationHandler = new Handler(Looper.myLooper());
-
+    private MediaPlayer createMediaPlayer() {
+        MediaPlayer player = new MediaPlayer();
         player.setOnPreparedListener(this::onPlayerPrepared);
         player.setOnCompletionListener(this::onPlayerCompletion);
         player.setOnErrorListener(this::onPlayerError);
         player.setOnSeekCompleteListener(this::onPlayerSeekComplete);
+        return player;
     }
 
     public void setCallbackApi(MusicPlayerCallbackApi callbackApi) {
@@ -82,13 +84,13 @@ public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener {
             shouldSeekTo = -1;
         }
 
+        onPlayerStateChanged("prepared");
+
         if (isPlaying) {
             player.start();
             onPlayerStateChanged("playing");
             listenPositionChanged();
         }
-
-        onPlayerStateChanged("prepared");
     }
 
     private void onPlayerCompletion(MediaPlayer player) {
@@ -155,6 +157,7 @@ public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener {
 
     public void play() {
         AudioManager audioManager = getAudioManager();
+        int requestFocusResult;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             AudioFocusRequest.Builder builder = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN);
             builder.setAudioAttributes(new AudioAttributes.Builder()
@@ -164,12 +167,12 @@ public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener {
                     .setOnAudioFocusChangeListener(this);
             this.audioFocusRequest = builder.build();
             //再次注册会覆盖之前注册的音频焦点请求
-            audioManager.requestAudioFocus(this.audioFocusRequest);
+            requestFocusResult = audioManager.requestAudioFocus(this.audioFocusRequest);
         } else {
-            int result = audioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-            if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-                playInternal();
-            }
+            requestFocusResult = audioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+        }
+        if (requestFocusResult == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            playInternal();
         }
     }
 
@@ -209,7 +212,8 @@ public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener {
         }
         onPlayingSongChanged(song);
         try {
-            player.setDataSource(context, Uri.parse(song.streamUrl));
+            this.player = createMediaPlayer();
+            this.player.setDataSource(context, Uri.parse(song.streamUrl));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -238,11 +242,15 @@ public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener {
         } else {
             audioManager.abandonAudioFocus(this);
         }
-        player.stop();
+        if(player != null){
+            player.stop();
+            player.release();
+        }
         onPlayerStateChanged("stopped");
         isPlaying = false;
         isPrepared = false;
         removePositionChangedCallback();
+        player = null;
     }
 
     public void seekTo(int position) {
@@ -257,9 +265,6 @@ public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener {
 
     // listen duration change
     private void listenPositionChanged() {
-        if (updatePositionCallback != null) {
-            return;
-        }
         updatePositionCallback = new UpdatePositionCallback(this);
         durationHandler.postDelayed(updatePositionCallback, 300);
     }
@@ -273,6 +278,7 @@ public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener {
             MusicMessages.PositionMessage message = new MusicMessages.PositionMessage();
             message.setPosition((long) player.getCurrentPosition());
             message.setDuration((long) player.getDuration());
+//            Logger.d("%s updatePosition , position : %s, duration %s", TAG, message.getPosition().toString(), message.getDuration().toString());
             callbackApi.onPositionChanged(message, reply -> {
             });
         }
@@ -292,7 +298,7 @@ public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener {
                 return;
             }
             ref.get().updatePosition();
-            ref.get().listenPositionChanged();
+            ref.get().durationHandler.postDelayed(this, 300);
         }
     }
 

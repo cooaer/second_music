@@ -73,6 +73,7 @@ public class Playlist implements MusicPlayer.MusicPlayerSongDelegate {
         if (song == null) {
             return;
         }
+        Song currentSong = currentPlayingSong();
         SongNode node = new SongNode(song);
         SongNode prev = current;
         SongNode next = current != null ? current.next : null;
@@ -91,7 +92,12 @@ public class Playlist implements MusicPlayer.MusicPlayerSongDelegate {
             node.next = next;
         }
 
-        songs.add(song);
+        int currentIndex;
+        if (currentSong != null && (currentIndex = songs.indexOf(currentSong)) != -1) {
+            songs.add(currentIndex + 1, song);
+        } else {
+            songs.add(song);
+        }
 
         onShowingSongListChanged();
         onPlayingSongListChanged();
@@ -182,7 +188,11 @@ public class Playlist implements MusicPlayer.MusicPlayerSongDelegate {
                 newCurrent = tail;
             }
         }
-        nodes[0] = head.next;
+        head = head.next;
+        if (head != null) {
+            head.prev = null;
+        }
+        nodes[0] = head;
         nodes[1] = tail;
         nodes[2] = newCurrent;
         return nodes;
