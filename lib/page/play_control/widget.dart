@@ -130,15 +130,15 @@ class _PlayingListTitle extends StatelessWidget {
   }
 
   void _addAllToSongList(BuildContext context) async {
-    var mySongListDao = MySongListDao();
-    var songLists = await mySongListDao.queryAllSongListWithoutSongs(
-        plt: MusicPlatforms.local);
+    var songDao = SongDao();
+    var songLists =
+        await songDao.queryAllSongListWithoutSongs(plt: MusicPlatforms.local);
     var songList = await selectSongList(context, songLists);
     if (songList == null) {
       return;
     }
     var songs = MusicService.instance.showingSongList;
-    await mySongListDao.addSongsToSongList(songList.id, songs);
+    await songDao.addSongsToSongList(songList.id, songs);
     mySongList.notifyMySongListChanged();
   }
 }

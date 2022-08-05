@@ -10,7 +10,7 @@ class SearchModel {
   late List<String> _searchKeywords;
 
   SearchModel() {
-    _searchKeywords = PlayingStorage.instance.searchKeywords();
+    _searchKeywords = PlayingStorage.instance.searchKeywords;
   }
 
   var _searchEditingController = TextEditingController();

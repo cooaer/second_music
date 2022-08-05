@@ -14,3 +14,12 @@ class SongListJoinSong {
     );
   }
 }
+
+class PlayingSong {
+  final int songId;
+  final DateTime addedTime;
+
+  PlayingSong(this.songId, this.addedTime);
+
+  PlayingSong.fromDb(this.songId, this.addedTime);
+}

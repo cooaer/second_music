@@ -17,7 +17,7 @@ class SongListModel {
   final String songListId;
   final SongListType songListType;
 
-  var _mySongListDao = MySongListDao();
+  var _songDao = SongDao();
 
   SongListModel(this.plt, this.songListId, this.songListType);
 
@@ -28,7 +28,7 @@ class SongListModel {
 
   void refresh() async {
     SongList? songList =
-        await _mySongListDao.getSongList(plt, songListId, songListType);
+        await _songDao.getSongList(plt, songListId, songListType);
     debugPrint(
         "refreshSongList: local, isCollected = $_isCollected, songTotal = ${songList?.songTotal}");
 
@@ -40,7 +40,7 @@ class SongListModel {
       songList =
           await MusicProvider(musicPlatform).songList(songListType, songListId);
       debugPrint(
-          "refreshSongList: remote, isCollected = $_isCollected, songTotal = ${songList?.songTotal}");
+          "refreshSongList: remote, isCollected = $_isCollected, songTotal = ${songList.songTotal}");
     }
 
     if (songList != null) {
@@ -63,14 +63,14 @@ class SongListModel {
   Stream<bool> get isCollectedStream => _isCollectedController.stream;
 
   /// 收藏歌单，保存歌单到数据库
-  Future togglePlaylistCollection(SongList songList) async {
+  Future<void> togglePlaylistCollection(SongList songList) async {
     _isCollectedController.add(!_isCollected);
     var result = false;
     if (_isCollected) {
-      result = await _mySongListDao.deleteSongList(songList.id);
+      result = await _songDao.deleteSongList(songList.id);
       _isCollected = false;
     } else {
-      result = await _mySongListDao.saveSongList(songList);
+      result = await _songDao.saveSongList(songList);
       _isCollected = true;
     }
     debugPrint(

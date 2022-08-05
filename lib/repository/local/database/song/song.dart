@@ -109,8 +109,21 @@ class SongListJoinSongTable extends Table {
   Set<Column> get primaryKey => {songListId, songId};
 }
 
+@UseRowClass(PlayingSong, constructor: "fromDb")
+class PlayingSongTable extends Table {
+  @override
+  String get tableName => "playing_song";
+
+  IntColumn get songId => integer()();
+
+  DateTimeColumn get addedTime => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {songId};
+}
+
 @DriftDatabase(
-  tables: [SongListTable, SongTable, SongListJoinSongTable],
+  tables: [SongListTable, SongTable, SongListJoinSongTable, PlayingSongTable],
 )
 class SongDatabase extends _$SongDatabase {
   SongDatabase() : super(_openConnection());

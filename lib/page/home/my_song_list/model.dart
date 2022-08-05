@@ -50,7 +50,7 @@ class MySongListModel {
         .toList();
   }
 
-  var _mySongListDao = MySongListDao();
+  var _songDao = SongDao();
 
   MySongListModel._();
 
@@ -60,22 +60,21 @@ class MySongListModel {
 
   //我的所有歌单
   Future refresh() async {
-    List<SongList> songLists =
-        await _mySongListDao.queryAllSongListWithoutSongs();
+    List<SongList> songLists = await _songDao.queryAllSongListWithoutSongs();
     _mySongListController.add(songLists);
   }
 
   //创建歌单
   Future<bool> createSongList(String title) async {
     if (title.isEmpty) return false;
-    var result = await _mySongListDao.createSongList(title);
+    var result = await _songDao.createSongList(title);
     await refresh();
     return result;
   }
 
   //删除歌单（删除没有从属某个歌单且没有播放时间的歌曲）
   Future<bool> deleteSongList(int songListId) async {
-    var result = await _mySongListDao.deleteSongList(songListId);
+    var result = await _songDao.deleteSongList(songListId);
     await refresh();
     return result;
   }

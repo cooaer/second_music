@@ -21,32 +21,32 @@ class PlaySongListModel {
   }
 
   void _onPageChanged() {
-    if (_pageController.positions.isEmpty) {
+    if (_pageController.positions.length != 1) {
       return;
     }
     final realPageIndex = _pageController.page!.round();
-    final playlistIndex = MusicService.instance.currentIndex;
-    if (realPageIndex == playlistIndex) {
+    final playingIndex = MusicService.instance.playingIndex;
+    if (playingIndex < 0 || realPageIndex == playingIndex) {
       return;
     }
     debugPrint(
-        "onPageChanged, realPageIndex = $realPageIndex, playlistIndex = $playlistIndex");
+        "onPageChanged, realPageIndex = $realPageIndex, playingIndex = $playingIndex");
     MusicService.instance.playSongWithPlayingIndicesIndex(realPageIndex);
   }
 
   void _onPlayerCurrentIndexChanged(int showingListIndex) {
-    if (_pageController.positions.isEmpty) {
+    if (_pageController.positions.length != 1) {
       return;
     }
     final realPageIndex = _pageController.page!.round();
-    final realShowingListIndex =
-        MusicService.instance.playingIndices[realPageIndex];
-    if (showingListIndex == realShowingListIndex) {
+    final playingIndex = MusicService.instance
+        .convertShowingListIndexToPlayingIndex(showingListIndex);
+    if (playingIndex < 0 || realPageIndex == playingIndex) {
       return;
     }
     debugPrint(
-        "onPlayerCurrentIndexChanged, pageIndex = $realPageIndex, playlistIndex = $showingListIndex");
-    _pageController.jumpToPage(showingListIndex);
+        "onPlayerCurrentIndexChanged, pageIndex = $realPageIndex, showingListIndex = $showingListIndex, playingIndex = $playingIndex");
+    _pageController.jumpToPage(playingIndex);
   }
 
   void dispose() {
@@ -57,7 +57,7 @@ class PlaySongListModel {
 class SongModel {
   final Song song;
 
-  final _mySongListDao = MySongListDao();
+  final _songDao = SongDao();
 
   SongModel(this.song) {
     refresh();
@@ -65,7 +65,7 @@ class SongModel {
 
   void refresh() async {
     _isFavorite =
-        await _mySongListDao.isSongInFavoriteList(song.plt.name, song.pltId);
+        await _songDao.isSongInFavoriteList(song.plt.name, song.pltId);
     _isFavoriteController.add(_isFavorite);
   }
 
@@ -81,12 +81,12 @@ class SongModel {
     _isFavoriteController.add(!_isFavorite);
     var isSuccessful = false;
     if (isFavorite) {
-      isSuccessful = await _mySongListDao.deleteSongFromSongList(
-          SongList.FAVOR_ID, song.id);
+      isSuccessful =
+          await _songDao.deleteSongFromSongList(SongList.FAVOR_ID, song.id);
       if (isSuccessful) _isFavorite = false;
     } else {
       final addedSongs =
-          await _mySongListDao.addSongsToSongList(SongList.FAVOR_ID, [song]);
+          await _songDao.addSongsToSongList(SongList.FAVOR_ID, [song]);
       isSuccessful = addedSongs == 1;
       if (isSuccessful) _isFavorite = true;
     }

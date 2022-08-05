@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:dart_extensions_methods/dart_extension_methods.dart';
+import 'package:flutter/foundation.dart';
 import 'package:second_music/app.dart';
 import 'package:second_music/common/json.dart';
 import 'package:second_music/entity/album.dart';
@@ -49,24 +51,106 @@ class QQMusic extends BaseMusicProvider {
 
   @override
   Future<bool> parseTrack(Song song) async {
-    final url = 'https://u.y.qq.com/cgi-bin/musicu.fcg?loginUin=0&'
-        'hostUin=0&format=json&inCharset=utf8&outCharset=utf-8&notice=0&'
-        'platform=yqq.json&needNewCode=0&data=%7B%22req_0%22%3A%7B%22'
-        'module%22%3A%22vkey.GetVkeyServer%22%2C%22method%22%3A%22'
-        'CgiGetVkey%22%2C%22param%22%3A%7B%22guid%22%3A%2210000%22%2C%22songmid%22%3A%5B%22'
-        '${song.pltId}%22%5D%2C%22songtype%22%3A%5B0%5D%2C%22uin%22%3A%220%22%2C%22loginflag%22'
-        '%3A1%2C%22platform%22%3A%2220%22%7D%7D%2C%22comm%22%3A%7B%22uin%22%3A0%2C%22'
-        'format%22%3A%22json%22%2C%22ct%22%3A20%2C%22cv%22%3A0%7D%7D';
-
-    final response = await httpMaker({
-      HttpMakerParams.url: url,
-      HttpMakerParams.method: HttpMakerParams.methodGet
-    });
-    final respJson = json.decode(response);
-    if (respJson == null) return false;
-    song.streamUrl = respJson['req_0']['data']['sip'].first +
-        respJson['req_0']['data']['midurlinfo'].first['purl'];
+    await _parseStreamUrl([song]);
     return true;
+  }
+
+  Future<void> _parseStreamUrl(List<Song> songs) async {
+    final _parseStreamUrlInternal = (List<Song> songs) async {
+      final url = 'https://u.y.qq.com/cgi-bin/musicu.fcg';
+      final guid = '10000';
+      final songIdList = songs.map((song) => song.pltId).toList();
+      final uin = '0';
+
+      final fileType = '128';
+      final fileConfig = {
+        'm4a': {
+          's': 'C400',
+          'e': '.m4a',
+          'bitrate': 'M4A',
+        },
+        '128': {
+          's': 'M500',
+          'e': '.mp3',
+          'bitrate': '128kbps',
+        },
+        '320': {
+          's': 'M800',
+          'e': '.mp3',
+          'bitrate': '320kbps',
+        },
+        'ape': {
+          's': 'A000',
+          'e': '.ape',
+          'bitrate': 'APE',
+        },
+        'flac': {
+          's': 'F000',
+          'e': '.flac',
+          'bitrate': 'FLAC',
+        },
+      };
+      final fileInfo = fileConfig[fileType];
+      final fileNames = songs
+          .map((song) =>
+              "${fileInfo?['s']}${song.pltId}${song.pltId}${fileInfo?['e']}")
+          .toList();
+
+      final reqData = {
+        'req_0': {
+          'module': 'vkey.GetVkeyServer',
+          'method': 'CgiGetVkey',
+          'param': {
+            'filename': fileNames,
+            'guid': guid,
+            'songmid': songIdList,
+            'songtype': [0],
+            'uin': uin,
+            'loginflag': 1,
+            'platform': '20',
+          },
+        },
+        'loginUin': uin,
+        'comm': {
+          'uin': uin,
+          'format': 'json',
+          'ct': 24,
+          'cv': 0,
+        },
+      };
+      final params = {
+        'format': 'json',
+        'data': jsonEncode(reqData),
+      };
+
+      final httpResult = await httpMaker({
+        HttpMakerParams.url: url,
+        HttpMakerParams.method: HttpMakerParams.methodGet,
+        HttpMakerParams.data: params,
+      });
+
+      debugPrint("QQMusic.parseStreamUrl, httpResult = $httpResult");
+      final Map<String, dynamic>? respJson = json.decode(httpResult);
+      final List<dynamic>? sips = respJson?['req_0']?['data']?['sip'];
+      final String baseUrl = sips.isNotNullOrEmpty() ? sips!.first : "";
+      final List<dynamic>? midUrlInfos =
+          respJson?['req_0']?['data']?['midurlinfo'];
+      if (midUrlInfos == null) {
+        return;
+      }
+      final Map<String, String> idUrls = Map.fromIterable(midUrlInfos,
+          key: (item) => item['songmid'], value: (item) => item['purl']);
+      for (var song in songs) {
+        song.streamUrl = baseUrl + (idUrls[song.pltId] ?? "");
+      }
+    };
+
+    var startIndex = 0;
+    while (startIndex < songs.length) {
+      _parseStreamUrlInternal(
+          songs.sublist(startIndex, min(startIndex + 20, songs.length)));
+      startIndex += 20;
+    }
   }
 
   @override
@@ -90,6 +174,7 @@ class QQMusic extends BaseMusicProvider {
 
     final songs =
         await Future.wait(listJson.map((item) => _convertSong2(item)));
+    await _parseStreamUrl(songs);
 
     final singer = Singer()
       ..plt = MusicPlatform.qq
@@ -142,6 +227,7 @@ class QQMusic extends BaseMusicProvider {
 
     final listJson = Json.getList(dataCdlist0, 'songlist');
     final songList = await Future.wait(listJson.map((e) => _convertSong(e)));
+    await _parseStreamUrl(songList);
 
     final playlist = Playlist();
     playlist.id = listId;
@@ -232,6 +318,10 @@ class QQMusic extends BaseMusicProvider {
       HttpMakerParams.method: HttpMakerParams.methodGet
     });
 
+    if (response.isEmpty) {
+      return SearchResult();
+    }
+
     final respJson = json.decode(response);
     final dataJson = Json.getMap(respJson, 'data');
 
@@ -252,6 +342,7 @@ class QQMusic extends BaseMusicProvider {
       final songJson = Json.getMap(dataJson, 'song');
       final listJson = Json.getList(songJson, 'list');
       final songs = await Future.wait(listJson.map((e) => _convertSong2(e)));
+      await _parseStreamUrl(songs);
 
       result.total = Json.getInt(songJson, 'totalnum');
       result.items = songs;
@@ -316,7 +407,7 @@ class QQMusic extends BaseMusicProvider {
       ..singers = singerList
       ..album = album;
 
-    await parseTrack(song);
+    // await parseTrack(song);
 
     return song;
   }
@@ -346,7 +437,7 @@ class QQMusic extends BaseMusicProvider {
       ..singers = singerList
       ..album = album;
 
-    await parseTrack(song);
+    // await parseTrack(song);
 
     return song;
   }

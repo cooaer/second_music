@@ -103,15 +103,14 @@ class _SongMenu extends StatelessWidget {
   void _playNext() {}
 
   void _addToSongList(BuildContext context) async {
-    var mySongListDao = MySongListDao();
-    var songLists = await mySongListDao.queryAllSongListWithoutSongs(
-        plt: MusicPlatforms.local);
+    var songDao = SongDao();
+    var songLists =
+        await songDao.queryAllSongListWithoutSongs(plt: MusicPlatforms.local);
     var songList = await selectSongList(context, songLists);
     if (songList == null) {
       return;
     }
-    final result =
-        (await mySongListDao.addSongsToSongList(songList.id, [song])) > 0;
+    final result = (await songDao.addSongsToSongList(songList.id, [song])) > 0;
     debugPrint("songMenu.addToSongList, result = $result");
     notifyMySongListChanged();
   }
@@ -120,8 +119,8 @@ class _SongMenu extends StatelessWidget {
     if (songList == null || songListModel == null) {
       return;
     }
-    var _mySongListDao = MySongListDao();
-    await _mySongListDao.deleteSongFromSongList(songList!.id, song.id);
+    var _songDao = SongDao();
+    await _songDao.deleteSongFromSongList(songList!.id, song.id);
     songListModel!.refresh();
     notifyMySongListChanged();
   }

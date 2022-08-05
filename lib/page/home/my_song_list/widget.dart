@@ -65,8 +65,8 @@ void _createPlaylist(BuildContext context, String text) async {
     return;
   }
   Navigator.of(context).pop();
-  var songListDao = MySongListDao();
-  await songListDao.createSongList(text);
+  var songDao = SongDao();
+  await songDao.createSongList(text);
   notifyMySongListChanged();
 }
 
@@ -149,8 +149,8 @@ class _SongMenu extends StatelessWidget {
   }
 
   void _deleteSongList() async {
-    var _mySongListDao = MySongListDao();
-    await _mySongListDao.deleteSongList(songList.id);
+    var _songDao = SongDao();
+    await _songDao.deleteSongList(songList.id);
     notifyMySongListChanged();
   }
 }

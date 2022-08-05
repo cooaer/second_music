@@ -41,7 +41,7 @@ class SearchHistoryWidget extends StatelessWidget {
             ],
           ),
           StreamBuilder(
-            initialData: PlayingStorage.instance.searchKeywords(),
+            initialData: PlayingStorage.instance.searchKeywords,
             stream: searchModel.keywordHistoryStream,
             builder: (context, AsyncSnapshot<List<String>> snapshot) {
               return Wrap(

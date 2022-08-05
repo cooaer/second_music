@@ -7,6 +7,7 @@ import 'package:just_audio_background/just_audio_background.dart';
 import 'package:second_music/entity/enum.dart';
 import 'package:second_music/entity/playing_progress.dart';
 import 'package:second_music/entity/song.dart';
+import 'package:second_music/repository/local/database/song/dao.dart';
 import 'package:second_music/repository/local/preference/playing.dart';
 import 'package:second_music/repository/remote/platform/music_provider.dart';
 
@@ -31,6 +32,8 @@ class MusicService {
   final _audioPlayer = AudioPlayer();
   ConcatenatingAudioSource? _playlist;
 
+  final _songDao = SongDao();
+
   MusicService._() {
     _initPlayer();
   }
@@ -45,7 +48,8 @@ class MusicService {
 
     _listenStateChanged();
 
-    _initPlayMode();
+    await _initPlayingSongs();
+    await _initPlayMode();
   }
 
   void _listenStateChanged() {
@@ -69,9 +73,27 @@ class MusicService {
         .listen(_onShuffleModeChanged, onError: _onStreamError);
   }
 
-  void _initPlayMode() {
-    _playMode = PlayingStorage.instance.playMode();
-    setAudioPlayerPlayMode(_playMode);
+  Future<void> _initPlayMode() async {
+    _playMode = PlayingStorage.instance.playMode;
+    await setAudioPlayerPlayMode(_playMode);
+  }
+
+  Future<void> _initPlayingSongs() async {
+    final playingSongId = PlayingStorage.instance.playingSongId;
+    final playingSongPosition = PlayingStorage.instance.playingSongPosition;
+    final playingSongs = await _songDao.getPlayingSongs();
+
+    _allSongs = Map.fromIterable(playingSongs,
+        key: (song) => song.uniqueId, value: (song) => song);
+    await _createAndSetPlayList(playingSongs);
+    var lastIndex = playingSongs.indexWhere((song) => song.id == playingSongId);
+    var lastPosition = playingSongPosition;
+    if (lastIndex == -1) {
+      lastIndex = 0;
+      lastPosition = 0;
+    }
+    await _audioPlayer.seek(Duration(milliseconds: lastPosition),
+        index: lastIndex);
   }
 
   //=======  callback api  =======
@@ -181,7 +203,7 @@ class MusicService {
   }
 
   //==============当前展示的播放列表中的歌曲，按照加入的顺序排列===============
-  final _allSongs = <String, Song>{};
+  var _allSongs = <String, Song>{};
 
   int get playlistSize => _showingSongList.length;
 
@@ -228,34 +250,9 @@ class MusicService {
     _playingIndicesController.add(_playingIndices);
   }
 
-  // var _shuffleIndices = <int>[];
-  //
-  // var _playingSongList = <Song>[];
-  //
-  // List<Song> get playingSongList => _playingSongList;
-  // var _playingSongListController = StreamController<List<Song>>.broadcast();
-  //
-  // Stream<List<Song>> get playingSongListStream =>
-  //     _playingSongListController.stream;
-  //
-  // void _setPlayingSongList(List<int> indices) {
-  //   if (_shuffleIndices == indices) {
-  //     return;
-  //   }
-  //   _shuffleIndices = indices;
-  //   List<Song> songList;
-  //   switch (_playMode) {
-  //     case PlayMode.repeatOne:
-  //     case PlayMode.repeat:
-  //       songList = _showingSongList;
-  //       break;
-  //     case PlayMode.random:
-  //       songList = indices.map((index) => _showingSongList[index]).toList();
-  //       break;
-  //   }
-  //   _playingSongList = songList;
-  //   _playingSongListController.add(songList);
-  // }
+  int convertShowingListIndexToPlayingIndex(int showingIndex) {
+    return _playingIndices.indexOf(showingIndex);
+  }
 
   // ===============当前播放的歌曲================
 
@@ -279,8 +276,12 @@ class MusicService {
     }
     _currentIndex = index;
     _currentIndexController.add(index);
-    debugPrint("setCurrentIndex: currentSong = ${currentSong?.name}");
+    debugPrint(
+        "setCurrentIndex: currentSong = ${currentSong?.name}, streamUrl = ${currentSong?.streamUrl}");
+    PlayingStorage.instance.savePlayingSongId(currentSong?.id ?? 0);
   }
+
+  int get playingIndex => convertShowingListIndexToPlayingIndex(_currentIndex);
 
   //===========播放状态===========
   var _playerState = PlayerState.idle;
@@ -340,6 +341,7 @@ class MusicService {
     }
     if (position != null) {
       this._playingProgress.position = position.inMilliseconds;
+      PlayingStorage.instance.savePlayingSongPosition(position.inMilliseconds);
     }
     if (_playingProgress.position > _playingProgress.duration) {
       _playingProgress.duration = _playingProgress.position;
@@ -375,10 +377,8 @@ class MusicService {
   }
 
   Future<void> playSongList(List<Song> songs) async {
-    _allSongs.clear();
-    for (var song in songs) {
-      _allSongs[song.uniqueId] = song;
-    }
+    _allSongs = Map.fromIterable(songs,
+        key: (song) => song.uniqueId, value: (song) => song);
     if (_playlist == null) {
       await _createAndSetPlayList(songs);
     } else {
@@ -386,6 +386,11 @@ class MusicService {
       await _playlist!.addAll(songs.map((e) => e.toAudioSource()).toList());
     }
     await _audioPlayer.seek(Duration.zero, index: _playingIndices[0]);
+    await _audioPlayer.play();
+
+    //替换playingSongs的缓存
+    await _songDao.deleteAllPlayingSongs();
+    await _songDao.savePlayingSongs(songs);
   }
 
   Future<void> _createAndSetPlayList(List<Song> songs) async {
@@ -418,20 +423,28 @@ class MusicService {
       songIndex = playlistSize - 1;
     }
     await _audioPlayer.seek(Duration.zero, index: songIndex);
+    await _audioPlayer.play();
+
+    //添加歌曲到缓存
+    await _songDao.savePlayingSong(song);
   }
 
   Future<void> playSongWithShowingListIndex(int index) async {
     if (currentIndex == index) {
+      _audioPlayer.play();
       return;
     }
     await _audioPlayer.seek(Duration.zero, index: index);
+    await _audioPlayer.play();
   }
 
   Future<void> playSongWithPlayingIndicesIndex(int index) async {
     if (currentIndex == _playingIndices[index]) {
+      _audioPlayer.play();
       return;
     }
     await _audioPlayer.seek(Duration.zero, index: _playingIndices[index]);
+    await _audioPlayer.play();
   }
 
   Future<void> playNext() async {
@@ -441,8 +454,9 @@ class MusicService {
           "musicService.playNext, error, currentIndexIndex = $currentIndexIndex");
       return;
     }
-    final nextIndex = _playingIndices[currentIndexIndex + 1];
+    final nextIndex = _playingIndices[(currentIndexIndex + 1) % playlistSize];
     await _audioPlayer.seek(Duration.zero, index: nextIndex);
+    await _audioPlayer.play();
   }
 
   Future<void> playPrev() async {
@@ -452,8 +466,9 @@ class MusicService {
           "musicService.playPrev, error, currentIndexIndex = $currentIndexIndex");
       return;
     }
-    final prevIndex = _playingIndices[currentIndexIndex - 1];
+    final prevIndex = _playingIndices[(currentIndexIndex - 1) % playlistSize];
     await _audioPlayer.seek(Duration.zero, index: prevIndex);
+    await _audioPlayer.play();
   }
 
   Future<void> playOrPause() async {
@@ -479,15 +494,28 @@ class MusicService {
     if (index >= 0) {
       _allSongs.remove(song.uniqueId);
       await _playlist?.removeAt(index);
+
+      //从缓存中删除playingSong
+      await _songDao.deletePlayingSong(song.id);
+    } else {
+      debugPrint(
+          "MusicService.deleteSongFromPlaylist: failed, song = ${song.name}");
     }
   }
 
-  void clearPlaylistWithoutCurrentSong() {
+  Future<void> clearPlaylistWithoutCurrentSong() async {
+    //从缓存中删除除当前歌曲之外的playingSongs
+    final deleteSongIds = <int>[];
+    _showingSongList.asMap().entries.forEach((entry) {
+      if (entry.key != currentIndex) deleteSongIds.add(entry.value.id);
+    });
+    await _songDao.deletePlayingSongs(deleteSongIds);
+    //从播放列表中删除
     if (currentIndex != 0) {
-      _playlist?.removeRange(0, currentIndex);
+      await _playlist?.removeRange(0, currentIndex);
     }
     if (currentIndex != playlistSize - 1) {
-      _playlist?.removeRange(currentIndex + 1, playlistSize);
+      await _playlist?.removeRange(currentIndex + 1, playlistSize);
     }
   }
 

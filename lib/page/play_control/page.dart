@@ -2,13 +2,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:second_music/entity/song.dart';
 import 'package:second_music/page/navigator.dart';
+import 'package:second_music/page/play/model.dart';
 import 'package:second_music/page/play_control/widget.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/service/music_service.dart';
+import 'package:second_music/widget/infinite_page_view.dart';
 import 'package:second_music/widget/material_icon_round.dart';
-
-import '../../widget/infinite_page_view.dart';
-import '../play/model.dart';
 
 class PlayController extends StatefulWidget {
   static const double BAR_HEIGHT = 48;
@@ -144,9 +143,11 @@ class _PlayControllerSong extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
-        MusicService.instance.play();
-        AppNavigator.instance
-            .navigateTo(context, AppNavigator.play, overlay: true);
+        if (song != null) {
+          MusicService.instance.play();
+          AppNavigator.instance
+              .navigateTo(context, AppNavigator.play, overlay: true);
+        }
       },
       child: Row(
         children: <Widget>[

@@ -94,7 +94,7 @@ class InfinitePageController extends PageController {
 
   @override
   void jumpToPage(int page) {
-    final virtualPage = (page + 1) % (realSize - 2);
+    final virtualPage = (page + 1) % (realSize + 2);
     super.jumpToPage(virtualPage);
   }
 
@@ -102,7 +102,7 @@ class InfinitePageController extends PageController {
   @override
   Future<void> animateToPage(int page,
       {required Duration duration, required Curve curve}) {
-    final virtualPage = (page + 1) % (realSize - 2);
+    final virtualPage = (page + 1) % (realSize + 2);
     return super.animateToPage(virtualPage, duration: duration, curve: curve);
   }
 

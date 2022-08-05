@@ -1078,15 +1078,127 @@ class $SongListJoinSongTableTable extends SongListJoinSongTable
   }
 }
 
+class PlayingSongTableCompanion extends UpdateCompanion<PlayingSong> {
+  final Value<int> songId;
+  final Value<DateTime> addedTime;
+  const PlayingSongTableCompanion({
+    this.songId = const Value.absent(),
+    this.addedTime = const Value.absent(),
+  });
+  PlayingSongTableCompanion.insert({
+    this.songId = const Value.absent(),
+    this.addedTime = const Value.absent(),
+  });
+  static Insertable<PlayingSong> custom({
+    Expression<int>? songId,
+    Expression<DateTime>? addedTime,
+  }) {
+    return RawValuesInsertable({
+      if (songId != null) 'song_id': songId,
+      if (addedTime != null) 'added_time': addedTime,
+    });
+  }
+
+  PlayingSongTableCompanion copyWith(
+      {Value<int>? songId, Value<DateTime>? addedTime}) {
+    return PlayingSongTableCompanion(
+      songId: songId ?? this.songId,
+      addedTime: addedTime ?? this.addedTime,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (songId.present) {
+      map['song_id'] = Variable<int>(songId.value);
+    }
+    if (addedTime.present) {
+      map['added_time'] = Variable<DateTime>(addedTime.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlayingSongTableCompanion(')
+          ..write('songId: $songId, ')
+          ..write('addedTime: $addedTime')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PlayingSongTableTable extends PlayingSongTable
+    with TableInfo<$PlayingSongTableTable, PlayingSong> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PlayingSongTableTable(this.attachedDatabase, [this._alias]);
+  final VerificationMeta _songIdMeta = const VerificationMeta('songId');
+  @override
+  late final GeneratedColumn<int?> songId = GeneratedColumn<int?>(
+      'song_id', aliasedName, false,
+      type: const IntType(), requiredDuringInsert: false);
+  final VerificationMeta _addedTimeMeta = const VerificationMeta('addedTime');
+  @override
+  late final GeneratedColumn<DateTime?> addedTime = GeneratedColumn<DateTime?>(
+      'added_time', aliasedName, false,
+      type: const IntType(),
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns => [songId, addedTime];
+  @override
+  String get aliasedName => _alias ?? 'playing_song';
+  @override
+  String get actualTableName => 'playing_song';
+  @override
+  VerificationContext validateIntegrity(Insertable<PlayingSong> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('song_id')) {
+      context.handle(_songIdMeta,
+          songId.isAcceptableOrUnknown(data['song_id']!, _songIdMeta));
+    }
+    if (data.containsKey('added_time')) {
+      context.handle(_addedTimeMeta,
+          addedTime.isAcceptableOrUnknown(data['added_time']!, _addedTimeMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {songId};
+  @override
+  PlayingSong map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PlayingSong.fromDb(
+      const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}song_id'])!,
+      const DateTimeType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}added_time'])!,
+    );
+  }
+
+  @override
+  $PlayingSongTableTable createAlias(String alias) {
+    return $PlayingSongTableTable(attachedDatabase, alias);
+  }
+}
+
 abstract class _$SongDatabase extends GeneratedDatabase {
   _$SongDatabase(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
   late final $SongListTableTable songListTable = $SongListTableTable(this);
   late final $SongTableTable songTable = $SongTableTable(this);
   late final $SongListJoinSongTableTable songListJoinSongTable =
       $SongListJoinSongTableTable(this);
+  late final $PlayingSongTableTable playingSongTable =
+      $PlayingSongTableTable(this);
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [songListTable, songTable, songListJoinSongTable];
+      [songListTable, songTable, songListJoinSongTable, playingSongTable];
 }

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'package:flutter/material.dart';
 import 'package:second_music/repository/remote/cookie.dart';
 import 'package:second_music/repository/remote/http_maker.dart';
 
@@ -24,17 +25,29 @@ Future<ResponseResult> dioPost(
       response.statusCode, response.statusMessage, response.data);
 }
 
-Future<String> dioGetDefault(String url) async {
-  var response = await dio.get<String>(url);
-  return response.data ?? "";
+Future<String> dioGetDefault(String url,
+    {Map<String, dynamic>? queryParameters}) async {
+  try {
+    var response = await dio.get<String>(url, queryParameters: queryParameters);
+    return response.data ?? "";
+  } on Exception catch (e) {
+    debugPrint("dioGetDefault: exception = $e");
+  }
+  return "";
 }
 
 Future<String> dioPostDefault(
     String url, dynamic data, Map<String, dynamic>? headers) async {
-  final contentType = headers?.remove('Content-Type');
-  final response = await dio.post<String>(url,
-      data: data, options: Options(headers: headers, contentType: contentType));
-  return response.data ?? "";
+  try {
+    final contentType = headers?.remove('Content-Type');
+    final response = await dio.post<String>(url,
+        data: data,
+        options: Options(headers: headers, contentType: contentType));
+    return response.data ?? "";
+  } on Exception catch (e) {
+    debugPrint("dioPostDefault: exception = $e");
+  }
+  return "";
 }
 
 class AddHeaderInterceptor extends Interceptor {
