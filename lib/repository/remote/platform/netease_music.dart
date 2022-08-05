@@ -89,22 +89,22 @@ class NeteaseMusic extends BaseMusicProvider {
   @override
   bool get searchEnabled => true;
 
-  Future<SearchResult> searchSongs(String keyword,
+  Future<SearchResult> searchSong(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {
     return _searchInternal(1, keyword, page: page, count: count);
   }
 
-  Future<SearchResult> searchPlaylists(String keyword,
+  Future<SearchResult> searchPlaylist(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {
     return _searchInternal(1000, keyword, page: page, count: count);
   }
 
-  Future<SearchResult> searchAlbums(String keyword,
+  Future<SearchResult> searchAlbum(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {
     return _searchInternal(10, keyword, page: page, count: count);
   }
 
-  Future<SearchResult> searchSingers(String keyword,
+  Future<SearchResult> searchSinger(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {
     return _searchInternal(100, keyword, page: page, count: count);
   }

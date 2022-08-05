@@ -377,20 +377,23 @@ class MusicService {
   }
 
   Future<void> playSongList(List<Song> songs) async {
-    _allSongs = Map.fromIterable(songs,
+    final notNullSongs =
+        songs.filter((element) => element.streamUrl.isNotEmpty);
+    _allSongs = Map.fromIterable(notNullSongs,
         key: (song) => song.uniqueId, value: (song) => song);
     if (_playlist == null) {
-      await _createAndSetPlayList(songs);
+      await _createAndSetPlayList(notNullSongs);
     } else {
       await _playlist!.removeRange(0, playlistSize);
-      await _playlist!.addAll(songs.map((e) => e.toAudioSource()).toList());
+      await _playlist!
+          .addAll(notNullSongs.map((e) => e.toAudioSource()).toList());
     }
     await _audioPlayer.seek(Duration.zero, index: _playingIndices[0]);
     await _audioPlayer.play();
 
     //替换playingSongs的缓存
     await _songDao.deleteAllPlayingSongs();
-    await _songDao.savePlayingSongs(songs);
+    await _songDao.savePlayingSongs(notNullSongs);
   }
 
   Future<void> _createAndSetPlayList(List<Song> songs) async {
@@ -411,6 +414,9 @@ class MusicService {
     }
     if (song.streamUrl.isEmpty) {
       await MusicProvider(song.plt).parseTrack(song);
+    }
+    if (song.streamUrl.isEmpty) {
+      return;
     }
     debugPrint("playSong: name = ${song.name}, streamUrl = ${song.streamUrl}");
     _allSongs[song.uniqueId] = song;

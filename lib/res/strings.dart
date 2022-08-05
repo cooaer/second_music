@@ -277,4 +277,8 @@ class AppLocalizations {
 
   // 通知渠道名称
   String get notificationChannelAudio => "播放控制";
+
+  //错误提示
+
+  String get playFailBecauseOfCopyright => "版权原因无法播放，请尝试其他平台";
 }

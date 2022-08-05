@@ -132,22 +132,32 @@ class QQMusic extends BaseMusicProvider {
       debugPrint("QQMusic.parseStreamUrl, httpResult = $httpResult");
       final Map<String, dynamic>? respJson = json.decode(httpResult);
       final List<dynamic>? sips = respJson?['req_0']?['data']?['sip'];
-      final String baseUrl = sips.isNotNullOrEmpty() ? sips!.first : "";
+      final String? baseUrl = sips.isNotNullOrEmpty() ? sips!.first : null;
+      if (baseUrl.isNullOrEmpty()) {
+        return;
+      }
       final List<dynamic>? midUrlInfos =
           respJson?['req_0']?['data']?['midurlinfo'];
       if (midUrlInfos == null) {
         return;
       }
+      //item中的result=104003，表示由于版权原因无法获取url
       final Map<String, String> idUrls = Map.fromIterable(midUrlInfos,
           key: (item) => item['songmid'], value: (item) => item['purl']);
       for (var song in songs) {
-        song.streamUrl = baseUrl + (idUrls[song.pltId] ?? "");
+        final purl = idUrls[song.pltId];
+        if (purl.isNullOrEmpty()) {
+          continue;
+        }
+        song.streamUrl = baseUrl! + purl!;
+        debugPrint(
+            "parseStreamUrl: name = ${song.name}, url = ${song.streamUrl}");
       }
     };
 
     var startIndex = 0;
     while (startIndex < songs.length) {
-      _parseStreamUrlInternal(
+      await _parseStreamUrlInternal(
           songs.sublist(startIndex, min(startIndex + 20, songs.length)));
       startIndex += 20;
     }
@@ -246,7 +256,7 @@ class QQMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<SearchResult> searchPlaylists(String keyword,
+  Future<SearchResult> searchPlaylist(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) async {
     final enKeyword = Uri.encodeComponent(keyword);
     final searchId = (Random().nextDouble() * 9655).floor().toString();
@@ -283,19 +293,19 @@ class QQMusic extends BaseMusicProvider {
   // n: 每页歌曲数目
 
   @override
-  Future<SearchResult> searchSongs(String keyword,
+  Future<SearchResult> searchSong(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {
     return _searchCpInternal(keyword, 0, 0, page: page, count: count);
   }
 
   @override
-  Future<SearchResult> searchAlbums(String keyword,
+  Future<SearchResult> searchAlbum(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {
     return _searchCpInternal(keyword, 8, 0, page: page, count: count);
   }
 
   @override
-  Future<SearchResult> searchSingers(String keyword,
+  Future<SearchResult> searchSinger(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {
     return _searchCpInternal(keyword, 0, 1, page: page, count: count);
   }

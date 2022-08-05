@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:second_music/entity/enum.dart';
 
 class AppColors {
+  AppColors._();
+
   static final primary = Colors.white;
   static final accent = Color(0xffff0000);
   static final divider = Color(0xffe6e6e6);
@@ -21,6 +23,7 @@ class AppColors {
   static final text_accent = Color(0xffff0000);
   static final text_embed = Color(0xffffffff);
   static final text_embed_half_transparent = Color(0x7fffffff);
+  static final text_disabled = Color(0xffc0c0c0);
 
   static final tint_rounded = Color(0xff999999);
   static final tint_outlined = Color(0xff646464);

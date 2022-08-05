@@ -14,6 +14,7 @@ class InfinitePageView<T> extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
+    controller.realSize = itemCount;
     return _InfinitePageViewState<T>();
   }
 }
@@ -31,7 +32,6 @@ class _InfinitePageViewState<T> extends State<InfinitePageView<T>> {
   Widget build(BuildContext context) {
     final itemCount = widget.itemCount;
     final virtualItemCount = itemCount + 2;
-    widget.controller.realSize = itemCount;
     if (itemCount == 0) {
       return Container();
     }

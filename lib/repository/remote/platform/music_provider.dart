@@ -56,16 +56,16 @@ abstract class MusicProvider {
   Future<SearchResult> search(String text, MusicObjectType type,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT});
 
-  Future<SearchResult> searchSongs(String keyword,
+  Future<SearchResult> searchSong(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT});
 
-  Future<SearchResult> searchPlaylists(String keyword,
+  Future<SearchResult> searchPlaylist(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT});
 
-  Future<SearchResult> searchAlbums(String keyword,
+  Future<SearchResult> searchAlbum(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT});
 
-  Future<SearchResult> searchSingers(String keyword,
+  Future<SearchResult> searchSinger(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT});
 
   ///获取音乐流地址
@@ -108,13 +108,13 @@ abstract class BaseMusicProvider implements MusicProvider {
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) async {
     switch (type) {
       case MusicObjectType.song:
-        return searchSongs(keyword, page: page, count: count);
+        return searchSong(keyword, page: page, count: count);
       case MusicObjectType.playlist:
-        return searchPlaylists(keyword, page: page, count: count);
+        return searchPlaylist(keyword, page: page, count: count);
       case MusicObjectType.album:
-        return searchAlbums(keyword, page: page, count: count);
+        return searchAlbum(keyword, page: page, count: count);
       case MusicObjectType.singer:
-        return searchSingers(keyword, page: page, count: count);
+        return searchSinger(keyword, page: page, count: count);
     }
   }
 

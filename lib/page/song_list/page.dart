@@ -11,6 +11,7 @@ import 'package:second_music/page/song_list/model.dart';
 import 'package:second_music/page/song_list/widget.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/widget/material_icon_round.dart';
+import 'package:toast/toast.dart';
 
 class SongListPage extends StatefulWidget {
   final String plt;
@@ -108,7 +109,7 @@ class _SongListPageState extends State<SongListPage> {
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
                   var song = songList.songs[index];
-                  return _SongListItem(index, song, songList,
+                  return _SongListItem(index, song,
                       () => showSongMenu(context, song, songList, _model),
                       key: Key(song.pltId));
                 },
@@ -445,22 +446,25 @@ class _ControlBar extends StatelessWidget {
 class _SongListItem extends StatelessWidget {
   final int index;
   final Song song;
-  final SongList songList;
   final VoidCallback onTapMenu;
 
-  _SongListItem(this.index, this.song, this.songList, this.onTapMenu,
-      {Key? key})
+  _SongListItem(this.index, this.song, this.onTapMenu, {Key? key})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    bool hasCopyright = song.streamUrl.isNotEmpty;
     return ButtonTheme(
       height: 60,
       minWidth: 0,
       child: FlatButton(
         onPressed: () {
-          AppNavigator.instance.navigateTo(context, AppNavigator.play,
-              params: {'song': song}, overlay: true);
+          if (hasCopyright) {
+            AppNavigator.instance.navigateTo(context, AppNavigator.play,
+                params: {'song': song}, overlay: true);
+          } else {
+            Toast.show(stringsOf(context).playFailBecauseOfCopyright);
+          }
         },
         padding: EdgeInsets.zero,
         child: Row(
@@ -495,7 +499,9 @@ class _SongListItem extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 16,
-                      color: AppColors.text_title,
+                      color: hasCopyright
+                          ? AppColors.text_title
+                          : AppColors.text_disabled,
                       fontWeight: FontWeight.normal,
                     ),
                   ),
@@ -509,7 +515,9 @@ class _SongListItem extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.text_light,
+                      color: hasCopyright
+                          ? AppColors.text_light
+                          : AppColors.text_disabled,
                       fontWeight: FontWeight.normal,
                     ),
                   ),

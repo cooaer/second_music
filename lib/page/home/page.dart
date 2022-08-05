@@ -8,10 +8,19 @@ import 'package:second_music/page/play_control/page.dart';
 import 'package:second_music/page/ui_style.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/widget/material_icon_round.dart';
+import 'package:toast/toast.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return _HomePageState();
+  }
+}
+
+class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
+    ToastContext().init(context);
     return Material(
       child: Stack(
         alignment: AlignmentDirectional.bottomCenter,
