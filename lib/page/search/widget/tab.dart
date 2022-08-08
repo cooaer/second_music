@@ -21,10 +21,8 @@ import 'package:second_music/widget/material_icon_round.dart';
 class SearchObjectTab extends StatefulWidget {
   final String keyword;
   final MusicObjectType type;
-  final bool selected;
 
-  SearchObjectTab(this.keyword, this.type, this.selected, {Key? key})
-      : super(key: key);
+  SearchObjectTab(this.keyword, this.type, {Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _SearchObjectTabState();
@@ -38,34 +36,7 @@ class _SearchObjectTabState extends State<SearchObjectTab>
   void initState() {
     super.initState();
     _model = SearchObjectModel(widget.type, widget.keyword);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _updateModelSelected();
-    _updateModelKeyword();
-  }
-
-  @override
-  void didUpdateWidget(SearchObjectTab oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.selected != oldWidget.selected) {
-      if (_model.results.isEmpty) {
-        _updateModelSelected();
-      }
-    }
-    if (widget.keyword != oldWidget.keyword) {
-      _updateModelKeyword();
-    }
-  }
-
-  void _updateModelSelected() {
-    _model.selected = widget.selected;
-  }
-
-  void _updateModelKeyword() {
-    _model.keyword = widget.keyword;
+    _model.selected = true;
   }
 
   @override

@@ -126,12 +126,12 @@ class SearchObjectModel {
 
   bool get selected => _selected;
 
-  refresh(bool force, {List<MusicPlatform> plts = MusicPlatform.values}) {
+  void refresh(bool force, {List<MusicPlatform> plts = MusicPlatform.values}) {
     if (!force && !selected) return;
     _refreshInternal(plts);
   }
 
-  _refreshInternal(List<MusicPlatform> plts) async {
+  void _refreshInternal(List<MusicPlatform> plts) async {
     _loading = true;
 
     for (MusicPlatform plt in plts) {
@@ -157,13 +157,15 @@ class SearchObjectModel {
       } else {
         _lastResult.hasError = true;
       }
-      _resultController.add(_results);
+      if (!_resultController.isClosed) {
+        _resultController.add(_results);
+      }
     }
 
     _loading = false;
   }
 
-  requestMore(bool force, List<MusicPlatform> plts) {
+  void requestMore(bool force, List<MusicPlatform> plts) {
     if (!force && lastError) return;
     refresh(force, plts: plts);
   }

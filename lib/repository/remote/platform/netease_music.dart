@@ -295,13 +295,14 @@ class NeteaseMusic extends BaseMusicProvider {
     return album;
   }
 
-  SearchResult _convertSearchResult(Map<String, dynamic> map) {
+  Future<SearchResult> _convertSearchResult(Map<String, dynamic> map) async {
     final searchResult = SearchResult();
 
     if (map.containsKey('songs')) {
+      final songs = await Future.wait(
+          Json.getList(map, 'songs').map((e) => _convertSong(e)));
       searchResult.total = Json.getInt(map, 'songCount');
-      searchResult.items =
-          Json.getList(map, 'songs').map((e) => _convertSong(e)).toList();
+      searchResult.items = songs;
       return searchResult;
     }
 
@@ -314,9 +315,11 @@ class NeteaseMusic extends BaseMusicProvider {
     }
 
     if (map.containsKey('albums')) {
+      final albums = await Future.wait(
+          Json.getList(map, 'albums').map((e) => _convertAlbum(e)));
       searchResult.total = Json.getInt(map, 'albumCount');
-      searchResult.items =
-          Json.getList(map, 'albums').map((e) => _convertAlbum(e)).toList();
+      searchResult.items = albums;
+
       return searchResult;
     }
 
