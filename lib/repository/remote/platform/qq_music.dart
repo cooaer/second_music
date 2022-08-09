@@ -151,7 +151,7 @@ class QQMusic extends BaseMusicProvider {
         }
         song.streamUrl = baseUrl! + purl!;
         debugPrint(
-            "parseStreamUrl: name = ${song.name}, url = ${song.streamUrl}");
+            "QQMusic.parseStreamUrl: name = ${song.name}, url = ${song.streamUrl}");
       }
     };
 
@@ -184,7 +184,7 @@ class QQMusic extends BaseMusicProvider {
 
     final songs =
         await Future.wait(listJson.map((item) => _convertSong2(item)));
-    await _parseStreamUrl(songs);
+    // await _parseStreamUrl(songs);
 
     final singer = Singer()
       ..plt = MusicPlatform.qq
@@ -215,13 +215,22 @@ class QQMusic extends BaseMusicProvider {
   @override
   Future<Playlist> playList(String listId,
       {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
-    final targetUrl =
-        'https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg?'
-        'type=1&json=1&utf8=1&onlysong=0&new_format=1&disstid=$listId&g_tk=1062527372&'
-        '&loginUin=1064549797hostUin=0&format=json&inCharset=utf8&outCharset=utf-8&notice=0&'
-        'platform=yqq.json&needNewCode=0';
+    // final targetUrl =
+    //     'https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg?'
+    //     'type=1&json=1&utf8=1&onlysong=0&new_format=1&disstid=$listId&g_tk=1062527372&'
+    //     '&loginUin=1064549797hostUin=0&format=json&inCharset=utf8&outCharset=utf-8&notice=0&'
+    //     'platform=yqq.json&needNewCode=0';
 
-    String response = await httpMaker({'url': targetUrl, 'method': 'get'});
+    final targetUrl = 'http://i.y.qq.com/qzone-music/fcg-bin/fcg_ucc_getcdinfo_' +
+        'byids_cp.fcg?type=1&json=1&utf8=1&onlysong=0&jsonpCallback=' +
+        'jsonCallback&nosign=1&disstid=${listId}&g_tk=5381&loginUin=0&hostUin=0' +
+        '&format=jsonp&inCharset=GB2312&outCharset=utf-8&notice=0' +
+        '&platform=yqq&jsonpCallback=jsonCallback&needNewCode=0';
+
+    String response = await httpMaker({
+      HttpMakerParams.url: targetUrl,
+      HttpMakerParams.method: HttpMakerParams.methodGet
+    });
     final jsonString =
         response.substring('jsonCallback('.length, response.lastIndexOf(')'));
     Map<String, dynamic> data = json.decode(jsonString);
@@ -236,8 +245,8 @@ class QQMusic extends BaseMusicProvider {
     creator.source = 'https://y.qq.com/portal/profile.html?uin=${creator.id}';
 
     final listJson = Json.getList(dataCdlist0, 'songlist');
-    final songList = await Future.wait(listJson.map((e) => _convertSong(e)));
-    await _parseStreamUrl(songList);
+    final songList = await Future.wait(listJson.map((e) => _convertSong2(e)));
+    // await _parseStreamUrl(songList);
 
     final playlist = Playlist();
     playlist.id = listId;
@@ -352,7 +361,7 @@ class QQMusic extends BaseMusicProvider {
       final songJson = Json.getMap(dataJson, 'song');
       final listJson = Json.getList(songJson, 'list');
       final songs = await Future.wait(listJson.map((e) => _convertSong2(e)));
-      await _parseStreamUrl(songs);
+      // await _parseStreamUrl(songs);
 
       result.total = Json.getInt(songJson, 'totalnum');
       result.items = songs;
@@ -444,6 +453,7 @@ class QQMusic extends BaseMusicProvider {
       ..name = Json.getString(songJson, 'songname')
       ..subtitle = Json.getString(songJson, 'lyric')
       ..cover = _getImageUrl(album.id, 'album')
+      ..isPlayable = _isQQSongPlayable(Json.getInt(songJson, "switch"))
       ..singers = singerList
       ..album = album;
 
@@ -537,5 +547,9 @@ class QQMusic extends BaseMusicProvider {
         '$category/${imageId.substring(imageId.length - 2, imageId.length - 1)}/${imageId.substring(imageId.length - 1)}/$imageId';
     final url = 'http://imgcache.qq.com/music/photo/${params}.jpg';
     return url;
+  }
+
+  bool _isQQSongPlayable(int songSwitch) {
+    return songSwitch & 0x2 == 0x2;
   }
 }

@@ -453,13 +453,13 @@ class _SongListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool hasCopyright = song.streamUrl.isNotEmpty;
+    bool isPlayable = song.isPlayable;
     return ButtonTheme(
       height: 60,
       minWidth: 0,
       child: FlatButton(
         onPressed: () {
-          if (hasCopyright) {
+          if (isPlayable) {
             AppNavigator.instance.navigateTo(context, AppNavigator.play,
                 params: {'song': song}, overlay: true);
           } else {
@@ -499,7 +499,7 @@ class _SongListItem extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 16,
-                      color: hasCopyright
+                      color: isPlayable
                           ? AppColors.text_title
                           : AppColors.text_disabled,
                       fontWeight: FontWeight.normal,
@@ -515,7 +515,7 @@ class _SongListItem extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 12,
-                      color: hasCopyright
+                      color: isPlayable
                           ? AppColors.text_light
                           : AppColors.text_disabled,
                       fontWeight: FontWeight.normal,

@@ -49,8 +49,14 @@ dependencies:
 #    git:
 #       url: git@github.com:cooaer/netease_music_cipher.git
 
-  just_audio: ^0.9.28
-  just_audio_background: ^0.0.1-beta.7
+#  just_audio: ^0.9.28
+#  just_audio_background: ^0.0.1-beta.7
+  just_audio:
+    path: ../../github/just_audio/just_audio
+  just_audio_background:
+    path: ../../github/just_audio/just_audio_background
+  just_audio_platform_interface:
+    path: ../../github/just_audio/just_audio_platform_interface
 
   drift: ^1.7.1
   sqlite3_flutter_libs: ^0.5.0

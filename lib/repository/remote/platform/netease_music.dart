@@ -237,11 +237,12 @@ class NeteaseMusic extends BaseMusicProvider {
       ..name = Json.getString(map, 'name')
       ..subtitle = Json.getList(map, 'alia').join(' | ')
       ..cover = Json.getString(Json.getMap(map, 'al'), 'picUrl')
+      ..isPlayable = _isSongPlayable(Json.getInt(map, "fee", defaultValue: 0))
       ..album = await _convertAlbum(Json.getMap(map, 'al'))
       ..singers = Json.getList(map, 'ar')
           .map<Singer>((e) => _convertSinger(e))
           .toList();
-    await parseTrack(song);
+    // await parseTrack(song);
     return song;
   }
 
@@ -252,11 +253,12 @@ class NeteaseMusic extends BaseMusicProvider {
       ..name = Json.getString(map, 'name')
       ..subtitle = Json.getList(map, 'alia').join(' | ')
       ..cover = Json.getString(Json.getMap(map, 'album'), 'picUrl')
+      ..isPlayable = _isSongPlayable(Json.getInt(map, "fee", defaultValue: 0))
       ..album = await _convertAlbum(Json.getMap(map, 'album'))
       ..singers = Json.getList(map, 'artists')
           .map<Singer>((e) => _convertSinger(e))
           .toList();
-    await parseTrack(song);
+    // await parseTrack(song);
     return song;
   }
 
@@ -331,6 +333,10 @@ class NeteaseMusic extends BaseMusicProvider {
     }
 
     return searchResult;
+  }
+
+  bool _isSongPlayable(int fee) {
+    return fee != 4 && fee != 1;
   }
 }
 

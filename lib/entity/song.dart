@@ -15,6 +15,7 @@ class Song {
   String cover = "";
   String streamUrl = ""; //歌曲播放流地址
   String description = ""; //描述
+  bool isPlayable = true; //该歌曲在当前平台上非登录状态下是否可播放，不可播放的原因有：1：没有版权，2：需要付费
 
   ///歌手
   Singer? _singer;

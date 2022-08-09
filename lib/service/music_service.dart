@@ -377,23 +377,22 @@ class MusicService {
   }
 
   Future<void> playSongList(List<Song> songs) async {
-    final notNullSongs =
-        songs.filter((element) => element.streamUrl.isNotEmpty);
-    _allSongs = Map.fromIterable(notNullSongs,
+    // final notNullSongs =
+    //     songs.filter((element) => element.streamUrl.isNotEmpty);
+    _allSongs = Map.fromIterable(songs,
         key: (song) => song.uniqueId, value: (song) => song);
     if (_playlist == null) {
-      await _createAndSetPlayList(notNullSongs);
+      await _createAndSetPlayList(songs);
     } else {
       await _playlist!.removeRange(0, playlistSize);
-      await _playlist!
-          .addAll(notNullSongs.map((e) => e.toAudioSource()).toList());
+      await _playlist!.addAll(songs.map((e) => e.toAudioSource()).toList());
     }
     await _audioPlayer.seek(Duration.zero, index: _playingIndices[0]);
     await _audioPlayer.play();
 
     //替换playingSongs的缓存
     await _songDao.deleteAllPlayingSongs();
-    await _songDao.savePlayingSongs(notNullSongs);
+    await _songDao.savePlayingSongs(songs);
   }
 
   Future<void> _createAndSetPlayList(List<Song> songs) async {
@@ -412,12 +411,12 @@ class MusicService {
       playSongWithShowingListIndex(index);
       return;
     }
-    if (song.streamUrl.isEmpty) {
-      await MusicProvider(song.plt).parseTrack(song);
-    }
-    if (song.streamUrl.isEmpty) {
-      return;
-    }
+    // if (song.streamUrl.isEmpty) {
+    //   await MusicProvider(song.plt).parseTrack(song);
+    // }
+    // if (song.streamUrl.isEmpty) {
+    //   return;
+    // }
     debugPrint("playSong: name = ${song.name}, streamUrl = ${song.streamUrl}");
     _allSongs[song.uniqueId] = song;
     final int songIndex;
@@ -551,7 +550,7 @@ class MusicService {
 
 extension PlayerSongExtension on Song {
   AudioSource toAudioSource() {
-    return AudioSource.uri(Uri.parse(this.streamUrl),
+    return ResolvingAudioSource(Uri.parse(this.source), parseStreamUrl,
         tag: MediaItem(
           id: this.uniqueId,
           title: this.name,
@@ -559,5 +558,10 @@ extension PlayerSongExtension on Song {
           artist: this.singer?.name,
           artUri: Uri.tryParse(this.cover),
         ));
+  }
+
+  Future<String> parseStreamUrl() async {
+    await MusicProvider(plt).parseTrack(this);
+    return streamUrl;
   }
 }
