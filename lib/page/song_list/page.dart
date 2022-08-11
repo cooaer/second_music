@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_extensions_methods/dart_extension_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:second_music/entity/enum.dart';
 import 'package:second_music/entity/song.dart';
@@ -84,16 +85,28 @@ class _SongListPageState extends State<SongListPage> {
             ButtonTheme(
               minWidth: 0,
               height: 44,
-              child: FlatButton(
-                  onPressed: () {},
-                  shape: CircleBorder(),
+              child: IconButton(
+                  onPressed: () {
+                    Toast.show(stringsOf(context).developing);
+                  },
                   padding: EdgeInsets.symmetric(horizontal: 10),
-                  child: MdrIcon(
-                    'playlist_add_check',
-                    color: AppColors.text_embed,
-                    size: 28,
-                  )),
-            )
+                  icon: Icon(Icons.download_rounded)),
+            ),
+            ButtonTheme(
+              minWidth: 0,
+              height: 44,
+              child: IconButton(
+                  onPressed: () {
+                    final songListSource = _model.songList?.source;
+                    if (songListSource.isNotNullOrEmpty()) {
+                      AppNavigator.instance.navigateTo(
+                          context, AppNavigator.web_view,
+                          params: {"url": songListSource});
+                    }
+                  },
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  icon: Icon(Icons.link)),
+            ),
           ],
         ),
         SliverPersistentHeader(

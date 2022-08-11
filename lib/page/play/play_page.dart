@@ -1,12 +1,12 @@
 import 'dart:ui';
 
-import 'package:after_layout/after_layout.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:second_music/entity/enum.dart';
 import 'package:second_music/entity/playing_progress.dart';
 import 'package:second_music/entity/song.dart';
-import 'package:second_music/page/play/model.dart';
+import 'package:second_music/page/play/play_logic.dart';
 import 'package:second_music/page/play_control/widget.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/service/music_service.dart';
@@ -15,18 +15,22 @@ import 'package:second_music/widget/material_icon_round.dart';
 import 'package:second_music/widget/play_progress_slider.dart';
 
 class PlayPage extends StatefulWidget {
+  //在可见的播放列表中的索引
+  final int? index;
   final Song? song;
 
-  PlayPage(this.song);
+  PlayPage(this.index, this.song);
 
   @override
   State<StatefulWidget> createState() => _PlayPageState();
 }
 
-class _PlayPageState extends State<PlayPage> with AfterLayoutMixin {
+class _PlayPageState extends State<PlayPage> {
   @override
   void initState() {
     super.initState();
+    Get.put<PlaySongListLogic>(PlaySongListLogic(
+        playingIndex: widget.index, currentSong: widget.song));
   }
 
   @override
@@ -54,10 +58,9 @@ class _PlayPageState extends State<PlayPage> with AfterLayoutMixin {
   }
 
   @override
-  void afterFirstLayout(BuildContext context) {
-    if (widget.song != null) {
-      MusicService.instance.playSong(widget.song!);
-    }
+  void dispose() {
+    super.dispose();
+    Get.delete<PlaySongListLogic>();
   }
 }
 
@@ -67,10 +70,10 @@ class _PlayBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-        initialData: MusicService.instance.currentIndex,
-        stream: MusicService.instance.currentIndexStream,
+        initialData: MusicService().currentIndex,
+        stream: MusicService().currentIndexStream,
         builder: (context, AsyncSnapshot<int> snapshot) {
-          final cover = MusicService.instance.currentSong?.cover;
+          final cover = MusicService().currentSong?.cover;
           return _buildContent(context, cover);
         });
   }
@@ -111,10 +114,10 @@ class _PlayTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      initialData: MusicService.instance.currentIndex,
-      stream: MusicService.instance.currentIndexStream,
+      initialData: MusicService().currentIndex,
+      stream: MusicService().currentIndexStream,
       builder: (context, AsyncSnapshot<int> snapshot) {
-        final currentSong = MusicService.instance.currentSong;
+        final currentSong = MusicService().currentSong;
         return _buildContent(context, currentSong);
       },
     );
@@ -166,10 +169,9 @@ class _PlayCenterContainerState extends State<_PlayCenterContainer> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: _switchPage,
-      child: _isShowingCover ? _PlayCoverContainer() : _PlayLyricContainer(),
-    );
+        behavior: HitTestBehavior.opaque,
+        onTap: _switchPage,
+        child: _isShowingCover ? _PlayCoverContainer() : _PlayLyricContainer());
   }
 
   void _switchPage() {
@@ -186,25 +188,25 @@ class _PlayCoverContainer extends StatefulWidget {
   State<StatefulWidget> createState() => _PlayCoverContainerState();
 }
 
-class _PlayCoverContainerState extends State<_PlayCoverContainer>
-    with AfterLayoutMixin<_PlayCoverContainer> {
-  late PlaySongListModel _model;
+class _PlayCoverContainerState extends State<_PlayCoverContainer> {
+  final _logic = Get.find<PlaySongListLogic>();
+  late InfinitePageController _pageController;
 
   @override
   void initState() {
     super.initState();
-    _model = PlaySongListModel();
+    _pageController = _logic.newPageController();
   }
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      initialData: MusicService.instance.playingIndices,
-      stream: MusicService.instance.playingIndicesStream,
+      initialData: MusicService().playingIndices,
+      stream: MusicService().playingIndicesStream,
       builder: (context, AsyncSnapshot<List<int>> snapshot) {
         return StreamBuilder(
-          initialData: MusicService.instance.currentIndex,
-          stream: MusicService.instance.currentIndexStream,
+          initialData: MusicService().currentIndex,
+          stream: MusicService().currentIndexStream,
           builder: (context, AsyncSnapshot<int> snapshot2) {
             return _buildContent(context, snapshot.data!, snapshot2.data!);
           },
@@ -217,7 +219,7 @@ class _PlayCoverContainerState extends State<_PlayCoverContainer>
       BuildContext context, List<int> playingIndices, int currentIndex) {
     final screenWidth = MediaQuery.of(context).size.width;
     final songCount = playingIndices.length;
-    final currentSong = MusicService.instance.currentSong;
+    final currentSong = MusicService().currentSong;
     return Stack(
       alignment: Alignment.bottomCenter,
       children: <Widget>[
@@ -227,11 +229,11 @@ class _PlayCoverContainerState extends State<_PlayCoverContainer>
               ? _PlayingSongCover("", key: Key('default_cover'))
               : InfinitePageView<Song>(
                   songCount,
-                  _model.pageController,
+                  _pageController,
                   (context, index, realIndex) {
                     final showingListIndex = playingIndices[realIndex];
                     final song =
-                        MusicService.instance.showingSongList[showingListIndex];
+                        MusicService().showingSongList[showingListIndex];
                     print(
                         "PlayPage.buildContent, index = $index, realIndex=$realIndex, count = $songCount");
                     return _PlayingSongCover(song.cover,
@@ -265,11 +267,8 @@ class _PlayCoverContainerState extends State<_PlayCoverContainer>
   @override
   void dispose() {
     super.dispose();
-    _model.dispose();
+    _pageController.dispose();
   }
-
-  @override
-  void afterFirstLayout(BuildContext context) {}
 }
 
 class _PlayingSongCover extends StatelessWidget {
@@ -396,8 +395,8 @@ class _PlayControl extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           StreamBuilder(
-              initialData: MusicService.instance.playingProgress,
-              stream: MusicService.instance.playingProgressStream,
+              initialData: MusicService().playingProgress,
+              stream: MusicService().playingProgressStream,
               builder: (context, AsyncSnapshot<PlayingProgress> snapshot) {
                 return _buildPlayProgress(
                     context, snapshot.data!.position, snapshot.data!.duration);
@@ -405,8 +404,8 @@ class _PlayControl extends StatelessWidget {
           Row(
             children: <Widget>[
               StreamBuilder(
-                initialData: MusicService.instance.playMode,
-                stream: MusicService.instance.playModeStream,
+                initialData: MusicService().playMode,
+                stream: MusicService().playModeStream,
                 builder: (context, AsyncSnapshot<PlayMode> snapshot) {
                   return _buildPlayControlIcon(context, 'play_mode',
                       AppImages.playModeIcon(snapshot.data!), 32);
@@ -414,8 +413,8 @@ class _PlayControl extends StatelessWidget {
               ),
               _buildPlayControlIcon(context, 'play_pre', 'skip_previous', 40),
               StreamBuilder(
-                initialData: MusicService.instance.playing,
-                stream: MusicService.instance.playingStream,
+                initialData: MusicService().playing,
+                stream: MusicService().playingStream,
                 builder: (context, AsyncSnapshot<bool> snapshot) {
                   if (snapshot.data == true) {
                     return _buildPlayControlIcon(
@@ -451,7 +450,7 @@ class _PlayControl extends StatelessWidget {
         Expanded(
             flex: 1,
             child: PlayProgressSlider(position, duration,
-                (value) => MusicService.instance.seekTo(value.toInt()))),
+                (value) => MusicService().seekTo(value.toInt()))),
         Text(
           stringsOf(context).playPosition(duration),
           style: TextStyle(fontSize: 10, color: Colors.white30),
@@ -485,16 +484,16 @@ class _PlayControl extends StatelessWidget {
   void _onTapControlIcon(BuildContext context, String iconName) {
     switch (iconName) {
       case 'play_mode':
-        MusicService.instance.switchPlayMode();
+        MusicService().switchPlayMode();
         break;
       case 'play_pre':
-        MusicService.instance.playPrev();
+        MusicService().playPrev();
         break;
       case 'playOrPause':
-        MusicService.instance.playOrPause();
+        MusicService().playOrPause();
         break;
       case 'play_next':
-        MusicService.instance.playNext();
+        MusicService().playNext();
         break;
       case 'playing_list':
         showPlayingList(context);

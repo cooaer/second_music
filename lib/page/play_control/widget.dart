@@ -43,12 +43,12 @@ class _PlayingList extends StatelessWidget {
 
   Widget _buildSongList(BuildContext context) {
     return StreamBuilder(
-      initialData: MusicService.instance.showingSongList,
-      stream: MusicService.instance.showingSongListStream,
+      initialData: MusicService().showingSongList,
+      stream: MusicService().showingSongListStream,
       builder: (context, AsyncSnapshot<List<Song>> snapshotShowingList) {
         return StreamBuilder(
-            initialData: MusicService.instance.currentIndex,
-            stream: MusicService.instance.currentIndexStream,
+            initialData: MusicService().currentIndex,
+            stream: MusicService().currentIndexStream,
             builder: (context, AsyncSnapshot<int> snapshotCurrentSong) {
               return ListView.separated(
                   itemBuilder: (context, index) {
@@ -76,12 +76,12 @@ class _PlayingListTitle extends StatelessWidget {
           child: Row(
             children: <Widget>[
               StreamBuilder(
-                initialData: MusicService.instance.playMode,
-                stream: MusicService.instance.playModeStream,
+                initialData: MusicService().playMode,
+                stream: MusicService().playModeStream,
                 builder: (context, AsyncSnapshot<PlayMode> snapshot) {
                   return FlatButton.icon(
                       onPressed: () {
-                        MusicService.instance.switchPlayMode();
+                        MusicService().switchPlayMode();
                       },
                       icon: MdrIcon(
                         AppImages.playModeIcon(snapshot.data!),
@@ -116,8 +116,7 @@ class _PlayingListTitle extends StatelessWidget {
                     ),
                   )),
               FlatButton(
-                onPressed:
-                    MusicService.instance.clearPlaylistWithoutCurrentSong,
+                onPressed: MusicService().clearPlaylistWithoutCurrentSong,
                 padding: EdgeInsets.symmetric(horizontal: 10),
                 child: MdrIcon(
                   "delete_outline",
@@ -137,7 +136,7 @@ class _PlayingListTitle extends StatelessWidget {
     if (songList == null) {
       return;
     }
-    var songs = MusicService.instance.showingSongList;
+    var songs = MusicService().showingSongList;
     await songDao.addSongsToSongList(songList.id, songs);
     mySongList.notifyMySongListChanged();
   }
@@ -161,7 +160,7 @@ class _PlayingListSong extends StatelessWidget {
           child: FlatButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                MusicService.instance.playSong(song);
+                MusicService().playSong(song);
               },
               padding: EdgeInsets.zero,
               child: Row(
@@ -212,7 +211,7 @@ class _PlayingListSong extends StatelessWidget {
                   if (!isPlaying)
                     FlatButton(
                       onPressed: () =>
-                          MusicService.instance.deleteSongFromPlaylist(song),
+                          MusicService().deleteSongFromPlaylist(song),
                       padding: EdgeInsets.symmetric(horizontal: 10),
                       child: MdrIcon(
                         "close",

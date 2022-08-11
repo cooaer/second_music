@@ -14,24 +14,22 @@ class InfinitePageView<T> extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    controller.realSize = itemCount;
     return _InfinitePageViewState<T>();
   }
 }
 
 class _InfinitePageViewState<T> extends State<InfinitePageView<T>> {
-  late PageController pageController;
-
   @override
-  void initState() {
-    super.initState();
-    pageController = widget.controller;
+  void didUpdateWidget(covariant InfinitePageView<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    widget.controller.realSize = widget.itemCount;
   }
 
   @override
   Widget build(BuildContext context) {
     final itemCount = widget.itemCount;
     final virtualItemCount = itemCount + 2;
+    widget.controller.realSize = itemCount;
     if (itemCount == 0) {
       return Container();
     }
@@ -61,7 +59,10 @@ class _InfinitePageViewState<T> extends State<InfinitePageView<T>> {
   }
 
   bool _onNotification(ScrollEndNotification notification) {
+    final itemCount = widget.itemCount;
     final virtualItemCount = widget.itemCount + 2;
+    final pageController = widget.controller;
+    pageController.realSize = widget.itemCount;
     final page = pageController.page;
     if (page == null) {
       return false;
@@ -69,11 +70,11 @@ class _InfinitePageViewState<T> extends State<InfinitePageView<T>> {
     var index = page.round();
     if (index == 0) {
       Future.delayed(Duration(milliseconds: 20), () {
-        pageController.jumpToPage(virtualItemCount - 2);
+        pageController.jumpToPage(itemCount - 1);
       });
     } else if (index == virtualItemCount - 1) {
       Future.delayed(Duration(milliseconds: 20), () {
-        pageController.jumpToPage(1);
+        pageController.jumpToPage(0);
       });
     }
     return true;
@@ -108,9 +109,12 @@ class InfinitePageController extends PageController {
 
   ///获得页面真实的index
   @override
-  double? get page {
+  int? get realPage {
     final currentPage = super.page;
     if (currentPage == null) return null;
-    return (currentPage - 1) % realSize;
+    var result = (currentPage.round() - 1) % realSize;
+    debugPrint(
+        "page, current = $currentPage, realSize = $realSize, result = $result");
+    return result;
   }
 }

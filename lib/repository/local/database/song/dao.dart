@@ -284,7 +284,9 @@ class SongDao extends BasicDao {
     final typedResult = await (db.select(db.playingSongTable).join([
       innerJoin(
           db.songTable, db.songTable.id.equalsExp(db.playingSongTable.songId))
-    ])).get();
+    ])
+          ..orderBy([OrderingTerm.asc(db.playingSongTable.addedTime)]))
+        .get();
     return typedResult.map((e) => e.readTable(db.songTable)).toList();
   }
 

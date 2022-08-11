@@ -22,6 +22,7 @@ class SongListModel {
   SongListModel(this.plt, this.songListId, this.songListType);
 
   SongList? _songList;
+  SongList? get songList => _songList;
   var _songListStreamController = StreamController<SongList>.broadcast();
 
   Stream<SongList> get songListStream => _songListStreamController.stream;
@@ -116,7 +117,7 @@ class SongListModel {
   ///播放全部歌曲
   void playAll() {
     if (_songList != null && _songList!.songs.isNotNullOrEmpty()) {
-      MusicService.instance.playSongList(_songList!.songs);
+      MusicService().playSongList(_songList!.songs);
     }
   }
 

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:second_music/entity/song.dart';
 import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/page/home/my_song_list/model.dart';
@@ -8,50 +9,78 @@ import 'package:second_music/repository/local/database/song/dao.dart';
 import 'package:second_music/service/music_service.dart';
 import 'package:second_music/widget/infinite_page_view.dart';
 
-class PlaySongListModel {
-  final InfinitePageController _pageController;
-
-  InfinitePageController get pageController => _pageController;
+class PlaySongListLogic extends GetxController {
+  final int? playingIndex;
+  final Song? currentSong;
+  InfinitePageController? _pageController;
 
   ///InfinitePageView会在第一个位置和最后一个位置分别添加真是列表的最后一个和第一个元素，所以默认的初试页面应该为1
-  PlaySongListModel() : _pageController = InfinitePageController() {
-    _pageController.addListener(_onPageChanged);
-    MusicService.instance.currentIndexStream
-        .listen(_onPlayerCurrentIndexChanged);
+  PlaySongListLogic({this.playingIndex, this.currentSong}) {
+    MusicService().currentIndexStream.listen(_onCurrentIndexChanged);
+    MusicService().playingIndicesStream.listen((_onPlayingIndicesChanged));
   }
 
+  @override
+  void onInit() {
+    super.onInit();
+    if (currentSong != null) {
+      MusicService().playSong(currentSong!);
+    }
+  }
+
+  InfinitePageController newPageController() {
+    final initialPage = MusicService().playingIndex + 1;
+    final newPageController = InfinitePageController(initialPage: initialPage);
+    newPageController.addListener(_onPageChanged);
+    _pageController = newPageController;
+    return newPageController;
+  }
+
+  int get playingIndexInInfinitePageView =>
+      (MusicService().playingIndex + 1) % MusicService().playlistSize;
+
   void _onPageChanged() {
-    if (_pageController.positions.length != 1) {
+    if (_pageController == null || _pageController!.positions.length != 1) {
       return;
     }
-    final realPageIndex = _pageController.page!.round();
-    final playingIndex = MusicService.instance.playingIndex;
+    final realPageIndex = _pageController!.realPage!;
+    final playingIndex = MusicService().playingIndex;
     if (playingIndex < 0 || realPageIndex == playingIndex) {
       return;
     }
     debugPrint(
         "onPageChanged, realPageIndex = $realPageIndex, playingIndex = $playingIndex");
-    MusicService.instance.playSongWithPlayingIndicesIndex(realPageIndex);
+    MusicService().playSongWithPlayingIndicesIndex(realPageIndex);
   }
 
-  void _onPlayerCurrentIndexChanged(int showingListIndex) {
-    if (_pageController.positions.length != 1) {
+  void _onCurrentIndexChanged(int showingListIndex) {
+    if (_pageController == null || _pageController!.positions.length != 1) {
       return;
     }
-    final realPageIndex = _pageController.page!.round();
-    final playingIndex = MusicService.instance
-        .convertShowingListIndexToPlayingIndex(showingListIndex);
+    final realPageIndex = _pageController!.realPage;
+    final playingIndex =
+        MusicService().convertShowingListIndexToPlayingIndex(showingListIndex);
     if (playingIndex < 0 || realPageIndex == playingIndex) {
       return;
     }
     debugPrint(
-        "onPlayerCurrentIndexChanged, pageIndex = $realPageIndex, showingListIndex = $showingListIndex, playingIndex = $playingIndex");
-    _pageController.jumpToPage(playingIndex);
+        "PlayLogic.onCurrentIndexChanged, pageIndex = $realPageIndex, showingListIndex = $showingListIndex, playingIndex = $playingIndex");
+    _pageController?.jumpToPage(playingIndex);
   }
 
-  void dispose() {
-    _pageController.dispose();
+  void _onPlayingIndicesChanged(List<int> indices) {
+    if (_pageController == null || _pageController!.positions.length != 1) {
+      return;
+    }
+    final playingIndex = MusicService().playingIndex;
+    if (playingIndex == -1) {
+      return;
+    }
+    _pageController?.jumpToPage(playingIndex);
   }
+
+  @override
+  void onClose() {}
 }
 
 class SongModel {

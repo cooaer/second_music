@@ -20,14 +20,9 @@ enum PlayerState {
 }
 
 class MusicService {
-  static MusicService? _instance;
+  factory MusicService() => _instance ??= MusicService._();
 
-  static MusicService get instance {
-    if (_instance == null) {
-      _instance = new MusicService._();
-    }
-    return _instance!;
-  }
+  static MusicService? _instance;
 
   final _audioPlayer = AudioPlayer();
   ConcatenatingAudioSource? _playlist;
@@ -163,6 +158,7 @@ class MusicService {
   }
 
   void _onPlayModeChanged(LoopMode loopMode) {
+    debugPrint("MusicService.onPlayModeChanged, mode = $loopMode");
     if (loopMode == LoopMode.all) {
       _setPlayMode(PlayMode.repeat);
     } else if (loopMode == LoopMode.one) {
@@ -171,6 +167,7 @@ class MusicService {
   }
 
   void _onShuffleModeChanged(bool enable) {
+    debugPrint("MusicService.onShuffleModeChanged, enable = $enable");
     if (enable) {
       _setPlayMode(PlayMode.random);
     }
@@ -219,6 +216,12 @@ class MusicService {
     _showingSongList = songs;
     _showingSongListController.add(songs);
     _resetPlayingIndices();
+  }
+
+  int? showingListIndex(int playingIndex) {
+    return playingIndex >= 0 && playingIndex < playlistSize
+        ? _playingIndices[playingIndex]
+        : null;
   }
 
   //===============播放列表中歌曲的索引列表,按照播放顺序排列================
@@ -525,21 +528,6 @@ class MusicService {
   }
 
 //=============== utils ===============
-
-  //获取在播放列表中真实的索引地址
-  int _getShowingListIndex(int playingListIndex) {
-    int showingListIndex;
-    switch (_playMode) {
-      case PlayMode.repeatOne:
-      case PlayMode.repeat:
-        showingListIndex = playingListIndex;
-        break;
-      case PlayMode.random:
-        showingListIndex = _shuffleIndices[playingListIndex];
-        break;
-    }
-    return showingListIndex;
-  }
 
   List<Song> _filterInPlaylist(List<Song> songs) {
     return songs

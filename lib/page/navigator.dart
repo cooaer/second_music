@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:second_music/page/home/page.dart';
-import 'package:second_music/page/play/page.dart';
+import 'package:second_music/page/play/play_page.dart';
 import 'package:second_music/page/search/page.dart';
 import 'package:second_music/page/setting/page.dart';
 import 'package:second_music/page/song_list/page.dart';
@@ -127,7 +127,7 @@ class AppNavigator {
   }
 
   Widget buildPlay({Map<String, dynamic>? params}) {
-    return PlayPage(params?['song']);
+    return PlayPage(params?['index'], params?['song']);
   }
 
   Widget buildWebView({Map<String, dynamic>? params}) {

@@ -74,6 +74,23 @@ class AppLocalizations {
     }
   }
 
+  String platformFullName(MusicPlatform plt) {
+    switch (plt) {
+      case MusicPlatform.netease:
+        return neteaseMusic;
+      case MusicPlatform.qq:
+        return qqMusic;
+      // case MusicPlatform.kugou:
+      //   return kugou;
+      // case MusicPlatform.kuwo:
+      //   return kuwo;
+      // case MusicPlatform.bilibili:
+      //   return bilibili;
+      // case MusicPlatform.local:
+      //   return local;
+    }
+  }
+
   //common
 
   String get ok => '确定';
@@ -156,6 +173,11 @@ class AppLocalizations {
   String anAlbum(String name) => '专辑：$name';
 
   String get delete => '删除';
+
+  String get source => '来源';
+
+  String sourceWithPlatform(MusicPlatform plt) =>
+      source + "：" + platformFullName(plt);
 
   // search
   String get searchHistory => '搜索历史';
@@ -281,4 +303,5 @@ class AppLocalizations {
   //错误提示
 
   String get playFailBecauseOfCopyright => "版权原因无法播放，请尝试其他平台";
+  String get developing => "开发中...";
 }

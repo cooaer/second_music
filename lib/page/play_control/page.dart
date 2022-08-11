@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:second_music/entity/song.dart';
 import 'package:second_music/page/navigator.dart';
-import 'package:second_music/page/play/model.dart';
+import 'package:second_music/page/play/play_logic.dart';
 import 'package:second_music/page/play_control/widget.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/service/music_service.dart';
@@ -18,12 +18,14 @@ class PlayController extends StatefulWidget {
 }
 
 class _PlayControllerState extends State<PlayController> {
-  late PlaySongListModel _model;
+  late PlaySongListLogic _logic;
+  late InfinitePageController _pageController;
 
   @override
   void initState() {
     super.initState();
-    _model = PlaySongListModel();
+    _logic = PlaySongListLogic();
+    _pageController = _logic.newPageController();
   }
 
   @override
@@ -81,22 +83,22 @@ class _PlayControllerState extends State<PlayController> {
 
   Widget _buildSongList(BuildContext context) {
     return StreamBuilder(
-      initialData: MusicService.instance.playingIndices,
-      stream: MusicService.instance.playingIndicesStream,
+      initialData: MusicService().playingIndices,
+      stream: MusicService().playingIndicesStream,
       builder: (context, AsyncSnapshot<List<int>> snapshot) {
         final count = snapshot.data?.length ?? 0;
         return count == 0
-            ? _PlayControllerSong(null, key: Key('default_song'))
+            ? _PlayControllerSong(-1, null, key: Key('default_song'))
             : InfinitePageView(
                 count,
-                _model.pageController,
+                _pageController,
                 (context, index, realIndex) {
                   print(
                       "PlayControl.buildSongList: index = $index, realIndex=$realIndex");
                   final showingListIndex = snapshot.data![realIndex];
-                  final song =
-                      MusicService.instance.showingSongList[showingListIndex];
-                  return _PlayControllerSong(song, key: Key(song.uniqueId));
+                  final song = MusicService().showingSongList[showingListIndex];
+                  return _PlayControllerSong(realIndex, song,
+                      key: Key(song.uniqueId));
                 },
               );
       },
@@ -110,11 +112,11 @@ class _PlayControllerState extends State<PlayController> {
       alignment: Alignment.center,
       child: FlatButton(
           padding: EdgeInsets.zero,
-          onPressed: () => MusicService.instance.playOrPause(),
+          onPressed: () => MusicService().playOrPause(),
           shape: CircleBorder(),
           child: StreamBuilder(
-            initialData: MusicService.instance.playing,
-            stream: MusicService.instance.playingStream,
+            initialData: MusicService().playing,
+            stream: MusicService().playingStream,
             builder: (context, AsyncSnapshot<bool> snapshot) {
               return MdrIcon(
                 AppImages.playIcon(snapshot.data!),
@@ -129,24 +131,24 @@ class _PlayControllerState extends State<PlayController> {
   @override
   void dispose() {
     super.dispose();
-    _model.dispose();
+    _pageController.dispose();
   }
 }
 
 class _PlayControllerSong extends StatelessWidget {
+  final int index;
   final Song? song;
 
-  _PlayControllerSong(this.song, {Key? key}) : super(key: key);
+  _PlayControllerSong(this.index, this.song, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
-        if (song != null) {
-          MusicService.instance.play();
-          AppNavigator.instance
-              .navigateTo(context, AppNavigator.play, overlay: true);
+        if (index >= 0 && song != null) {
+          AppNavigator.instance.navigateTo(context, AppNavigator.play,
+              params: {"index": index, "song": song}, overlay: true);
         }
       },
       child: Row(

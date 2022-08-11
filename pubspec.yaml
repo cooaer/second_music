@@ -38,7 +38,6 @@ dependencies:
   crypto: ^3.0.0
   convert: ^3.0.0
   material_design_icons_flutter: ^5.0.6595
-  after_layout: ^1.2.0
   webview_flutter: ^3.0.1
   palette_generator: ^0.3.3
 
@@ -64,6 +63,7 @@ dependencies:
   path: ^1.8.0
 
   toast: ^0.3.0
+  get: ^4.6.5
 
 dev_dependencies:
   flutter_test:

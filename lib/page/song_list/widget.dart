@@ -24,6 +24,7 @@ void showSongMenu(BuildContext context, Song song, SongList? songList,
 //歌手：
 //专辑:
 //删除（从歌单中删除）
+//来源
 class _SongMenu extends StatelessWidget {
   final Song song;
   final SongList? songList;
@@ -51,6 +52,9 @@ class _SongMenu extends StatelessWidget {
       items.add(
           ['deleteFromSongList', 'delete_outline', stringsOf(context).delete]);
     }
+
+    items.add(
+        ["source", "link", stringsOf(context).sourceWithPlatform(song.plt)]);
 
     return SingleChildScrollView(
       child: Padding(
@@ -97,6 +101,9 @@ class _SongMenu extends StatelessWidget {
       case 'deleteFromSongList':
         _deleteFromSongList();
         break;
+      case 'source':
+        _openSource(context);
+        break;
     }
   }
 
@@ -131,6 +138,11 @@ class _SongMenu extends StatelessWidget {
       "songListId": song.album?.id,
       "songListType": SongListType.album
     });
+  }
+
+  void _openSource(BuildContext context) {
+    AppNavigator.instance.navigateTo(context, AppNavigator.web_view,
+        params: {"url": song.source});
   }
 }
 
