@@ -75,6 +75,8 @@ class SongTable extends Table {
 
   TextColumn get description => text()();
 
+  BoolColumn get isPlayable => boolean()();
+
   TextColumn get singerId => text()();
 
   TextColumn get singerName => text()();
@@ -114,12 +116,16 @@ class PlayingSongTable extends Table {
   @override
   String get tableName => "playing_song";
 
+  IntColumn get id => integer().autoIncrement()();
+
   IntColumn get songId => integer()();
 
   DateTimeColumn get addedTime => dateTime().withDefault(currentDateAndTime)();
 
   @override
-  Set<Column> get primaryKey => {songId};
+  List<Set<Column>> get uniqueKeys => [
+        {songId}
+      ];
 }
 
 @DriftDatabase(

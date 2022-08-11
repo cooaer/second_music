@@ -482,6 +482,7 @@ class SongTableCompanion extends UpdateCompanion<Song> {
   final Value<String> cover;
   final Value<String> streamUrl;
   final Value<String> description;
+  final Value<bool> isPlayable;
   final Value<String> singerId;
   final Value<String> singerName;
   final Value<String> singerAvatar;
@@ -498,6 +499,7 @@ class SongTableCompanion extends UpdateCompanion<Song> {
     this.cover = const Value.absent(),
     this.streamUrl = const Value.absent(),
     this.description = const Value.absent(),
+    this.isPlayable = const Value.absent(),
     this.singerId = const Value.absent(),
     this.singerName = const Value.absent(),
     this.singerAvatar = const Value.absent(),
@@ -515,6 +517,7 @@ class SongTableCompanion extends UpdateCompanion<Song> {
     required String cover,
     required String streamUrl,
     required String description,
+    required bool isPlayable,
     required String singerId,
     required String singerName,
     required String singerAvatar,
@@ -529,6 +532,7 @@ class SongTableCompanion extends UpdateCompanion<Song> {
         cover = Value(cover),
         streamUrl = Value(streamUrl),
         description = Value(description),
+        isPlayable = Value(isPlayable),
         singerId = Value(singerId),
         singerName = Value(singerName),
         singerAvatar = Value(singerAvatar),
@@ -544,6 +548,7 @@ class SongTableCompanion extends UpdateCompanion<Song> {
     Expression<String>? cover,
     Expression<String>? streamUrl,
     Expression<String>? description,
+    Expression<bool>? isPlayable,
     Expression<String>? singerId,
     Expression<String>? singerName,
     Expression<String>? singerAvatar,
@@ -561,6 +566,7 @@ class SongTableCompanion extends UpdateCompanion<Song> {
       if (cover != null) 'cover': cover,
       if (streamUrl != null) 'stream_url': streamUrl,
       if (description != null) 'description': description,
+      if (isPlayable != null) 'is_playable': isPlayable,
       if (singerId != null) 'singer_id': singerId,
       if (singerName != null) 'singer_name': singerName,
       if (singerAvatar != null) 'singer_avatar': singerAvatar,
@@ -580,6 +586,7 @@ class SongTableCompanion extends UpdateCompanion<Song> {
       Value<String>? cover,
       Value<String>? streamUrl,
       Value<String>? description,
+      Value<bool>? isPlayable,
       Value<String>? singerId,
       Value<String>? singerName,
       Value<String>? singerAvatar,
@@ -596,6 +603,7 @@ class SongTableCompanion extends UpdateCompanion<Song> {
       cover: cover ?? this.cover,
       streamUrl: streamUrl ?? this.streamUrl,
       description: description ?? this.description,
+      isPlayable: isPlayable ?? this.isPlayable,
       singerId: singerId ?? this.singerId,
       singerName: singerName ?? this.singerName,
       singerAvatar: singerAvatar ?? this.singerAvatar,
@@ -633,6 +641,9 @@ class SongTableCompanion extends UpdateCompanion<Song> {
     if (description.present) {
       map['description'] = Variable<String>(description.value);
     }
+    if (isPlayable.present) {
+      map['is_playable'] = Variable<bool>(isPlayable.value);
+    }
     if (singerId.present) {
       map['singer_id'] = Variable<String>(singerId.value);
     }
@@ -668,6 +679,7 @@ class SongTableCompanion extends UpdateCompanion<Song> {
           ..write('cover: $cover, ')
           ..write('streamUrl: $streamUrl, ')
           ..write('description: $description, ')
+          ..write('isPlayable: $isPlayable, ')
           ..write('singerId: $singerId, ')
           ..write('singerName: $singerName, ')
           ..write('singerAvatar: $singerAvatar, ')
@@ -728,6 +740,13 @@ class $SongTableTable extends SongTable with TableInfo<$SongTableTable, Song> {
   late final GeneratedColumn<String?> description = GeneratedColumn<String?>(
       'description', aliasedName, false,
       type: const StringType(), requiredDuringInsert: true);
+  final VerificationMeta _isPlayableMeta = const VerificationMeta('isPlayable');
+  @override
+  late final GeneratedColumn<bool?> isPlayable = GeneratedColumn<bool?>(
+      'is_playable', aliasedName, false,
+      type: const BoolType(),
+      requiredDuringInsert: true,
+      defaultConstraints: 'CHECK (is_playable IN (0, 1))');
   final VerificationMeta _singerIdMeta = const VerificationMeta('singerId');
   @override
   late final GeneratedColumn<String?> singerId = GeneratedColumn<String?>(
@@ -774,6 +793,7 @@ class $SongTableTable extends SongTable with TableInfo<$SongTableTable, Song> {
         cover,
         streamUrl,
         description,
+        isPlayable,
         singerId,
         singerName,
         singerAvatar,
@@ -837,6 +857,14 @@ class $SongTableTable extends SongTable with TableInfo<$SongTableTable, Song> {
               data['description']!, _descriptionMeta));
     } else if (isInserting) {
       context.missing(_descriptionMeta);
+    }
+    if (data.containsKey('is_playable')) {
+      context.handle(
+          _isPlayableMeta,
+          isPlayable.isAcceptableOrUnknown(
+              data['is_playable']!, _isPlayableMeta));
+    } else if (isInserting) {
+      context.missing(_isPlayableMeta);
     }
     if (data.containsKey('singer_id')) {
       context.handle(_singerIdMeta,
@@ -915,6 +943,8 @@ class $SongTableTable extends SongTable with TableInfo<$SongTableTable, Song> {
           .mapFromDatabaseResponse(data['${effectivePrefix}stream_url'])!,
       description: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}description'])!,
+      isPlayable: const BoolType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}is_playable'])!,
       singerId: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}singer_id'])!,
       singerName: const StringType()
@@ -1079,29 +1109,35 @@ class $SongListJoinSongTableTable extends SongListJoinSongTable
 }
 
 class PlayingSongTableCompanion extends UpdateCompanion<PlayingSong> {
+  final Value<int> id;
   final Value<int> songId;
   final Value<DateTime> addedTime;
   const PlayingSongTableCompanion({
+    this.id = const Value.absent(),
     this.songId = const Value.absent(),
     this.addedTime = const Value.absent(),
   });
   PlayingSongTableCompanion.insert({
-    this.songId = const Value.absent(),
+    this.id = const Value.absent(),
+    required int songId,
     this.addedTime = const Value.absent(),
-  });
+  }) : songId = Value(songId);
   static Insertable<PlayingSong> custom({
+    Expression<int>? id,
     Expression<int>? songId,
     Expression<DateTime>? addedTime,
   }) {
     return RawValuesInsertable({
+      if (id != null) 'id': id,
       if (songId != null) 'song_id': songId,
       if (addedTime != null) 'added_time': addedTime,
     });
   }
 
   PlayingSongTableCompanion copyWith(
-      {Value<int>? songId, Value<DateTime>? addedTime}) {
+      {Value<int>? id, Value<int>? songId, Value<DateTime>? addedTime}) {
     return PlayingSongTableCompanion(
+      id: id ?? this.id,
       songId: songId ?? this.songId,
       addedTime: addedTime ?? this.addedTime,
     );
@@ -1110,6 +1146,9 @@ class PlayingSongTableCompanion extends UpdateCompanion<PlayingSong> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
     if (songId.present) {
       map['song_id'] = Variable<int>(songId.value);
     }
@@ -1122,6 +1161,7 @@ class PlayingSongTableCompanion extends UpdateCompanion<PlayingSong> {
   @override
   String toString() {
     return (StringBuffer('PlayingSongTableCompanion(')
+          ..write('id: $id, ')
           ..write('songId: $songId, ')
           ..write('addedTime: $addedTime')
           ..write(')'))
@@ -1135,11 +1175,18 @@ class $PlayingSongTableTable extends PlayingSongTable
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $PlayingSongTableTable(this.attachedDatabase, [this._alias]);
+  final VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+      'id', aliasedName, false,
+      type: const IntType(),
+      requiredDuringInsert: false,
+      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _songIdMeta = const VerificationMeta('songId');
   @override
   late final GeneratedColumn<int?> songId = GeneratedColumn<int?>(
       'song_id', aliasedName, false,
-      type: const IntType(), requiredDuringInsert: false);
+      type: const IntType(), requiredDuringInsert: true);
   final VerificationMeta _addedTimeMeta = const VerificationMeta('addedTime');
   @override
   late final GeneratedColumn<DateTime?> addedTime = GeneratedColumn<DateTime?>(
@@ -1148,7 +1195,7 @@ class $PlayingSongTableTable extends PlayingSongTable
       requiredDuringInsert: false,
       defaultValue: currentDateAndTime);
   @override
-  List<GeneratedColumn> get $columns => [songId, addedTime];
+  List<GeneratedColumn> get $columns => [id, songId, addedTime];
   @override
   String get aliasedName => _alias ?? 'playing_song';
   @override
@@ -1158,9 +1205,14 @@ class $PlayingSongTableTable extends PlayingSongTable
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
     if (data.containsKey('song_id')) {
       context.handle(_songIdMeta,
           songId.isAcceptableOrUnknown(data['song_id']!, _songIdMeta));
+    } else if (isInserting) {
+      context.missing(_songIdMeta);
     }
     if (data.containsKey('added_time')) {
       context.handle(_addedTimeMeta,
@@ -1170,7 +1222,11 @@ class $PlayingSongTableTable extends PlayingSongTable
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {songId};
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+        {songId},
+      ];
   @override
   PlayingSong map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';

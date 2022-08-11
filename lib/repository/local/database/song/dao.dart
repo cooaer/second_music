@@ -285,7 +285,7 @@ class SongDao extends BasicDao {
       innerJoin(
           db.songTable, db.songTable.id.equalsExp(db.playingSongTable.songId))
     ])
-          ..orderBy([OrderingTerm.asc(db.playingSongTable.addedTime)]))
+          ..orderBy([OrderingTerm.asc(db.playingSongTable.id)]))
         .get();
     return typedResult.map((e) => e.readTable(db.songTable)).toList();
   }
@@ -305,7 +305,7 @@ class SongDao extends BasicDao {
         try {
           final rowId = await db
               .into(db.playingSongTable)
-              .insert(PlayingSongTableCompanion.insert(songId: Value(songId)));
+              .insert(PlayingSongTableCompanion.insert(songId: songId));
           if (rowId > 0) {
             addedRows++;
           }
