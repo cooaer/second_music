@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:second_music/entity/enum.dart';
 import 'package:second_music/page/home/hot_playlist/page.dart';
 import 'package:second_music/page/home/my_song_list/page.dart';
+import 'package:second_music/page/mini_player/mini_player_page.dart';
 import 'package:second_music/page/navigator.dart';
-import 'package:second_music/page/play_control/page.dart';
 import 'package:second_music/page/ui_style.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/widget/material_icon_round.dart';
@@ -26,7 +26,7 @@ class _HomePageState extends State<HomePage> {
         alignment: AlignmentDirectional.bottomCenter,
         children: <Widget>[
           _NavigatorContainer(),
-          PlayController(),
+          MiniPlayer(),
         ],
       ),
     );

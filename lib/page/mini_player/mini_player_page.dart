@@ -1,23 +1,23 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:second_music/entity/song.dart';
+import 'package:second_music/page/mini_player/playing_list_bottom_sheet.dart';
 import 'package:second_music/page/navigator.dart';
 import 'package:second_music/page/play/play_logic.dart';
-import 'package:second_music/page/play_control/widget.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/service/music_service.dart';
 import 'package:second_music/widget/infinite_page_view.dart';
 import 'package:second_music/widget/material_icon_round.dart';
 
-class PlayController extends StatefulWidget {
+class MiniPlayer extends StatefulWidget {
   static const double BAR_HEIGHT = 48;
   static const double ALL_HEIGHT = 54;
 
   @override
-  State<StatefulWidget> createState() => _PlayControllerState();
+  State<StatefulWidget> createState() => _MiniPlayerState();
 }
 
-class _PlayControllerState extends State<PlayController> {
+class _MiniPlayerState extends State<MiniPlayer> {
   late PlaySongListLogic _logic;
   late InfinitePageController _pageController;
 
@@ -38,7 +38,7 @@ class _PlayControllerState extends State<PlayController> {
           child: SafeArea(
             top: false,
             child: Container(
-                height: PlayController.BAR_HEIGHT,
+                height: MiniPlayer.BAR_HEIGHT,
                 alignment: Alignment.topCenter,
                 child: Divider(
                   height: 1,
@@ -88,16 +88,16 @@ class _PlayControllerState extends State<PlayController> {
       builder: (context, AsyncSnapshot<List<int>> snapshot) {
         final count = snapshot.data?.length ?? 0;
         return count == 0
-            ? _PlayControllerSong(-1, null, key: Key('default_song'))
+            ? _MiniPlayerSong(-1, null, key: Key('default_song'))
             : InfinitePageView(
                 count,
                 _pageController,
                 (context, index, realIndex) {
                   print(
-                      "PlayControl.buildSongList: index = $index, realIndex=$realIndex");
+                      "MiniPlayer.buildSongList: index = $index, realIndex=$realIndex");
                   final showingListIndex = snapshot.data![realIndex];
                   final song = MusicService().showingSongList[showingListIndex];
-                  return _PlayControllerSong(realIndex, song,
+                  return _MiniPlayerSong(realIndex, song,
                       key: Key(song.uniqueId));
                 },
               );
@@ -135,11 +135,11 @@ class _PlayControllerState extends State<PlayController> {
   }
 }
 
-class _PlayControllerSong extends StatelessWidget {
+class _MiniPlayerSong extends StatelessWidget {
   final int index;
   final Song? song;
 
-  _PlayControllerSong(this.index, this.song, {Key? key}) : super(key: key);
+  _MiniPlayerSong(this.index, this.song, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -167,7 +167,11 @@ class _PlayControllerSong extends StatelessWidget {
                         width: 44,
                         height: 44,
                         fit: BoxFit.cover,
-                        imageUrl: song!.cover),
+                        imageUrl: song!.cover,
+                        errorWidget: (context, url, error) => SizedBox(
+                              width: 44,
+                              height: 44,
+                            )),
                   )
                 : null,
           ),
@@ -180,7 +184,7 @@ class _PlayControllerSong extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    song?.name ?? stringsOf(context).defaultPlayControlTitle,
+                    song?.name ?? stringsOf(context).defaultMiniPlayerTitle,
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                     style: TextStyle(
@@ -191,7 +195,7 @@ class _PlayControllerSong extends StatelessWidget {
                   ),
                   Text(
                     song?.singer?.name ??
-                        stringsOf(context).defaultPlayControlDescription,
+                        stringsOf(context).defaultMiniPlayerDescription,
                     style: TextStyle(
                       color: AppColors.text_light,
                       fontSize: 11,

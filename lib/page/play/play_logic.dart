@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -29,7 +30,7 @@ class PlaySongListLogic extends GetxController {
   }
 
   InfinitePageController newPageController() {
-    final initialPage = MusicService().playingIndex + 1;
+    final initialPage = max(MusicService().playingIndex + 1, 1);
     final newPageController = InfinitePageController(initialPage: initialPage);
     newPageController.addListener(_onPageChanged);
     _pageController = newPageController;

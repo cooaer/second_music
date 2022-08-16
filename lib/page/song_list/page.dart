@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:second_music/entity/enum.dart';
 import 'package:second_music/entity/song.dart';
 import 'package:second_music/entity/song_list.dart';
+import 'package:second_music/page/mini_player/mini_player_page.dart';
 import 'package:second_music/page/navigator.dart';
-import 'package:second_music/page/play_control/page.dart';
 import 'package:second_music/page/song_list/model.dart';
 import 'package:second_music/page/song_list/widget.dart';
 import 'package:second_music/res/res.dart';
@@ -117,7 +117,7 @@ class _SongListPageState extends State<SongListPage> {
           SliverPadding(
             padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).padding.bottom +
-                    PlayController.BAR_HEIGHT),
+                    MiniPlayer.BAR_HEIGHT),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {

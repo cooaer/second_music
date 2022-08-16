@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/page/basic_types.dart';
 import 'package:second_music/page/home/my_song_list/model.dart';
-import 'package:second_music/page/play_control/page.dart';
+import 'package:second_music/page/mini_player/mini_player_page.dart';
 import 'package:second_music/repository/local/database/song/dao.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/widget/material_icon_round.dart';
@@ -113,8 +113,8 @@ class _SongMenu extends StatelessWidget {
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).padding.bottom +
-                PlayController.ALL_HEIGHT),
+            bottom:
+                MediaQuery.of(context).padding.bottom + MiniPlayer.ALL_HEIGHT),
         child: Column(children: listWidgets),
       ),
     );

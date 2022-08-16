@@ -205,9 +205,9 @@ class AppLocalizations {
 
   String get close => '关闭';
 
-  String get defaultPlayControlTitle => '聆听全平台免费音乐';
+  String get defaultMiniPlayerTitle => '聆听全平台免费音乐';
 
-  String get defaultPlayControlDescription => '第二音乐';
+  String get defaultMiniPlayerDescription => '第二音乐';
 
   //song list
   String songListTitle(SongListType songListType) {

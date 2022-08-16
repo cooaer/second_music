@@ -12,6 +12,7 @@ import 'package:second_music/entity/search.dart';
 import 'package:second_music/entity/song.dart';
 import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/entity/user.dart';
+import 'package:second_music/repository/remote/cookie.dart';
 import 'package:second_music/repository/remote/http_maker.dart';
 import 'package:second_music/repository/remote/platform/music_provider.dart';
 
@@ -50,7 +51,7 @@ class NeteaseMusic extends BaseMusicProvider {
       'csrf_token': ''
     };
 
-    final respStr = await _neteaseHttpRequest(url, params);
+    final respStr = await _weapiRequest(url, params);
 
     final respMap = json.decode(respStr);
 
@@ -122,14 +123,36 @@ class NeteaseMusic extends BaseMusicProvider {
       'total': 'false',
       'type': type.toString(),
     };
-    final respStr = await _neteaseHttpRequest(url, params);
+    final respStr = await _weapiRequest(url, params);
     final respMap = json.decode(respStr);
     final resultMap = Json.getMap(respMap, 'result');
     return _convertSearchResult(resultMap);
   }
 
   @override
-  Future<bool> parseTrack(Song song) async {
+  Future<bool> parseTrack(Song song) {
+    return _parseTrackByWeapi(song);
+  }
+
+  Future<bool> _parseTrackByEapi(Song song) async {
+    const targetUrl =
+        'https://interface3.music.163.com/eapi/song/enhance/player/url';
+    const eapiUrl = '/api/song/enhance/player/url';
+
+    final params = {
+      'ids': '[${song.pltId}]',
+      'br': 999000,
+    };
+
+    final respStr = await _eapiRequest(targetUrl, eapiUrl, params);
+    final respMap = json.decode(respStr);
+    final dataList = Json.getList(respMap, 'data');
+    final firstTrackMap = dataList.isNotEmpty ? dataList[0] : null;
+    song.streamUrl = Json.getString(firstTrackMap, 'url');
+    return true;
+  }
+
+  Future<bool> _parseTrackByWeapi(Song song) async {
     const url =
         'http://music.163.com/weapi/song/enhance/player/url/v1?csrf_token=';
     final params = {
@@ -138,7 +161,7 @@ class NeteaseMusic extends BaseMusicProvider {
       'encodeType': "aac",
       'csrf_token': ""
     };
-    final respStr = await _neteaseHttpRequest(url, params);
+    final respStr = await _weapiRequest(url, params);
     final respMap = json.decode(respStr);
     final dataList = Json.getList(respMap, 'data');
     final firstTrackMap = dataList.isNotEmpty ? dataList[0] : null;
@@ -176,12 +199,30 @@ class NeteaseMusic extends BaseMusicProvider {
   @override
   MusicPlatform get platform => MusicPlatform.netease;
 
-  Future _neteaseHttpRequest(String url, Map params) async {
-    final data = await NeteaseMusicCipher.encrypt(json.encode(params));
+  Future _weapiRequest(String url, Map params) async {
+    final data = await NeteaseMusicCipher.encryptWeapi(json.encode(params));
     final body =
         'encSecKey=${Uri.encodeQueryComponent(data['encSecKey'])}&params=${Uri.encodeQueryComponent(data['params'])}';
     return await httpMaker({
       HttpMakerParams.url: url,
+      HttpMakerParams.method: HttpMakerParams.methodPost,
+      HttpMakerParams.data: body,
+      HttpMakerParams.headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      }
+    });
+  }
+
+  Future<String> _eapiRequest(
+      String targetUrl, String eapiUrl, Map params) async {
+    final data =
+        await NeteaseMusicCipher.encryptEapi(eapiUrl, json.encode(params));
+    final body = 'params=${Uri.encodeQueryComponent(data['params'])}';
+    final expire =
+        DateTime.now().millisecondsSinceEpoch + 100 * 365 * 24 * 60 * 60 * 1000;
+    await setCookie('https://interface3.music.163.com', "os", "pc", expire);
+    return await httpMaker({
+      HttpMakerParams.url: targetUrl,
       HttpMakerParams.method: HttpMakerParams.methodPost,
       HttpMakerParams.data: body,
       HttpMakerParams.headers: {
@@ -196,7 +237,7 @@ class NeteaseMusic extends BaseMusicProvider {
       'c': '[' + trackIds.map((e) => '{"id":$e}').toList().join(',') + ']',
       'ids': '[' + trackIds.join(',') + ']',
     };
-    final respStr = await _neteaseHttpRequest(url, params);
+    final respStr = await _weapiRequest(url, params);
     final respMap = json.decode(respStr);
     List songsMap = respMap['songs'];
     return await Future.wait(songsMap.map((e) => _convertSong(e)));

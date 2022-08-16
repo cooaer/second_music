@@ -6,8 +6,8 @@ import 'package:get/get.dart';
 import 'package:second_music/entity/enum.dart';
 import 'package:second_music/entity/playing_progress.dart';
 import 'package:second_music/entity/song.dart';
+import 'package:second_music/page/mini_player/playing_list_bottom_sheet.dart';
 import 'package:second_music/page/play/play_logic.dart';
-import 'package:second_music/page/play_control/widget.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/service/music_service.dart';
 import 'package:second_music/widget/infinite_page_view.dart';
@@ -48,7 +48,7 @@ class _PlayPageState extends State<PlayPage> {
                   flex: 1,
                   child: _PlayCenterContainer(),
                 ),
-                _PlayControl(),
+                _MiniPlayer(),
               ],
             ),
           ),
@@ -386,7 +386,7 @@ class _PlayLyricContainer extends StatelessWidget {
   }
 }
 
-class _PlayControl extends StatelessWidget {
+class _MiniPlayer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -407,26 +407,26 @@ class _PlayControl extends StatelessWidget {
                 initialData: MusicService().playMode,
                 stream: MusicService().playModeStream,
                 builder: (context, AsyncSnapshot<PlayMode> snapshot) {
-                  return _buildPlayControlIcon(context, 'play_mode',
+                  return _buildMiniPlayerIcon(context, 'play_mode',
                       AppImages.playModeIcon(snapshot.data!), 32);
                 },
               ),
-              _buildPlayControlIcon(context, 'play_pre', 'skip_previous', 40),
+              _buildMiniPlayerIcon(context, 'play_pre', 'skip_previous', 40),
               StreamBuilder(
                 initialData: MusicService().playing,
                 stream: MusicService().playingStream,
                 builder: (context, AsyncSnapshot<bool> snapshot) {
                   if (snapshot.data == true) {
-                    return _buildPlayControlIcon(
+                    return _buildMiniPlayerIcon(
                         context, 'playOrPause', 'pause_circle_filled', 70);
                   } else {
-                    return _buildPlayControlIcon(
+                    return _buildMiniPlayerIcon(
                         context, 'playOrPause', 'play_circle_filled', 70);
                   }
                 },
               ),
-              _buildPlayControlIcon(context, 'play_next', 'skip_next', 40),
-              _buildPlayControlIcon(
+              _buildMiniPlayerIcon(context, 'play_next', 'skip_next', 40),
+              _buildMiniPlayerIcon(
                   context, 'playing_list', 'playlist_play', 40),
             ],
           )
@@ -462,7 +462,7 @@ class _PlayControl extends StatelessWidget {
     );
   }
 
-  Widget _buildPlayControlIcon(
+  Widget _buildMiniPlayerIcon(
       BuildContext context, String tag, String iconName, double iconSize) {
     return Expanded(
       flex: 1,

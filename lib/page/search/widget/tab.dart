@@ -9,8 +9,8 @@ import 'package:second_music/entity/search.dart';
 import 'package:second_music/entity/singer.dart';
 import 'package:second_music/entity/song.dart';
 import 'package:second_music/entity/song_list.dart';
+import 'package:second_music/page/mini_player/mini_player_page.dart';
 import 'package:second_music/page/navigator.dart';
-import 'package:second_music/page/play_control/page.dart';
 import 'package:second_music/page/search/model.dart';
 import 'package:second_music/page/song_list/widget.dart';
 import 'package:second_music/repository/local/preference/config.dart';
@@ -69,7 +69,7 @@ class _SearchObjectTabState extends State<SearchObjectTab>
             SliverToBoxAdapter(
               child: SizedBox(
                 height: MediaQuery.of(context).padding.bottom +
-                    PlayController.ALL_HEIGHT,
+                    MiniPlayer.ALL_HEIGHT,
               ),
             )
           ],
