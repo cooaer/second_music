@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:second_music/res/res.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -24,7 +23,6 @@ class WebViewPage extends StatelessWidget {
           ),
         ),
         backgroundColor: AppColors.main_bg,
-        systemOverlayStyle: SystemUiOverlayStyle.light,
         bottom: PreferredSize(
             child: Divider(
               height: 1,

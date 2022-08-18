@@ -11,7 +11,7 @@ class AppPath {
 
   String get tempCookieDirPath => _tempCookieDirPath ?? "";
 
-  static AppPath? _instance = null;
+  static AppPath? _instance;
 
   static AppPath get instance {
     if (_instance == null) {

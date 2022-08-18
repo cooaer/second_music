@@ -57,7 +57,7 @@ class HotPlaylistModel {
 
     var newSet =
         await _provider.showPlayList(offset: clear ? 0 : _set.playlists.length);
-    if (newSet != null) {
+    if (newSet.playlists.isNotEmpty) {
       if (clear) _set.playlists.clear();
       _playlistSetController.add(newSet);
       _lastErrorController.add(false);

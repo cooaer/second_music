@@ -16,6 +16,7 @@ class Song {
   String streamUrl = ""; //歌曲播放流地址
   String description = ""; //描述
   bool isPlayable = true; //该歌曲在当前平台上非登录状态下是否可播放，不可播放的原因有：1：没有版权，2：需要付费
+  String lyricUrl = "";
 
   ///歌手
   Singer? _singer;
@@ -31,6 +32,11 @@ class Song {
 
   ///最近一次播放时间, 本地数据库字段
   DateTime? playedTime;
+
+  //migu平台获取streamUrl时使用
+  String quality = "";
+  //migu平台获取songSource时使用
+  String copyrightId = "";
 
   Song();
 
@@ -59,12 +65,12 @@ class Song {
     this.plt = musicPlatform;
     this._singer = Singer()
       ..plt = this.plt
-      ..id = singerId
+      ..pltId = singerId
       ..name = singerName
       ..avatar = singerAvatar;
     this.album = Album()
       ..plt = this.plt
-      ..id = albumId
+      ..pltId = albumId
       ..name = albumName
       ..cover = albumCover;
   }
@@ -79,10 +85,10 @@ class Song {
         streamUrl: streamUrl,
         description: description,
         isPlayable: isPlayable,
-        singerId: singer?.id ?? "",
+        singerId: singer?.pltId ?? "",
         singerName: singer?.name ?? "",
         singerAvatar: singer?.avatar ?? "",
-        albumId: album?.id ?? "",
+        albumId: album?.pltId ?? "",
         albumName: album?.name ?? "",
         albumCover: album?.cover ?? "");
   }
@@ -98,13 +104,13 @@ class Song {
 
     this.album = new Album()
       ..plt = this.plt
-      ..id = map.getString("albumId")
+      ..pltId = map.getString("albumId")
       ..name = map.getString("albumName")
       ..cover = map.getString("albumCover");
 
     this.singer = new Singer()
       ..plt = this.plt
-      ..id = map.getString("singerId")
+      ..pltId = map.getString("singerId")
       ..name = map.getString("singerName")
       ..avatar = map.getString("singerAvatar");
   }
@@ -118,10 +124,10 @@ class Song {
       "cover": this.cover,
       "streamUrl": this.streamUrl,
       "description": this.description,
-      "albumId": this.album?.id ?? "",
+      "albumId": this.album?.pltId ?? "",
       "albumName": this.album?.name ?? "",
       "albumCover": this.album?.cover ?? "",
-      "singerId": this.singer?.id ?? "",
+      "singerId": this.singer?.pltId ?? "",
       "singerName": this.singer?.name ?? "",
       "singerAvatar": this.singer?.avatar ?? "",
     };
@@ -135,11 +141,11 @@ class Song {
 
   bool get isSingerAvailable =>
       singer != null &&
-      singer!.id.isNotNullOrEmpty() &&
+      singer!.pltId.isNotNullOrEmpty() &&
       singer!.name.isNotNullOrEmpty();
 
   bool get isAlbumAvailable =>
-      album != null && album!.id.isNotEmpty && album!.name.isNotEmpty;
+      album != null && album!.pltId.isNotEmpty && album!.name.isNotEmpty;
 
   String get uniqueId => "${plt.name}#$pltId";
 

@@ -68,7 +68,11 @@ class Json {
   }
 }
 
-extension JsonUtils on Map<String, dynamic> {
+extension MapJson on Map<String, dynamic> {
+  T get<T>(String key, {required T defaultValue}) {
+    return this[key] ?? defaultValue;
+  }
+
   int getInt(String key, {int defaultValue = 0}) {
     return Json.getInt(this, key, defaultValue: defaultValue);
   }
@@ -85,7 +89,7 @@ extension JsonUtils on Map<String, dynamic> {
     return Json.getBool(this, key, defaultValue: defaultValue);
   }
 
-  Map getMap(String key) {
+  Map<String, dynamic> getMap(String key) {
     return Json.getMap(this, key);
   }
 
@@ -95,5 +99,16 @@ extension JsonUtils on Map<String, dynamic> {
 
   T getObject<T>(String key) {
     return Json.getObject(this, key);
+  }
+}
+
+extension ListJson on List<dynamic> {
+  T get<T>(int index, {required T defaultValue}) {
+    return index >= 0 && index < this.length ? this[index] : defaultValue;
+  }
+
+  Map<String, dynamic> getMap(int index,
+      {Map<String, dynamic> defaultValue = const <String, dynamic>{}}) {
+    return index >= 0 && index < this.length ? this[index] : defaultValue;
   }
 }

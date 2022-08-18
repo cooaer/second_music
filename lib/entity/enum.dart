@@ -1,7 +1,7 @@
 import 'package:dart_extensions_methods/dart_extension_methods.dart';
 
 //local, kuwo, kugou, bilibili }
-enum MusicPlatform { netease, qq }
+enum MusicPlatform { netease, qq, migu }
 
 class MusicPlatforms {
   MusicPlatforms._();

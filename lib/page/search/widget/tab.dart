@@ -53,8 +53,8 @@ class _SearchObjectTabState extends State<SearchObjectTab>
               SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
                   var plt = plts[index];
-                  var result = snapshot.data![plt]!;
-                  return result.items.isNotEmpty
+                  var result = snapshot.data![plt];
+                  return result != null && result.items.isNotEmpty
                       ? _SearchResultItemWidget(
                           plt, widget.keyword, widget.type, result,
                           key: ValueKey(plt))

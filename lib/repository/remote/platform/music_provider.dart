@@ -9,6 +9,7 @@ import 'package:second_music/entity/singer.dart';
 import 'package:second_music/entity/song.dart';
 import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/repository/remote/http_maker.dart';
+import 'package:second_music/repository/remote/platform/migu_music.dart';
 import 'package:second_music/repository/remote/platform/netease_music.dart';
 import 'package:second_music/repository/remote/platform/qq_music.dart';
 
@@ -31,6 +32,9 @@ abstract class MusicProvider {
       case MusicPlatform.qq:
         instance = QQMusic(dioHttpMakerDefault);
         break;
+      case MusicPlatform.migu:
+        instance = MiguMusic(dioHttpMakerDefault);
+        break;
     }
     _instances[plt] = instance;
     return instance;
@@ -41,7 +45,7 @@ abstract class MusicProvider {
       {int offset = 0, int count = DEFAULT_REQUEST_COUNT});
 
   ///获取歌单的详情
-  Future<Playlist> playList(String listId,
+  Future<Playlist> playlist(String playlistId,
       {int offset = 0, int count = DEFAULT_REQUEST_COUNT});
 
   ///获取歌手详情，包含歌曲和专辑
@@ -125,7 +129,7 @@ abstract class BaseMusicProvider implements MusicProvider {
         var data = await album(songListId, offset: offset, count: count);
         return SongList.fromAlbum(data);
       case SongListType.playlist:
-        var data = await playList(songListId, offset: offset, count: count);
+        var data = await playlist(songListId, offset: offset, count: count);
         return SongList.fromPlaylist(data);
     }
   }

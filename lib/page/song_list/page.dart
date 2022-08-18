@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_extensions_methods/dart_extension_methods.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:second_music/entity/enum.dart';
 import 'package:second_music/entity/song.dart';
 import 'package:second_music/entity/song_list.dart';
@@ -65,6 +66,7 @@ class _SongListPageState extends State<SongListPage> {
         SliverAppBar(
           backgroundColor: barBgColor,
           elevation: 0,
+          systemOverlayStyle: SystemUiOverlayStyle.light,
           title: Text(
             stringsOf(context).songListTitle(widget.songListType),
             style: TextStyle(
@@ -260,10 +262,15 @@ class _SongListHeader extends StatelessWidget {
                           //创建者
                           if (songList != null && songList!.isUserAvailable)
                             GestureDetector(
-                              onTap: () => AppNavigator.instance.navigateTo(
-                                  context, AppNavigator.web_view,
-                                  params: {'url': songList!.userSource},
-                                  overlay: true),
+                              onTap: () {
+                                final userSource = songList!.userSource;
+                                if (userSource.isNotEmpty) {
+                                  AppNavigator.instance.navigateTo(
+                                      context, AppNavigator.web_view,
+                                      params: {'url': songList!.userSource},
+                                      overlay: true);
+                                }
+                              },
                               child: Row(
                                 children: <Widget>[
                                   ClipRRect(
@@ -297,11 +304,15 @@ class _SongListHeader extends StatelessWidget {
                                       ),
                                     ),
                                   ),
-                                  MdrIcon(
-                                    'navigate_next',
-                                    size: 24,
-                                    color: Colors.white.withOpacity(0.8),
-                                  )
+                                  Visibility(
+                                    visible:
+                                        songList!.userSource.isNotNullOrEmpty(),
+                                    child: MdrIcon(
+                                      'navigate_next',
+                                      size: 24,
+                                      color: Colors.white.withOpacity(0.8),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),

@@ -10,7 +10,6 @@ import 'package:second_music/common/date.dart';
 import 'package:second_music/common/json.dart';
 import 'package:second_music/entity/search.dart';
 import 'package:second_music/entity/song.dart';
-import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/entity/user.dart';
 import 'package:second_music/repository/remote/cookie.dart';
 import 'package:second_music/repository/remote/http_maker.dart';
@@ -39,7 +38,7 @@ class NeteaseMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<Playlist> playList(String listId,
+  Future<Playlist> playlist(String listId,
       {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
     final url = "http://music.163.com/weapi/v3/playlist/detail";
     final params = {
@@ -124,6 +123,9 @@ class NeteaseMusic extends BaseMusicProvider {
       'type': type.toString(),
     };
     final respStr = await _weapiRequest(url, params);
+    if (respStr.isEmpty) {
+      return SearchResult();
+    }
     final respMap = json.decode(respStr);
     final resultMap = Json.getMap(respMap, 'result');
     return _convertSearchResult(resultMap);
@@ -199,7 +201,7 @@ class NeteaseMusic extends BaseMusicProvider {
   @override
   MusicPlatform get platform => MusicPlatform.netease;
 
-  Future _weapiRequest(String url, Map params) async {
+  Future<String> _weapiRequest(String url, Map params) async {
     final data = await NeteaseMusicCipher.encryptWeapi(json.encode(params));
     final body =
         'encSecKey=${Uri.encodeQueryComponent(data['encSecKey'])}&params=${Uri.encodeQueryComponent(data['params'])}';
@@ -238,6 +240,9 @@ class NeteaseMusic extends BaseMusicProvider {
       'ids': '[' + trackIds.join(',') + ']',
     };
     final respStr = await _weapiRequest(url, params);
+    if (respStr.isEmpty) {
+      return List.empty();
+    }
     final respMap = json.decode(respStr);
     List songsMap = respMap['songs'];
     return await Future.wait(songsMap.map((e) => _convertSong(e)));
@@ -247,13 +252,12 @@ class NeteaseMusic extends BaseMusicProvider {
     final playlist = Playlist()
       ..plt = MusicPlatform.netease
       ..source = playlistSource(Json.getString(map, 'id'))
-      ..id = Json.getString(map, 'id')
+      ..pltId = Json.getString(map, 'id')
       ..cover = Json.getString(map, 'coverImgUrl')
       ..title = Json.getString(map, 'name')
       ..playCount = Json.getInt(map, 'playCount')
       ..favorCount = Json.getInt(map, 'subscribedCount')
       ..description = Json.getString(map, 'description')
-      ..type = SongListType.playlist
       ..creator = _convertCreator(Json.getMap(map, 'creator'))
       ..songTotal = Json.getInt(map, 'trackCount');
     return playlist;
@@ -263,7 +267,7 @@ class NeteaseMusic extends BaseMusicProvider {
     final creator = User()
       ..plt = MusicPlatform.netease
       ..source = userSource(map['userId'].toString())
-      ..id = map['userId'].toString()
+      ..pltId = map['userId'].toString()
       ..name = map['nickname']
       ..avatar = map['avatarUrl'] ?? ""
       ..description = map['signature'] ?? "";
@@ -307,7 +311,7 @@ class NeteaseMusic extends BaseMusicProvider {
     final singer = Singer()
       ..plt = MusicPlatform.netease
       ..source = singerSource(Json.getString(map, 'id'))
-      ..id = Json.getString(map, 'id')
+      ..pltId = Json.getString(map, 'id')
       ..name = Json.getString(map, 'name')
       ..avatar = Json.getString(map, 'picUrl');
     return singer;
@@ -324,7 +328,7 @@ class NeteaseMusic extends BaseMusicProvider {
     final album = Album()
       ..plt = MusicPlatform.netease
       ..source = albumSource(Json.getString(map, 'id'))
-      ..id = Json.getString(map, 'id')
+      ..pltId = Json.getString(map, 'id')
       ..name = Json.getString(map, 'name')
       ..subtitle = alias.isNotEmpty ? alias[0] : ""
       ..cover = Json.getString(map, 'picUrl')
@@ -403,7 +407,7 @@ PlaylistSet _syncMapToObjOfPlaylistSet(Map<String, dynamic> objMap) {
   final playlistList = objMap['playlists'] as List;
   final playlists = playlistList.map<Playlist>((item) {
     final playlist = Playlist()
-      ..id = item['id']
+      ..pltId = item['id']
       ..title = item['title']
       ..cover = item['cover']
       ..plt = item['plt']

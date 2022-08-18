@@ -3,13 +3,12 @@ import 'package:second_music/entity/playlist_set.dart';
 
 class User {
   MusicPlatform plt = MusicPlatform.netease;
-  String source = "";
-
-  String id = "";
+  String pltId = "";
   String name = "";
 
   String avatar = "";
   String description = "";
+  String source = "";
 
   //创建的歌单
   PlaylistSet? createPlaylist;

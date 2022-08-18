@@ -44,13 +44,13 @@ class SongListModel {
           "refreshSongList: remote, isCollected = $_isCollected, songTotal = ${songList.songTotal}");
     }
 
-    if (songList != null) {
+    if (songList.songs.isNotEmpty) {
       _songList = songList;
       _songListStreamController.add(songList);
     }
 
     //更新AppBar颜色
-    if (songList != null && songList.hasDisplayCover) {
+    if (songList.hasDisplayCover) {
       _generateBarColor(songList.displayCover);
     }
   }

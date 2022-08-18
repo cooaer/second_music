@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:second_music/res/res.dart';
 
 class SettingPage extends StatelessWidget {
@@ -16,7 +15,6 @@ class SettingPage extends StatelessWidget {
           ),
           centerTitle: true,
           backgroundColor: AppColors.primary,
-          systemOverlayStyle: SystemUiOverlayStyle.light,
         ),
         body: _buildExample(context));
   }

@@ -104,17 +104,17 @@ class HomeHotPlaylistPlatformState extends State
               var item = playlists[index];
               return FlatButton(
                 onPressed: () {
-                  AppNavigator.instance.navigateTo(
-                      context, AppNavigator.song_list, params: {
+                  AppNavigator.instance
+                      .navigateTo(context, AppNavigator.song_list, params: {
                     'plt': item.plt.name,
-                    'songListId': item.id,
+                    'songListId': item.pltId,
                     'songListType': SongListType.playlist
                   });
                 },
                 padding: EdgeInsets.zero,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5)),
-                child: HomeHotPlaylistItem(item, key: Key(item.id)),
+                child: HomeHotPlaylistItem(item, key: Key(item.pltId)),
               );
             }, childCount: playlists.length),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

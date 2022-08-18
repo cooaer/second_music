@@ -73,7 +73,7 @@ class SearchObjectModel {
       {List<MusicPlatform> plts = MusicPlatform.values})
       : this._plts = plts;
 
-  static const REQUEST_COUNT = 20;
+  static const REQUEST_COUNT = 5;
 
   var _loading = false;
 

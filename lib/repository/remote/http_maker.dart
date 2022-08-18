@@ -17,12 +17,12 @@ Future<ResponseResult> dioHttpMaker(Map<String, dynamic> params) {
   final String url = params.remove(HttpMakerParams.url);
   HttpMethod method = params.remove(HttpMakerParams.method);
   final String data = params.remove(HttpMakerParams.data);
-  final Map<String, String> headers = params.remove(HttpMakerParams.headers);
+  final Map<String, dynamic>? headers = params.remove(HttpMakerParams.headers);
   switch (method) {
     case HttpMethod.get:
-      return dioGet(url);
+      return dioGet(url, headers: headers);
     case HttpMethod.post:
-      return dioPost(url, data, headers);
+      return dioPost(url, data, headers: headers);
   }
 }
 
@@ -30,12 +30,12 @@ Future<String> dioHttpMakerDefault(Map<String, dynamic> params) async {
   final String url = params.remove(HttpMakerParams.url);
   String method = params.remove(HttpMakerParams.method);
   final data = params.remove(HttpMakerParams.data);
-  final Map<String, String>? headers = params.remove(HttpMakerParams.headers);
+  final Map<String, dynamic>? headers = params.remove(HttpMakerParams.headers);
   switch (method) {
     case "get":
-      return await dioGetDefault(url, queryParameters: data);
+      return await dioGetDefault(url, queryParameters: data, headers: headers);
     case "post":
-      return await dioPostDefault(url, data, headers);
+      return await dioPostDefault(url, data, headers: headers);
   }
   return "";
 }

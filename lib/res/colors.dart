@@ -36,6 +36,8 @@ class AppColors {
         return Color(0xffd22a0d);
       case MusicPlatform.qq:
         return Color(0xff59be7c);
+      case MusicPlatform.migu:
+        return Color(0xfff7206c);
       // case MusicPlatform.kuwo:
       //   return Color(0xfffdb340);
       // case MusicPlatform.kugou:

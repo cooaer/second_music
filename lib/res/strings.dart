@@ -45,6 +45,8 @@ class AppLocalizations {
 
   String get bilibiliMusic => '哔哩哔哩音乐';
 
+  String get miguMusic => '咪咕音乐';
+
   String get netease => '网易';
 
   String get qq => 'QQ';
@@ -57,12 +59,16 @@ class AppLocalizations {
 
   String get local => "本地";
 
+  String get migu => '咪咕';
+
   String platform(MusicPlatform plt) {
     switch (plt) {
       case MusicPlatform.netease:
         return netease;
       case MusicPlatform.qq:
         return qq;
+      case MusicPlatform.migu:
+        return migu;
       // case MusicPlatform.kugou:
       //   return kugou;
       // case MusicPlatform.kuwo:
@@ -80,6 +86,8 @@ class AppLocalizations {
         return neteaseMusic;
       case MusicPlatform.qq:
         return qqMusic;
+      case MusicPlatform.migu:
+        return miguMusic;
       // case MusicPlatform.kugou:
       //   return kugou;
       // case MusicPlatform.kuwo:
@@ -132,11 +140,17 @@ class AppLocalizations {
   String playlistCount(int count) => '$count首';
 
   String songListCountAndCreator(int count, String creator) {
-    if (creator.isNotEmpty) {
-      return '$count首 by $creator';
-    } else {
-      return '$count首';
+    String joinStr = "";
+    if (count > 0) {
+      joinStr += '$count首';
     }
+    if (count >= 0 && creator.isNotEmpty) {
+      if (joinStr.isNotEmpty) {
+        joinStr += ' ';
+      }
+      joinStr += 'by $creator';
+    }
+    return joinStr;
   }
 
   //推荐
@@ -303,5 +317,6 @@ class AppLocalizations {
   //错误提示
 
   String get playFailBecauseOfCopyright => "版权原因无法播放，请尝试其他平台";
+
   String get developing => "开发中...";
 }

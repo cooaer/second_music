@@ -135,14 +135,17 @@ class _SongMenu extends StatelessWidget {
   void _openAlbum(BuildContext context) {
     AppNavigator.instance.navigateTo(context, AppNavigator.song_list, params: {
       "plt": song.plt.name,
-      "songListId": song.album?.id,
+      "songListId": song.album?.pltId,
       "songListType": SongListType.album
     });
   }
 
   void _openSource(BuildContext context) {
-    AppNavigator.instance.navigateTo(context, AppNavigator.web_view,
-        params: {"url": song.source});
+    final songSource = song.source;
+    if (songSource.isNotEmpty) {
+      AppNavigator.instance.navigateTo(context, AppNavigator.web_view,
+          params: {"url": song.source});
+    }
   }
 }
 

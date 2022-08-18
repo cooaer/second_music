@@ -23,6 +23,7 @@ Future initApp() async {
 
   if (Platform.isAndroid) {
     SystemChrome.setSystemUIOverlayStyle(darkIconUiStyle);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   }
 }

@@ -57,7 +57,7 @@ class SongList {
   SongList();
 
   SongList.fromPlaylist(Playlist playlist) {
-    pltId = playlist.id;
+    pltId = playlist.pltId;
     plt = playlist.plt.name;
     title = playlist.title;
     cover = playlist.cover;
@@ -65,7 +65,7 @@ class SongList {
     playCount = playlist.playCount;
     favorCount = playlist.favorCount;
     userPlt = playlist.creator?.plt.name ?? "";
-    userId = playlist.creator?.id ?? "";
+    userId = playlist.creator?.pltId ?? "";
     userName = playlist.creator?.name ?? "";
     userAvatar = playlist.creator?.avatar ?? "";
     type = SongListType.playlist;
@@ -74,15 +74,15 @@ class SongList {
   }
 
   SongList.fromAlbum(Album album) {
-    pltId = album.id;
+    pltId = album.pltId;
     plt = album.plt.name;
     title = album.name;
     cover = album.cover;
     description = album.description;
     playCount = album.playCount;
     favorCount = album.favorCount;
-    userPlt = album.singer?.id ?? "";
-    userId = album.singer?.id ?? "";
+    userPlt = album.singer?.pltId ?? "";
+    userId = album.singer?.pltId ?? "";
     userName = album.singer?.name ?? "";
     userAvatar = album.singer?.avatar ?? "";
     type = SongListType.album;

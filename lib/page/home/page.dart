@@ -67,8 +67,7 @@ class _HomeContent extends StatelessWidget {
         children: <Widget>[
           SafeArea(
             child: Container(
-              padding: EdgeInsets.only(
-                  top: 50, bottom: 48 + MediaQuery.of(context).padding.bottom),
+              padding: EdgeInsets.only(top: 50, bottom: 48),
               child: _HomeTabs(),
             ),
           ),
@@ -169,6 +168,7 @@ class _HomeTabs extends StatelessWidget {
   static const List<MusicPlatform> tabPlts = [
     MusicPlatform.netease,
     MusicPlatform.qq,
+    MusicPlatform.migu,
   ];
 
   @override

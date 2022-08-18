@@ -6,13 +6,13 @@ import 'package:second_music/entity/song.dart';
 //专辑
 class Album {
   MusicPlatform plt = MusicPlatform.netease;
-  String source = "";
-  String id = "";
+  String pltId = "";
   String name = "";
   String subtitle = "";
   String cover = "";
-  String releaseTime = ""; //发行时间
   String description = ""; //描述
+  String releaseTime = ""; //发行时间
+  String source = "";
 
   int playCount = 0; //播放量
   int favorCount = 0; //收藏量
@@ -25,6 +25,6 @@ class Album {
 
   @override
   String toString() {
-    return 'Album{plt: $plt, source: $source, id: $id, name: $name, subtitle: $subtitle, cover: $cover, releaseTime: $releaseTime, description: $description, playCount: $playCount, favorCount: $favorCount, singers: $singers, songTotal: $songTotal, songs: $songs}';
+    return 'Album{plt: $plt, source: $source, id: $pltId, name: $name, subtitle: $subtitle, cover: $cover, releaseTime: $releaseTime, description: $description, playCount: $playCount, favorCount: $favorCount, singers: $singers, songTotal: $songTotal, songs: $songs}';
   }
 }

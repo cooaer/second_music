@@ -10,15 +10,17 @@ final dio = Dio()
   ..interceptors.add(CookieManager(cookieJar))
   ..interceptors.add(AddHeaderInterceptor());
 
-Future<ResponseResult> dioGet(String url) async {
-  final response = await dio.get<String>(url);
+Future<ResponseResult> dioGet(String url,
+    {Map<String, dynamic>? headers}) async {
+  final response =
+      await dio.get<String>(url, options: Options(headers: headers));
   return ResponseResult(
       response.statusCode, response.statusMessage, response.data);
 }
 
-Future<ResponseResult> dioPost(
-    String url, dynamic data, Map<String, dynamic> headers) async {
-  final contentType = headers.remove('Content-Type');
+Future<ResponseResult> dioPost(String url, dynamic data,
+    {Map<String, dynamic>? headers}) async {
+  final contentType = headers?.remove('Content-Type') ?? "";
   final response = await dio.post<String>(url,
       data: data, options: Options(headers: headers, contentType: contentType));
   return ResponseResult(
@@ -26,9 +28,11 @@ Future<ResponseResult> dioPost(
 }
 
 Future<String> dioGetDefault(String url,
-    {Map<String, dynamic>? queryParameters}) async {
+    {Map<String, dynamic>? queryParameters,
+    Map<String, dynamic>? headers}) async {
   try {
-    var response = await dio.get<String>(url, queryParameters: queryParameters);
+    var response = await dio.get<String>(url,
+        queryParameters: queryParameters, options: Options(headers: headers));
     return response.data ?? "";
   } on Exception catch (e) {
     debugPrint("dioGetDefault: exception = $e");
@@ -36,8 +40,8 @@ Future<String> dioGetDefault(String url,
   return "";
 }
 
-Future<String> dioPostDefault(
-    String url, dynamic data, Map<String, dynamic>? headers) async {
+Future<String> dioPostDefault(String url, dynamic data,
+    {Map<String, dynamic>? headers}) async {
   try {
     final contentType = headers?.remove('Content-Type');
     final response = await dio.post<String>(url,

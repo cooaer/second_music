@@ -188,12 +188,12 @@ class QQMusic extends BaseMusicProvider {
 
     final singer = Singer()
       ..plt = MusicPlatform.qq
-      ..id = Json.getString(dataJson, 'singermid')
+      ..pltId = Json.getString(dataJson, 'singermid')
       ..name = Json.getString(dataJson, 'singername');
 
     final album = Album()
       ..plt = MusicPlatform.qq
-      ..id = Json.getString(dataJson, 'mid')
+      ..pltId = Json.getString(dataJson, 'mid')
       ..name = Json.getString(dataJson, 'name')
       ..cover = _getImageUrl(Json.getString(dataJson, 'mid'), 'album')
       ..releaseTime = Json.getString(dataJson, 'aDate')
@@ -213,7 +213,7 @@ class QQMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<Playlist> playList(String listId,
+  Future<Playlist> playlist(String listId,
       {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
     // final targetUrl =
     //     'https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg?'
@@ -238,18 +238,19 @@ class QQMusic extends BaseMusicProvider {
 
     final creator = User();
     creator.plt = MusicPlatform.qq;
-    creator.id = Json.getString(dataCdlist0, 'uin');
+    creator.pltId = Json.getString(dataCdlist0, 'uin');
     creator.name =
         App.htmlUnescape.convert(Json.getString(dataCdlist0, 'nick'));
     creator.avatar = Json.getString(dataCdlist0, 'headurl');
-    creator.source = 'https://y.qq.com/portal/profile.html?uin=${creator.id}';
+    creator.source =
+        'https://y.qq.com/portal/profile.html?uin=${creator.pltId}';
 
     final listJson = Json.getList(dataCdlist0, 'songlist');
     final songList = await Future.wait(listJson.map((e) => _convertSong2(e)));
     // await _parseStreamUrl(songList);
 
     final playlist = Playlist();
-    playlist.id = listId;
+    playlist.pltId = listId;
     playlist.plt = MusicPlatform.qq;
     playlist.title =
         App.htmlUnescape.convert(Json.getString(dataCdlist0, 'dissname'));
@@ -275,10 +276,14 @@ class QQMusic extends BaseMusicProvider {
         'page_no=$page&query=$enKeyword&format=json&outCharset=utf-8&inCharset=utf-8&'
         'num_per_page=$count&searchid=$searchId&remoteplace=txt.mac.search';
 
-    final response = await httpMaker({
+    final String response = await httpMaker({
       HttpMakerParams.url: url,
       HttpMakerParams.method: HttpMakerParams.methodGet
     });
+
+    if (response.isEmpty) {
+      return SearchResult();
+    }
 
     final respJson = json.decode(response);
     final dataJson = Json.getMap(respJson, 'data');
@@ -405,7 +410,7 @@ class QQMusic extends BaseMusicProvider {
     final singerList = singerListJson.map((item) {
       final singer = Singer()
         ..plt = MusicPlatform.qq
-        ..id = Json.getString(item, 'mid')
+        ..pltId = Json.getString(item, 'mid')
         ..name = Json.getString(item, 'name');
       return singer;
     }).toList();
@@ -413,7 +418,7 @@ class QQMusic extends BaseMusicProvider {
     final albumJson = Json.getMap(songJson, 'album');
     final album = Album()
       ..plt = MusicPlatform.qq
-      ..id = Json.getString(albumJson, 'mid')
+      ..pltId = Json.getString(albumJson, 'mid')
       ..name = Json.getString(albumJson, 'name')
       ..subtitle = Json.getString(albumJson, 'subtitle');
 
@@ -422,7 +427,7 @@ class QQMusic extends BaseMusicProvider {
       ..pltId = Json.getString(songJson, 'mid')
       ..name = Json.getString(songJson, 'name')
       ..subtitle = Json.getString(songJson, 'subtitle')
-      ..cover = _getImageUrl(album.id, 'album')
+      ..cover = _getImageUrl(album.pltId, 'album')
       ..singers = singerList
       ..album = album;
 
@@ -437,14 +442,14 @@ class QQMusic extends BaseMusicProvider {
     final singerList = singerListJson.map((item) {
       final singer = Singer()
         ..plt = MusicPlatform.qq
-        ..id = Json.getString(item, 'mid')
+        ..pltId = Json.getString(item, 'mid')
         ..name = Json.getString(item, 'name');
       return singer;
     }).toList();
 
     final album = Album()
       ..plt = MusicPlatform.qq
-      ..id = Json.getString(songJson, 'albummid')
+      ..pltId = Json.getString(songJson, 'albummid')
       ..name = Json.getString(songJson, 'albumname');
 
     final song = Song()
@@ -452,7 +457,7 @@ class QQMusic extends BaseMusicProvider {
       ..pltId = Json.getString(songJson, 'songmid')
       ..name = Json.getString(songJson, 'songname')
       ..subtitle = Json.getString(songJson, 'lyric')
-      ..cover = _getImageUrl(album.id, 'album')
+      ..cover = _getImageUrl(album.pltId, 'album')
       ..isPlayable = _isQQSongPlayable(Json.getInt(songJson, "switch"))
       ..singers = singerList
       ..album = album;
@@ -467,14 +472,14 @@ class QQMusic extends BaseMusicProvider {
     final singers = singerJson.map((item) {
       final singer = Singer()
         ..plt = MusicPlatform.qq
-        ..id = Json.getString(item, 'mid')
+        ..pltId = Json.getString(item, 'mid')
         ..name = Json.getString(item, 'name');
       return singer;
     }).toList();
 
     return Album()
       ..plt = MusicPlatform.qq
-      ..id = Json.getString(json, 'albumMID')
+      ..pltId = Json.getString(json, 'albumMID')
       ..name = Json.getString(json, 'albumName')
       ..cover = Json.getString(json, 'albumPic')
       ..releaseTime = Json.getString(json, 'publicTime')
@@ -487,7 +492,7 @@ class QQMusic extends BaseMusicProvider {
     final albums = albumsJson.map((item) {
       return Album()
         ..plt = platform
-        ..id = Json.getString(item, 'albumMID')
+        ..pltId = Json.getString(item, 'albumMID')
         ..name = Json.getString(item, 'albumName');
     }).toList();
 
@@ -501,7 +506,7 @@ class QQMusic extends BaseMusicProvider {
 
     return Singer()
       ..plt = platform
-      ..id = Json.getString(json, 'singerID')
+      ..pltId = Json.getString(json, 'singerID')
       ..name = Json.getString(json, 'singerName')
       ..avatar = Json.getString(json, 'singerPic')
       ..albumTotal = Json.getInt(json, 'albumNum')
@@ -516,13 +521,13 @@ class QQMusic extends BaseMusicProvider {
       ..plt = MusicPlatform.qq
       ..source =
           'https://y.qq.com/portal/profile.html?uin=${Json.getString(creatorJson, 'encrypt_uin')}'
-      ..id = Json.getString(creatorJson, 'encrypt_uin')
+      ..pltId = Json.getString(creatorJson, 'encrypt_uin')
       ..name = App.htmlUnescape.convert(Json.getString(creatorJson, 'name'))
       ..avatar = Json.getString(creatorJson, 'avatarUrl');
 
     return Playlist()
       ..plt = MusicPlatform.qq
-      ..id = Json.getString(json, 'dissid')
+      ..pltId = Json.getString(json, 'dissid')
       ..title = App.htmlUnescape.convert(Json.getString(json, 'dissname'))
       ..cover = Json.getString(json, 'imgurl')
       ..playCount = Json.getInt(json, 'listennum')
