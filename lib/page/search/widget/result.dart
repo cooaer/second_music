@@ -28,13 +28,13 @@ class SearchResultWidget extends StatelessWidget {
                   .searchTabTitles
                   .map((title) => Tab(text: title))
                   .toList(),
-              labelColor: AppColors.text_title,
+              labelColor: AppColors.textTitle,
               labelPadding: EdgeInsets.zero,
               labelStyle: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
-              unselectedLabelColor: AppColors.text_light,
+              unselectedLabelColor: AppColors.textLight,
               unselectedLabelStyle: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.normal,

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_extensions_methods/dart_extension_methods.dart';

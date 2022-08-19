@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:second_music/page/search/page.dart';
 import 'package:second_music/repository/local/preference/playing.dart';
 import 'package:second_music/res/res.dart';
-import 'package:second_music/widget/material_icon_round.dart';
 
 class SearchHistoryWidget extends StatelessWidget {
   @override
@@ -21,22 +20,22 @@ class SearchHistoryWidget extends StatelessWidget {
                   child: Text(
                     stringsOf(context).searchHistory,
                     style: TextStyle(
-                      color: AppColors.text_title,
+                      color: AppColors.textTitle,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   )),
-              ButtonTheme(
-                minWidth: 0,
-                child: FlatButton(
-                    onPressed: searchModel.clearKeywords,
-                    padding: EdgeInsets.symmetric(horizontal: 10),
-                    shape: CircleBorder(),
-                    child: MdrIcon(
-                      'delete_outline',
-                      color: AppColors.text_light,
-                      size: 24,
-                    )),
+              InkWell(
+                onTap: searchModel.clearKeywords,
+                borderRadius: BorderRadius.circular(22),
+                child: Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Icon(
+                    Icons.delete_outline_rounded,
+                    color: AppColors.textLight,
+                    size: 24,
+                  ),
+                ),
               ),
             ],
           ),
@@ -62,32 +61,30 @@ class SearchHistoryWidget extends StatelessWidget {
   }
 
   Widget buildHistoryItem(BuildContext context, String key) {
-    return ButtonTheme(
-        minWidth: 0,
-        height: 32,
-        child: FlatButton(
-          onPressed: () {
-            //隐藏键盘
-            FocusScope.of(context).requestFocus(FocusNode());
-            SearchModelProvider.of(context).model.setInputText(key);
-          },
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-          color: AppColors.page_background,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          child: Column(
-            children: <Widget>[
-              Text(
-                key,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.text_title,
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-            ],
+    return Ink(
+      height: 32,
+      decoration: BoxDecoration(
+          color: AppColors.pageBackground,
+          borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          //隐藏键盘
+          FocusScope.of(context).requestFocus(FocusNode());
+          SearchModelProvider.of(context).model.setInputText(key);
+        },
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+          child: Text(
+            key,
+            style: TextStyle(
+              fontSize: 14,
+              color: AppColors.textTitle,
+              fontWeight: FontWeight.normal,
+            ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 }

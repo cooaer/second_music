@@ -22,14 +22,14 @@ class QQMusic extends BaseMusicProvider {
   @override
   Future<PlaylistSet> showPlayList(
       {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
-    final target_url =
+    final targetUrl =
         'https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_by_tag.fcg'
         '?picmid=1&rnd=${Random().nextDouble()}&g_tk=732560869'
         '&loginUin=0&hostUin=0&format=json&inCharset=utf8&outCharset=utf-8'
         '&notice=0&platform=yqq.json&needNewCode=0'
         '&categoryId=10000000&sortId=5&sin=$offset&ein=${19 + offset}';
     final response = await httpMaker({
-      HttpMakerParams.url: target_url,
+      HttpMakerParams.url: targetUrl,
       HttpMakerParams.method: HttpMakerParams.methodGet,
     });
 
@@ -223,7 +223,7 @@ class QQMusic extends BaseMusicProvider {
 
     final targetUrl = 'http://i.y.qq.com/qzone-music/fcg-bin/fcg_ucc_getcdinfo_' +
         'byids_cp.fcg?type=1&json=1&utf8=1&onlysong=0&jsonpCallback=' +
-        'jsonCallback&nosign=1&disstid=${listId}&g_tk=5381&loginUin=0&hostUin=0' +
+        'jsonCallback&nosign=1&disstid=$listId&g_tk=5381&loginUin=0&hostUin=0' +
         '&format=jsonp&inCharset=GB2312&outCharset=utf-8&notice=0' +
         '&platform=yqq&jsonpCallback=jsonCallback&needNewCode=0';
 
@@ -550,7 +550,7 @@ class QQMusic extends BaseMusicProvider {
 
     final params =
         '$category/${imageId.substring(imageId.length - 2, imageId.length - 1)}/${imageId.substring(imageId.length - 1)}/$imageId';
-    final url = 'http://imgcache.qq.com/music/photo/${params}.jpg';
+    final url = 'http://imgcache.qq.com/music/photo/$params.jpg';
     return url;
   }
 

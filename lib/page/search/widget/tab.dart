@@ -16,7 +16,6 @@ import 'package:second_music/page/song_list/widget.dart';
 import 'package:second_music/repository/local/preference/config.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/widget/loading_more.dart';
-import 'package:second_music/widget/material_icon_round.dart';
 
 class SearchObjectTab extends StatefulWidget {
   final String keyword;
@@ -166,17 +165,16 @@ class _SearchResultTitle extends StatelessWidget {
             stringsOf(context).platform(plt),
             style: TextStyle(
               fontSize: 14,
-              color: AppColors.text_light,
+              color: AppColors.textLight,
               fontWeight: FontWeight.w500,
             ),
           ),
           Spacer(),
           if (hasMore)
-            ButtonTheme(
-              minWidth: 0,
-              child: FlatButton(
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: TextButton(
                 onPressed: () {},
-                padding: EdgeInsets.symmetric(horizontal: 24),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
@@ -184,18 +182,15 @@ class _SearchResultTitle extends StatelessWidget {
                       stringsOf(context).more,
                       style: TextStyle(
                         fontSize: 14,
-                        color: AppColors.text_light,
+                        color: AppColors.textLight,
                         fontWeight: FontWeight.normal,
                       ),
                     ),
-                    SizedBox(
-                      width: 20,
-                      child: MdrIcon(
-                        'navigate_next',
-                        size: 20,
-                        color: AppColors.tint_rounded,
-                      ),
-                    )
+                    Icon(
+                      Icons.navigate_next_rounded,
+                      size: 20,
+                      color: AppColors.tintRounded,
+                    ),
                   ],
                 ),
               ),
@@ -213,15 +208,13 @@ class _SearchResultSong extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ButtonTheme(
+    return Ink(
       height: 60,
-      minWidth: 0,
-      child: FlatButton(
-        onPressed: () {
+      child: InkWell(
+        onTap: () {
           AppNavigator.instance.navigateTo(context, AppNavigator.play,
               params: {'song': _song}, overlay: true);
         },
-        padding: EdgeInsets.zero,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
@@ -234,7 +227,7 @@ class _SearchResultSong extends StatelessWidget {
                   ? Container(
                       width: 50,
                       height: 50,
-                      color: AppColors.cover_bg,
+                      color: AppColors.coverBg,
                     )
                   : CachedNetworkImage(
                       imageUrl: _song.cover,
@@ -245,7 +238,7 @@ class _SearchResultSong extends StatelessWidget {
                         return Container(
                           width: 50,
                           height: 50,
-                          color: AppColors.cover_bg,
+                          color: AppColors.coverBg,
                         );
                       },
                     ),
@@ -257,6 +250,7 @@ class _SearchResultSong extends StatelessWidget {
               flex: 1,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Text(
                     _song.name,
@@ -264,7 +258,7 @@ class _SearchResultSong extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 16,
-                      color: AppColors.text_title,
+                      color: AppColors.textTitle,
                       fontWeight: FontWeight.normal,
                     ),
                   ),
@@ -278,21 +272,20 @@ class _SearchResultSong extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.text_light,
+                      color: AppColors.textLight,
                       fontWeight: FontWeight.normal,
                     ),
                   ),
                 ],
               ),
             ),
-            FlatButton(
+            IconButton(
               onPressed: () => showSongMenu(context, _song, null, null),
-              shape: CircleBorder(),
               padding: EdgeInsets.symmetric(horizontal: 10),
-              child: MdrIcon(
-                'more_vert',
+              icon: Icon(
+                Icons.more_vert_rounded,
                 size: 24,
-                color: AppColors.tint_rounded,
+                color: AppColors.tintRounded,
               ),
             )
           ],
@@ -309,78 +302,78 @@ class _SearchResultSongList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FlatButton(
-        onPressed: () {
-          AppNavigator.instance
-              .navigateTo(context, AppNavigator.song_list, params: {
-            'plt': _songList.plt,
-            'songListId': _songList.pltId,
-            'songListType': _songList.type,
-          });
-        },
-        padding: EdgeInsets.zero,
-        child: Container(
-          padding: EdgeInsets.fromLTRB(16, 5, 16, 5),
-          height: 60,
-          child: Row(
-            children: <Widget>[
-              ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(5)),
-                child: _songList.cover.isEmpty
-                    ? Container(
-                        width: 50,
-                        height: 50,
-                        color: AppColors.cover_bg,
-                      )
-                    : CachedNetworkImage(
-                        imageUrl: _songList.cover,
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) {
-                          return Container(
-                            width: 50,
-                            height: 50,
-                            color: AppColors.cover_bg,
-                          );
-                        },
-                      ),
-              ),
-              SizedBox(
-                width: 10,
-              ),
-              Expanded(
-                flex: 1,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      _songList.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                          color: AppColors.text_title,
-                          fontSize: 16,
-                          fontWeight: FontWeight.normal),
-                    ),
-                    Text(
-                      stringsOf(context).songListCountAndCreator(
-                          this._songList.songTotal, this._songList.userName),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: AppColors.text_light,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
+    return InkWell(
+      onTap: () {
+        AppNavigator.instance
+            .navigateTo(context, AppNavigator.song_list, params: {
+          'plt': _songList.plt,
+          'songListId': _songList.pltId,
+          'songListType': _songList.type,
+        });
+      },
+      child: Container(
+        padding: EdgeInsets.fromLTRB(16, 5, 16, 5),
+        height: 60,
+        child: Row(
+          children: <Widget>[
+            ClipRRect(
+              borderRadius: BorderRadius.all(Radius.circular(5)),
+              child: _songList.cover.isEmpty
+                  ? Container(
+                      width: 50,
+                      height: 50,
+                      color: AppColors.coverBg,
                     )
-                  ],
-                ),
+                  : CachedNetworkImage(
+                      imageUrl: _songList.cover,
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) {
+                        return Container(
+                          width: 50,
+                          height: 50,
+                          color: AppColors.coverBg,
+                        );
+                      },
+                    ),
+            ),
+            SizedBox(
+              width: 10,
+            ),
+            Expanded(
+              flex: 1,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    _songList.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        color: AppColors.textTitle,
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal),
+                  ),
+                  Text(
+                    stringsOf(context).songListCountAndCreator(
+                        this._songList.songTotal, this._songList.userName),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: AppColors.textLight,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  )
+                ],
               ),
-            ],
-          ),
-        ));
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -391,9 +384,8 @@ class _SearchResultSinger extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FlatButton(
-      onPressed: () {},
-      padding: EdgeInsets.zero,
+    return InkWell(
+      onTap: () {},
       child: Container(
         padding: EdgeInsets.fromLTRB(16, 5, 16, 5),
         height: 60,
@@ -404,7 +396,7 @@ class _SearchResultSinger extends StatelessWidget {
                   ? Container(
                       width: 50,
                       height: 50,
-                      color: AppColors.cover_bg,
+                      color: AppColors.coverBg,
                     )
                   : CachedNetworkImage(
                       imageUrl: _singer.avatar,
@@ -415,7 +407,7 @@ class _SearchResultSinger extends StatelessWidget {
                         return Container(
                           width: 50,
                           height: 50,
-                          color: AppColors.cover_bg,
+                          color: AppColors.coverBg,
                         );
                       },
                     ),
@@ -426,8 +418,7 @@ class _SearchResultSinger extends StatelessWidget {
             Expanded(
                 flex: 1,
                 child: Text(_singer.name,
-                    style:
-                        TextStyle(fontSize: 16, color: AppColors.text_title)))
+                    style: TextStyle(fontSize: 16, color: AppColors.textTitle)))
           ],
         ),
       ),

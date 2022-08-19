@@ -21,12 +21,12 @@ class LoadingMore extends StatelessWidget {
   Widget buildCenter(BuildContext context) {
     if (!loading && lastError) {
       return SizedBox.expand(
-        child: FlatButton(
-            onPressed: onPressed,
+        child: InkWell(
+            onTap: onPressed,
             child: Text(
               stringsOf(context).loadErrorAndRetry,
               style: TextStyle(
-                color: AppColors.text_title,
+                color: AppColors.textTitle,
                 fontSize: 16,
                 fontWeight: FontWeight.normal,
               ),
@@ -43,7 +43,7 @@ class LoadingMore extends StatelessWidget {
           Text(
             stringsOf(context).loading,
             style: TextStyle(
-              color: AppColors.text_title,
+              color: AppColors.textTitle,
               fontSize: 16,
               fontWeight: FontWeight.normal,
             ),

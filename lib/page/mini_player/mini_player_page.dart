@@ -7,7 +7,6 @@ import 'package:second_music/page/play/play_logic.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/service/music_service.dart';
 import 'package:second_music/widget/infinite_page_view.dart';
-import 'package:second_music/widget/material_icon_round.dart';
 
 class MiniPlayer extends StatefulWidget {
   static const double BAR_HEIGHT = 48;
@@ -62,14 +61,13 @@ class _MiniPlayerState extends State<MiniPlayer> {
                   width: 48,
                   height: 48,
                   alignment: Alignment.center,
-                  child: FlatButton(
+                  child: IconButton(
                     padding: EdgeInsets.zero,
                     onPressed: () => showPlayingList(context),
-                    shape: CircleBorder(),
-                    child: MdrIcon(
-                      'playlist_play',
+                    icon: Icon(
+                      Icons.playlist_play_rounded,
                       size: 36,
-                      color: AppColors.text_light,
+                      color: AppColors.textLight,
                     ),
                   ),
                 ),
@@ -110,18 +108,19 @@ class _MiniPlayerState extends State<MiniPlayer> {
       width: 48,
       height: 48,
       alignment: Alignment.center,
-      child: FlatButton(
+      child: IconButton(
           padding: EdgeInsets.zero,
           onPressed: () => MusicService().playOrPause(),
-          shape: CircleBorder(),
-          child: StreamBuilder(
+          icon: StreamBuilder(
             initialData: MusicService().playing,
             stream: MusicService().playingStream,
             builder: (context, AsyncSnapshot<bool> snapshot) {
-              return MdrIcon(
-                AppImages.playIcon(snapshot.data!),
+              return Icon(
+                snapshot.data!
+                    ? Icons.pause_circle_outline_rounded
+                    : Icons.play_circle_outline_rounded,
                 size: 30,
-                color: AppColors.text_light,
+                color: AppColors.textLight,
               );
             },
           )),
@@ -159,7 +158,7 @@ class _MiniPlayerSong extends StatelessWidget {
             alignment: Alignment.center,
             margin: EdgeInsets.only(left: 6, bottom: 6),
             decoration: BoxDecoration(
-                color: AppColors.cover_bg,
+                color: AppColors.coverBg,
                 borderRadius: BorderRadius.circular(24)),
             child: song != null && song!.cover.isNotEmpty
                 ? ClipOval(
@@ -188,7 +187,7 @@ class _MiniPlayerSong extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                     style: TextStyle(
-                      color: AppColors.text_title,
+                      color: AppColors.textTitle,
                       fontSize: 14,
                       fontWeight: FontWeight.normal,
                     ),
@@ -197,7 +196,7 @@ class _MiniPlayerSong extends StatelessWidget {
                     song?.singer?.name ??
                         stringsOf(context).defaultMiniPlayerDescription,
                     style: TextStyle(
-                      color: AppColors.text_light,
+                      color: AppColors.textLight,
                       fontSize: 11,
                       fontWeight: FontWeight.normal,
                     ),

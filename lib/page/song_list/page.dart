@@ -12,7 +12,6 @@ import 'package:second_music/page/navigator.dart';
 import 'package:second_music/page/song_list/model.dart';
 import 'package:second_music/page/song_list/widget.dart';
 import 'package:second_music/res/res.dart';
-import 'package:second_music/widget/material_icon_round.dart';
 import 'package:toast/toast.dart';
 
 class SongListPage extends StatefulWidget {
@@ -42,7 +41,7 @@ class _SongListPageState extends State<SongListPage> {
     return _SongListModelProvider(
       _model,
       child: Scaffold(
-        backgroundColor: AppColors.main_bg,
+        backgroundColor: AppColors.mainBg,
         body: StreamBuilder(
           stream: _model.songListStream,
           builder: (context, AsyncSnapshot<SongList> snapshot) {
@@ -71,7 +70,7 @@ class _SongListPageState extends State<SongListPage> {
             stringsOf(context).songListTitle(widget.songListType),
             style: TextStyle(
               fontSize: 18,
-              color: AppColors.text_embed,
+              color: AppColors.textEmbed,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -84,30 +83,24 @@ class _SongListPageState extends State<SongListPage> {
           ),
           pinned: true,
           actions: <Widget>[
-            ButtonTheme(
-              minWidth: 0,
-              height: 44,
-              child: IconButton(
-                  onPressed: () {
-                    Toast.show(stringsOf(context).developing);
-                  },
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  icon: Icon(Icons.download_rounded)),
+            IconButton(
+              onPressed: () {
+                Toast.show(stringsOf(context).developing);
+              },
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              icon: Icon(Icons.download_rounded),
             ),
-            ButtonTheme(
-              minWidth: 0,
-              height: 44,
-              child: IconButton(
-                  onPressed: () {
-                    final songListSource = _model.songList?.source;
-                    if (songListSource.isNotNullOrEmpty()) {
-                      AppNavigator.instance.navigateTo(
-                          context, AppNavigator.web_view,
-                          params: {"url": songListSource});
-                    }
-                  },
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  icon: Icon(Icons.link)),
+            IconButton(
+              onPressed: () {
+                final songListSource = _model.songList?.source;
+                if (songListSource.isNotNullOrEmpty()) {
+                  AppNavigator.instance.navigateTo(
+                      context, AppNavigator.web_view,
+                      params: {"url": songListSource});
+                }
+              },
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              icon: Icon(Icons.link),
             ),
           ],
         ),
@@ -201,7 +194,7 @@ class _SongListHeader extends StatelessWidget {
                         child: Container(
                           width: 140,
                           height: 140,
-                          color: AppColors.cover_bg,
+                          color: AppColors.coverBg,
                           child: (songList != null && songList!.hasDisplayCover)
                               ? CachedNetworkImage(
                                   width: 140,
@@ -215,16 +208,16 @@ class _SongListHeader extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: <Widget>[
-                          MdrIcon(
-                            'play_arrow',
+                          Icon(
+                            Icons.play_arrow_rounded,
                             size: 18,
-                            color: AppColors.text_embed,
+                            color: AppColors.textEmbed,
                           ),
                           Text(
                             stringsOf(context)
                                 .displayPlayCount(songList!.playCount),
                             style: TextStyle(
-                              color: AppColors.text_embed,
+                              color: AppColors.textEmbed,
                               fontSize: 12,
                             ),
                           ),
@@ -255,7 +248,7 @@ class _SongListHeader extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 18,
-                              color: AppColors.text_embed,
+                              color: AppColors.textEmbed,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -283,7 +276,7 @@ class _SongListHeader extends StatelessWidget {
                                         width: 32,
                                         height: 32,
                                         decoration: BoxDecoration(
-                                            color: AppColors.main_bg,
+                                            color: AppColors.mainBg,
                                             borderRadius:
                                                 BorderRadius.circular(16)),
                                       ),
@@ -307,8 +300,8 @@ class _SongListHeader extends StatelessWidget {
                                   Visibility(
                                     visible:
                                         songList!.userSource.isNotNullOrEmpty(),
-                                    child: MdrIcon(
-                                      'navigate_next',
+                                    child: Icon(
+                                      Icons.navigate_next_rounded,
                                       size: 24,
                                       color: Colors.white.withOpacity(0.8),
                                     ),
@@ -335,8 +328,8 @@ class _SongListHeader extends StatelessWidget {
                                       ),
                                     ),
                                   ),
-                                  MdrIcon(
-                                    'navigate_next',
+                                  Icon(
+                                    Icons.navigate_next_rounded,
                                     size: 24,
                                     color: Colors.white.withOpacity(0.8),
                                   )
@@ -384,86 +377,84 @@ class _ControlBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        color: AppColors.main_bg,
-        child: ButtonTheme(
-          minWidth: 0,
-          height: 50,
-          child: FlatButton(
-              onPressed: () {
-                final model = _SongListModelProvider.of(context).model;
-                model.playAll();
-              },
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Row(
-                children: <Widget>[
-                  MdrIcon(
-                    'play_circle_outline',
-                    size: 24,
-                    color: AppColors.text_title,
-                  ),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    stringsOf(context).playAll,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: AppColors.text_title,
-                      fontWeight: FontWeight.w600,
+    return Ink(
+      color: AppColors.mainBg,
+      height: 50,
+      child: InkWell(
+        onTap: () {
+          final model = _SongListModelProvider.of(context).model;
+          model.playAll();
+        },
+        child: Row(
+          children: <Widget>[
+            SizedBox(
+              width: 10,
+            ),
+            Icon(
+              Icons.play_circle_outline_rounded,
+              size: 24,
+              color: AppColors.textTitle,
+            ),
+            SizedBox(
+              width: 10,
+            ),
+            Text(
+              stringsOf(context).playAll,
+              style: TextStyle(
+                fontSize: 16,
+                color: AppColors.textTitle,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Text(
+              stringsOf(context).playAllCount(songList?.songs.length ?? 0),
+              style: TextStyle(
+                fontSize: 14,
+                color: AppColors.textLight,
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+            Spacer(),
+            if (songList?.plt != MusicPlatforms.local)
+              StreamBuilder(
+                initialData: null,
+                stream:
+                    _SongListModelProvider.of(context).model.isCollectedStream,
+                builder: (context, AsyncSnapshot<bool?> snapshot) {
+                  var _isCollectedEnable = snapshot.data != null;
+                  var _isCollected = snapshot.data == true;
+                  return ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(horizontal: 15),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)),
                     ),
-                  ),
-                  Text(
-                    stringsOf(context)
-                        .playAllCount(songList?.songs.length ?? 0),
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.text_light,
-                      fontWeight: FontWeight.normal,
+                    onPressed: () {
+                      if (_isCollectedEnable && songList != null) {
+                        _SongListModelProvider.of(context)
+                            .model
+                            .togglePlaylistCollection(songList!);
+                      }
+                    },
+                    child: Text(
+                      stringsOf(context)
+                          .collectAll(_isCollected, songList?.favorCount ?? 0),
+                      style: TextStyle(
+                        color: AppColors.textEmbed,
+                        fontSize: 14,
+                        fontWeight: FontWeight.normal,
+                      ),
                     ),
-                  ),
-                  Spacer(),
-                  if (songList?.plt != MusicPlatforms.local)
-                    StreamBuilder(
-                      initialData: null,
-                      stream: _SongListModelProvider.of(context)
-                          .model
-                          .isCollectedStream,
-                      builder: (context, AsyncSnapshot<bool?> snapshot) {
-                        var _isCollectedEnable = snapshot.data != null;
-                        var _isCollected = snapshot.data == true;
-                        return ButtonTheme(
-                          height: 40,
-                          child: RaisedButton(
-                            onPressed: () {
-                              if (_isCollectedEnable && songList != null) {
-                                _SongListModelProvider.of(context)
-                                    .model
-                                    .togglePlaylistCollection(songList!);
-                              }
-                            },
-                            padding: EdgeInsets.symmetric(horizontal: 10),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20)),
-                            color: _isCollected
-                                ? AppColors.disabled
-                                : AppColors.accent,
-                            child: Text(
-                              stringsOf(context).collectAll(
-                                  _isCollected, songList?.favorCount ?? 0),
-                              style: TextStyle(
-                                color: AppColors.text_embed,
-                                fontSize: 14,
-                                fontWeight: FontWeight.normal,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                ],
-              )),
-        ));
+                  );
+                },
+              ),
+            SizedBox(
+              width: 10,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -478,11 +469,10 @@ class _SongListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     bool isPlayable = song.isPlayable;
-    return ButtonTheme(
+    return Ink(
       height: 60,
-      minWidth: 0,
-      child: FlatButton(
-        onPressed: () {
+      child: InkWell(
+        onTap: () {
           if (isPlayable) {
             AppNavigator.instance.navigateTo(context, AppNavigator.play,
                 params: {'song': song}, overlay: true);
@@ -490,7 +480,6 @@ class _SongListItem extends StatelessWidget {
             Toast.show(stringsOf(context).playFailBecauseOfCopyright);
           }
         },
-        padding: EdgeInsets.zero,
         child: Row(
           children: <Widget>[
             SizedBox(
@@ -504,7 +493,7 @@ class _SongListItem extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
-                  color: AppColors.text_light,
+                  color: AppColors.textLight,
                   fontWeight: FontWeight.normal,
                 ),
               ),
@@ -516,6 +505,7 @@ class _SongListItem extends StatelessWidget {
               flex: 1,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Text(
                     song.name,
@@ -524,8 +514,8 @@ class _SongListItem extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       color: isPlayable
-                          ? AppColors.text_title
-                          : AppColors.text_disabled,
+                          ? AppColors.textTitle
+                          : AppColors.textDisabled,
                       fontWeight: FontWeight.normal,
                     ),
                   ),
@@ -540,22 +530,20 @@ class _SongListItem extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       color: isPlayable
-                          ? AppColors.text_light
-                          : AppColors.text_disabled,
+                          ? AppColors.textLight
+                          : AppColors.textDisabled,
                       fontWeight: FontWeight.normal,
                     ),
                   ),
                 ],
               ),
             ),
-            FlatButton(
+            IconButton(
               onPressed: onTapMenu,
-              shape: CircleBorder(),
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: MdrIcon(
-                'more_vert',
+              icon: Icon(
+                Icons.more_vert_rounded,
                 size: 24,
-                color: AppColors.tint_rounded,
+                color: AppColors.tintRounded,
               ),
             )
           ],

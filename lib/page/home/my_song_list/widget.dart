@@ -1,3 +1,4 @@
+import 'package:dart_extensions_methods/dart_extension_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/page/basic_types.dart';
@@ -5,7 +6,6 @@ import 'package:second_music/page/home/my_song_list/model.dart';
 import 'package:second_music/page/mini_player/mini_player_page.dart';
 import 'package:second_music/repository/local/database/song/dao.dart';
 import 'package:second_music/res/res.dart';
-import 'package:second_music/widget/material_icon_round.dart';
 
 void showCreatePlaylistDialog(BuildContext context) {
   showDialog(
@@ -18,7 +18,7 @@ void showCreatePlaylistDialog(BuildContext context) {
             stringsOf(context).createPlaylist,
             style: TextStyle(
               fontSize: 20,
-              color: AppColors.text_title,
+              color: AppColors.textTitle,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -33,14 +33,14 @@ void showCreatePlaylistDialog(BuildContext context) {
             decoration: InputDecoration(
               hintText: stringsOf(context).pleaseInputPlaylistTitle,
               hintStyle: TextStyle(
-                color: AppColors.text_light,
+                color: AppColors.textLight,
                 fontWeight: FontWeight.normal,
               ),
             ),
           ),
           contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -48,8 +48,9 @@ void showCreatePlaylistDialog(BuildContext context) {
             StreamBuilder(
                 stream: model.titleStream,
                 builder: (context, AsyncSnapshot<String> snapshot) {
-                  return FlatButton(
-                      onPressed: snapshot.data!.isEmpty
+                  final title = snapshot.data;
+                  return TextButton(
+                      onPressed: title.isNullOrEmpty()
                           ? null
                           : () => _createPlaylist(context,
                               model.titleEditingController.text.trim()),
@@ -102,7 +103,7 @@ class _SongMenu extends StatelessWidget {
     final items = [
       [
         'deleteSongList',
-        'delete_outline',
+        Icons.delete_outline_rounded,
         stringsOf(context).delete,
         !songList.isFavor
       ]
@@ -157,7 +158,7 @@ class _SongMenu extends StatelessWidget {
 
 class _SongMenuItem extends StatelessWidget {
   final String type;
-  final String logo;
+  final IconData logo;
   final String title;
   final bool enable;
   final ValueCallback<String> callback;
@@ -168,19 +169,18 @@ class _SongMenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FlatButton(
-      onPressed: () => enable ? callback(type) : null,
-      padding: EdgeInsets.zero,
+    return InkWell(
+      onTap: () => enable ? callback(type) : null,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 18),
         alignment: Alignment.center,
         height: 50,
         child: Row(
           children: <Widget>[
-            MdrIcon(
+            Icon(
               logo,
               size: 28,
-              color: enable ? AppColors.tint_outlined : AppColors.disabled,
+              color: enable ? AppColors.tintOutlined : AppColors.disabled,
             ),
             SizedBox(
               width: 10,
@@ -189,7 +189,7 @@ class _SongMenuItem extends StatelessWidget {
               title,
               style: TextStyle(
                 fontSize: 16,
-                color: enable ? AppColors.text_title : AppColors.disabled,
+                color: enable ? AppColors.textTitle : AppColors.disabled,
                 fontWeight: FontWeight.normal,
               ),
             )

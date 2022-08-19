@@ -1,12 +1,11 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:second_music/entity/enum.dart';
 import 'package:second_music/entity/song.dart';
 import 'package:second_music/repository/local/preference/basic.dart';
 
 class PlayingStorage {
-  static PlayingStorage? _instance = null;
+  static PlayingStorage? _instance;
 
   static PlayingStorage get instance {
     if (_instance == null) {

@@ -5,7 +5,6 @@ import 'package:second_music/page/home/my_song_list/model.dart';
 import 'package:second_music/page/home/my_song_list/widget.dart';
 import 'package:second_music/page/navigator.dart';
 import 'package:second_music/res/res.dart';
-import 'package:second_music/widget/material_icon_round.dart';
 
 class HomeMySongList extends StatefulWidget {
   @override
@@ -122,7 +121,7 @@ class HomeMySongListState extends State with AutomaticKeepAliveClientMixin {
 }
 
 class _HomeMyCommonItem extends StatelessWidget {
-  final String icon;
+  final IconData icon;
   final String title;
   final int count;
 
@@ -133,31 +132,30 @@ class _HomeMyCommonItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         height: 50,
-        child: FlatButton(
-          padding: EdgeInsets.zero,
-          onPressed: () => {},
+        child: GestureDetector(
+          onTap: () => {},
           child: Row(
             children: <Widget>[
               Container(
                 width: 80,
                 alignment: Alignment.center,
-                child: MdrIcon(
+                child: Icon(
                   icon,
                   size: 28,
-                  color: AppColors.tint_rounded,
+                  color: AppColors.tintRounded,
                 ),
               ),
               Text.rich(TextSpan(children: [
                 TextSpan(
                     text: title,
                     style: TextStyle(
-                      color: AppColors.text_title,
+                      color: AppColors.textTitle,
                       fontSize: 16,
                     )),
                 TextSpan(
                     text: ' ($count)',
                     style: TextStyle(
-                      color: AppColors.text_light,
+                      color: AppColors.textLight,
                       fontSize: 14,
                     ))
               ]))
@@ -193,10 +191,10 @@ class _HomeMySongListTitle extends StatelessWidget {
       margin: EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: <Widget>[
-          MdrIcon(
-            'expand_more',
+          Icon(
+            Icons.expand_more_rounded,
             size: 32,
-            color: AppColors.tint_rounded,
+            color: AppColors.tintRounded,
           ),
           Expanded(
               flex: 1,
@@ -204,7 +202,7 @@ class _HomeMySongListTitle extends StatelessWidget {
                 TextSpan(
                   text: title,
                   style: TextStyle(
-                    color: AppColors.text_dark,
+                    color: AppColors.textDark,
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                   ),
@@ -212,7 +210,7 @@ class _HomeMySongListTitle extends StatelessWidget {
                 TextSpan(
                   text: ' ($count)',
                   style: TextStyle(
-                    color: AppColors.text_light,
+                    color: AppColors.textLight,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -223,15 +221,11 @@ class _HomeMySongListTitle extends StatelessWidget {
             child: Container(
               width: 42,
               alignment: Alignment.center,
-              child: FlatButton(
+              child: IconButton(
                 onPressed: () => showCreatePlaylistDialog(context),
-                shape: CircleBorder(),
                 padding: EdgeInsets.zero,
-                child: MdrIcon(
-                  'add',
-                  size: 24,
-                  color: AppColors.tint_rounded,
-                ),
+                icon: Icon(Icons.add),
+                color: AppColors.tintRounded,
               ),
             ),
           )
@@ -248,8 +242,8 @@ class _HomeMySongListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FlatButton(
-        onPressed: () {
+    return InkWell(
+        onTap: () {
           AppNavigator.instance
               .navigateTo(context, AppNavigator.song_list, params: {
             'plt': songList.plt,
@@ -257,7 +251,6 @@ class _HomeMySongListItem extends StatelessWidget {
             'songListType': songList.type,
           });
         },
-        padding: EdgeInsets.zero,
         child: Container(
           padding: EdgeInsets.fromLTRB(16, 5, 0, 5),
           height: 60,
@@ -269,7 +262,7 @@ class _HomeMySongListItem extends StatelessWidget {
                     ? Container(
                         width: 50,
                         height: 50,
-                        color: AppColors.cover_bg,
+                        color: AppColors.coverBg,
                       )
                     : CachedNetworkImage(
                         imageUrl: songList.cover,
@@ -280,7 +273,7 @@ class _HomeMySongListItem extends StatelessWidget {
                           return Container(
                             width: 50,
                             height: 50,
-                            color: AppColors.cover_bg,
+                            color: AppColors.coverBg,
                           );
                         },
                       ),
@@ -299,7 +292,7 @@ class _HomeMySongListItem extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                          color: AppColors.text_title,
+                          color: AppColors.textTitle,
                           fontSize: 16,
                           fontWeight: FontWeight.normal),
                     ),
@@ -309,7 +302,7 @@ class _HomeMySongListItem extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: AppColors.text_light,
+                        color: AppColors.textLight,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -317,16 +310,12 @@ class _HomeMySongListItem extends StatelessWidget {
                   ],
                 ),
               ),
-              ButtonTheme(
-                minWidth: 36,
-                child: FlatButton(
-                  onPressed: () => showSongListMenu(context, songList),
-                  padding: EdgeInsets.zero,
-                  child: Icon(
-                    Icons.more_vert,
-                    color: AppColors.tint_rounded,
-                    size: 20,
-                  ),
+              IconButton(
+                onPressed: () => showSongListMenu(context, songList),
+                padding: EdgeInsets.zero,
+                icon: Icon(
+                  Icons.more_vert,
+                  color: AppColors.tintRounded,
                 ),
               ),
             ],

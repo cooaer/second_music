@@ -51,6 +51,9 @@ class NeteaseMusic extends BaseMusicProvider {
     };
 
     final respStr = await _weapiRequest(url, params);
+    if (respStr.isEmpty) {
+      return Playlist();
+    }
 
     final respMap = json.decode(respStr);
 

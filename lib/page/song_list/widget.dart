@@ -10,7 +10,6 @@ import 'package:second_music/page/navigator.dart';
 import 'package:second_music/page/song_list/model.dart';
 import 'package:second_music/repository/local/database/song/dao.dart';
 import 'package:second_music/res/res.dart';
-import 'package:second_music/widget/material_icon_round.dart';
 
 void showSongMenu(BuildContext context, Song song, SongList? songList,
     SongListModel? songListModel) {
@@ -36,25 +35,42 @@ class _SongMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = [
       // ['playNext', 'play_circle_outline', stringsOf(context).playNext],
-      ['addToSongList', 'library_add', stringsOf(context).collectToPlaylist]
+      [
+        'addToSongList',
+        Icons.library_add_rounded,
+        stringsOf(context).collectToPlaylist
+      ]
     ];
 
     if (song.isSingerAvailable) {
-      items.add(
-          ['singer', 'portrait', stringsOf(context).singerTitle(song.singer)]);
+      items.add([
+        'singer',
+        Icons.portrait_rounded,
+        stringsOf(context).singerTitle(song.singer)
+      ]);
     }
 
     if (song.isAlbumAvailable) {
-      items.add(['album', 'album', stringsOf(context).albumTitle(song.album)]);
+      items.add([
+        'album',
+        Icons.album_rounded,
+        stringsOf(context).albumTitle(song.album)
+      ]);
     }
 
     if (songList?.plt == MusicPlatforms.local) {
-      items.add(
-          ['deleteFromSongList', 'delete_outline', stringsOf(context).delete]);
+      items.add([
+        'deleteFromSongList',
+        Icons.delete_outline_rounded,
+        stringsOf(context).delete
+      ]);
     }
 
-    items.add(
-        ["source", "link", stringsOf(context).sourceWithPlatform(song.plt)]);
+    items.add([
+      "source",
+      Icons.link_rounded,
+      stringsOf(context).sourceWithPlatform(song.plt)
+    ]);
 
     return SingleChildScrollView(
       child: Padding(
@@ -66,7 +82,7 @@ class _SongMenu extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildMenuItems(BuildContext context, List<List<String>> items) {
+  List<Widget> _buildMenuItems(BuildContext context, List<List> items) {
     var widgets = <Widget>[];
     for (var i = 0; i < items.length; i++) {
       var item = items[i];
@@ -151,7 +167,7 @@ class _SongMenu extends StatelessWidget {
 
 class _SongMenuItem extends StatelessWidget {
   final String type;
-  final String logo;
+  final IconData logo;
   final String title;
   final ValueCallback<String> callback;
 
@@ -160,19 +176,18 @@ class _SongMenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FlatButton(
-      onPressed: () => callback(type),
-      padding: EdgeInsets.zero,
+    return InkWell(
+      onTap: () => callback(type),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 18),
         alignment: Alignment.center,
+        padding: EdgeInsets.symmetric(horizontal: 18),
         height: 50,
         child: Row(
           children: <Widget>[
-            MdrIcon(
+            Icon(
               logo,
               size: 28,
-              color: AppColors.tint_outlined,
+              color: AppColors.tintOutlined,
             ),
             SizedBox(
               width: 10,
@@ -184,7 +199,7 @@ class _SongMenuItem extends StatelessWidget {
                 maxLines: 2,
                 style: TextStyle(
                   fontSize: 16,
-                  color: AppColors.text_title,
+                  color: AppColors.textTitle,
                   fontWeight: FontWeight.normal,
                 ),
               ),
@@ -224,7 +239,7 @@ Future<SongList?> selectSongList(
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.text_title,
+                  color: AppColors.textTitle,
                 ),
               ),
             ),
@@ -248,11 +263,10 @@ class _SelectSongListContentItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FlatButton(
-        onPressed: () {
+    return InkWell(
+        onTap: () {
           Navigator.of(context).pop(songList);
         },
-        padding: EdgeInsets.zero,
         child: Container(
           padding: EdgeInsets.fromLTRB(16, 5, 16, 5),
           height: 60,
@@ -264,7 +278,7 @@ class _SelectSongListContentItem extends StatelessWidget {
                     ? Container(
                         width: 50,
                         height: 50,
-                        color: AppColors.cover_bg,
+                        color: AppColors.coverBg,
                       )
                     : CachedNetworkImage(
                         imageUrl: songList.cover,
@@ -275,7 +289,7 @@ class _SelectSongListContentItem extends StatelessWidget {
                           return Container(
                             width: 50,
                             height: 50,
-                            color: AppColors.cover_bg,
+                            color: AppColors.coverBg,
                           );
                         },
                       ),
@@ -294,7 +308,7 @@ class _SelectSongListContentItem extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                          color: AppColors.text_title,
+                          color: AppColors.textTitle,
                           fontSize: 16,
                           fontWeight: FontWeight.normal),
                     ),
@@ -304,7 +318,7 @@ class _SelectSongListContentItem extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: AppColors.text_light,
+                        color: AppColors.textLight,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -323,12 +337,12 @@ void showSongListDescriptionDialog(BuildContext context, String desc) {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: AppColors.main_bg,
+          backgroundColor: AppColors.mainBg,
           title: Text(
             stringsOf(context).description,
             style: TextStyle(
               fontSize: 18,
-              color: AppColors.text_title,
+              color: AppColors.textTitle,
             ),
           ),
           titlePadding: EdgeInsets.fromLTRB(20, 10, 20, 0),
@@ -337,7 +351,7 @@ void showSongListDescriptionDialog(BuildContext context, String desc) {
               desc.isEmpty ? stringsOf(context).nullText : desc,
               style: TextStyle(
                 fontSize: 14,
-                color: AppColors.text_title,
+                color: AppColors.textTitle,
                 fontWeight: FontWeight.normal,
                 decoration: TextDecoration.none,
               ),

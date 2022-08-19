@@ -7,11 +7,11 @@ class SettingPage extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           leading: BackButton(
-            color: AppColors.text_title,
+            color: AppColors.textTitle,
           ),
           title: Text(
             stringsOf(context).setting,
-            style: TextStyle(color: AppColors.text_title, fontSize: 18),
+            style: TextStyle(color: AppColors.textTitle, fontSize: 18),
           ),
           centerTitle: true,
           backgroundColor: AppColors.primary,

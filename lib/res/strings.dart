@@ -257,7 +257,7 @@ class AppLocalizations {
     if (collected) {
       return '已收藏(${_displayCount(count)})';
     } else {
-      return '+收藏(${_displayCount(count)})';
+      return count > 0 ? '+收藏(${_displayCount(count)})' : '+收藏';
     }
   }
 

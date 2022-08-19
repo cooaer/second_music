@@ -147,20 +147,20 @@ class MiguMusic extends BaseMusicProvider {
 
   @override
   Future<bool> parseTrack(Song song) async {
-    String toneFlag;
-    switch (song.quality) {
-      case '110000':
-        toneFlag = 'HQ';
-        break;
-      case '111100':
-        toneFlag = 'SQ';
-        break;
-      case '111111':
-        toneFlag = 'ZQ';
-        break;
-      default:
-        toneFlag = 'PQ';
-    }
+    // String toneFlag;
+    // switch (song.quality) {
+    //   case '110000':
+    //     toneFlag = 'HQ';
+    //     break;
+    //   case '111100':
+    //     toneFlag = 'SQ';
+    //     break;
+    //   case '111111':
+    //     toneFlag = 'ZQ';
+    //     break;
+    //   default:
+    //     toneFlag = 'PQ';
+    // }
     final targetUrl =
         'https://app.c.nf.migu.cn/MIGUM2.0/strategy/listen-url/v2.2?netType=01&resourceType=E&songId=${song.pltId}&toneFlag=PQ';
     final httpResp = await httpMaker({
@@ -355,14 +355,14 @@ class MiguMusic extends BaseMusicProvider {
     final encodedKeyword = Uri.encodeComponent(keyword);
     final encodedSearchSwitch = Uri.encodeComponent(searchSwitch);
     var targetUrl =
-        'https://jadeite.migu.cn/music_search/v2/search/searchAll?pageNo=${page}&pageSize=$count&sort=1&text=$encodedKeyword&searchSwitch=$encodedSearchSwitch&sid=$sid&isCopyright=1&isCorrect=1';
+        'https://jadeite.migu.cn/music_search/v2/search/searchAll?pageNo=$page&pageSize=$count&sort=1&text=$encodedKeyword&searchSwitch=$encodedSearchSwitch&sid=$sid&isCopyright=1&isCorrect=1';
 
     final appId = 'yyapp2';
     final deviceId = md5(sid).toUpperCase(); // 设备的UUID
     final timestamp = DateTime.now().millisecond;
     const signatureMd5 = '6cdc72a439cef99a3418d2a78aa28c73'; // app签名证书的md5
     final text =
-        "${keyword}${signatureMd5}${appId}d16148780a1dcc7408e06336b98cfd50${deviceId}${timestamp}";
+        "$keyword$signatureMd5${appId}d16148780a1dcc7408e06336b98cfd50$deviceId$timestamp";
     final sign = md5(text);
     final headers = {
       "appId": 'yyapp2',
@@ -384,11 +384,11 @@ class MiguMusic extends BaseMusicProvider {
   Future<PlaylistSet> showPlayList(
       {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
     final start = offset ~/ count + 1;
-    final target_url =
+    final targetUrl =
         'https://app.c.nf.migu.cn/MIGUM2.0/v2.0/content/getMusicData.do?count=$count&start=$start&templateVersion=5&type=1';
     final httpResp = await httpMaker({
       HttpMakerParams.method: HttpMakerParams.methodGet,
-      HttpMakerParams.url: target_url,
+      HttpMakerParams.url: targetUrl,
     });
     final Map<String, dynamic> respJson = await jsonDecode(httpResp);
     debugPrint("migu.showPlayList, result = $respJson");

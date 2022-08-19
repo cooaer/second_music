@@ -7,7 +7,6 @@ import 'package:second_music/page/mini_player/mini_player_page.dart';
 import 'package:second_music/page/navigator.dart';
 import 'package:second_music/page/ui_style.dart';
 import 'package:second_music/res/res.dart';
-import 'package:second_music/widget/material_icon_round.dart';
 import 'package:toast/toast.dart';
 
 class HomePage extends StatefulWidget {
@@ -104,22 +103,25 @@ class _HomeTopBar extends StatelessWidget {
                         stringsOf(context).appNameForShort,
                         style: TextStyle(
                           fontSize: 28,
-                          color: AppColors.text_title,
+                          color: AppColors.textTitle,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                     Expanded(
                       flex: 1,
-                      child: Container(
-                          height: 32,
-                          child: FlatButton(
-                              color: AppColors.search_bg,
-                              padding: EdgeInsets.zero,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              onPressed: () {
+                      child: SizedBox(
+                        height: 32,
+                        child: Material(
+                          child: Ink(
+                            decoration: BoxDecoration(
+                                color: AppColors.searchBg,
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(16))),
+                            child: InkWell(
+                              customBorder: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16)),
+                              onTap: () {
                                 AppNavigator.instance
                                     .navigateTo(context, AppNavigator.search);
                               },
@@ -128,37 +130,44 @@ class _HomeTopBar extends StatelessWidget {
                                   Padding(
                                     padding:
                                         EdgeInsets.only(left: 10, right: 6),
-                                    child: MdrIcon(
-                                      'search',
-                                      color: AppColors.tint_rounded,
+                                    child: Icon(
+                                      Icons.search_rounded,
+                                      color: AppColors.tintRounded,
                                       size: 20,
                                     ),
                                   ),
                                   Text(
                                     stringsOf(context).mainSearchHint,
                                     style: TextStyle(
-                                      color: AppColors.text_light,
+                                      color: AppColors.textLight,
                                       fontSize: 14,
                                     ),
                                   ),
                                 ],
-                              ))),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                    Container(
+                    Material(
+                      child: Container(
                         alignment: Alignment.center,
                         width: 48,
                         height: 48,
-                        child: FlatButton(
+                        child: IconButton(
                           padding: EdgeInsets.all(0),
-                          shape: CircleBorder(side: BorderSide.none),
+                          splashRadius: 24,
                           onPressed: () => AppNavigator.instance.navigateTo(
                               context, AppNavigator.setting,
                               overlay: true),
-                          child: Icon(
-                            MdiIcons.cogOutline,
+                          icon: Icon(
+                            Icons.settings_outlined,
                             color: Colors.grey.shade600,
                           ),
-                        )),
+                        ),
+                      ),
+                    ),
                   ],
                 ))));
   }
@@ -195,12 +204,12 @@ class _HomeTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        color: AppColors.main_bg,
+        color: AppColors.mainBg,
         child: TabBar(
             indicatorWeight: 3,
             indicatorSize: TabBarIndicatorSize.label,
-            labelColor: AppColors.text_accent,
-            unselectedLabelColor: AppColors.text_light,
+            labelColor: AppColors.textAccent,
+            unselectedLabelColor: AppColors.textLight,
             labelPadding: EdgeInsets.zero,
             tabs: titles
                 .map((e) => Tab(

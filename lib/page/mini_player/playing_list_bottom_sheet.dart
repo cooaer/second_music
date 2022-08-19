@@ -6,7 +6,6 @@ import 'package:second_music/page/song_list/widget.dart';
 import 'package:second_music/repository/local/database/song/dao.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/service/music_service.dart';
-import 'package:second_music/widget/material_icon_round.dart';
 
 void showPlayingList(BuildContext context) {
   showModalBottomSheet(context: context, builder: (context) => _PlayingList());
@@ -15,28 +14,30 @@ void showPlayingList(BuildContext context) {
 class _PlayingList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 400,
-      color: Colors.white,
-      child: Column(
-        children: <Widget>[
-          _PlayingListTitle(),
-          Divider(
-            indent: 0,
-            height: 0.5,
-            color: AppColors.divider,
-          ),
-          Expanded(
-            flex: 1,
-            child: _buildSongList(context),
-          ),
-          Divider(
-            indent: 0,
-            height: 0.5,
-            color: AppColors.divider,
-          ),
-          _PlayingListBottom(),
-        ],
+    return SafeArea(
+      child: Container(
+        height: 400,
+        color: Colors.white,
+        child: Column(
+          children: <Widget>[
+            _PlayingListTitle(),
+            Divider(
+              indent: 0,
+              height: 0.5,
+              color: AppColors.divider,
+            ),
+            Expanded(
+              flex: 1,
+              child: _buildSongList(context),
+            ),
+            Divider(
+              indent: 0,
+              height: 0.5,
+              color: AppColors.divider,
+            ),
+            _PlayingListBottom(),
+          ],
+        ),
       ),
     );
   }
@@ -68,64 +69,63 @@ class _PlayingList extends StatelessWidget {
 class _PlayingListTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ButtonTheme(
-        height: 50,
-        minWidth: 0,
-        child: Container(
-          height: 50,
-          child: Row(
-            children: <Widget>[
-              StreamBuilder(
-                initialData: MusicService().playMode,
-                stream: MusicService().playModeStream,
-                builder: (context, AsyncSnapshot<PlayMode> snapshot) {
-                  return FlatButton.icon(
-                      onPressed: () {
-                        MusicService().switchPlayMode();
-                      },
-                      icon: MdrIcon(
-                        AppImages.playModeIcon(snapshot.data!),
-                        color: AppColors.tint_rounded,
-                      ),
-                      label: Text(
-                        stringsOf(context).playMode(snapshot.data!),
-                        style: TextStyle(
-                          color: AppColors.text_title,
-                          fontSize: 16,
-                          fontWeight: FontWeight.normal,
-                        ),
-                      ));
-                },
-              ),
-              Spacer(),
-              FlatButton.icon(
+    return Container(
+      height: 50,
+      child: Row(
+        children: <Widget>[
+          StreamBuilder(
+            initialData: MusicService().playMode,
+            stream: MusicService().playModeStream,
+            builder: (context, AsyncSnapshot<PlayMode> snapshot) {
+              return TextButton.icon(
                   onPressed: () {
-                    _addAllToSongList(context);
+                    MusicService().switchPlayMode();
                   },
-                  padding: EdgeInsets.symmetric(horizontal: 5),
-                  icon: MdrIcon(
-                    'create_new_folder',
-                    color: AppColors.tint_rounded,
+                  icon: Icon(
+                    AppImages.playModeIcon(snapshot.data!),
+                    color: AppColors.tintRounded,
                   ),
                   label: Text(
-                    stringsOf(context).saveAll,
+                    stringsOf(context).playMode(snapshot.data!),
                     style: TextStyle(
-                      color: AppColors.text_title,
+                      color: AppColors.textTitle,
                       fontSize: 16,
                       fontWeight: FontWeight.normal,
                     ),
-                  )),
-              FlatButton(
-                onPressed: MusicService().clearPlaylistWithoutCurrentSong,
-                padding: EdgeInsets.symmetric(horizontal: 10),
-                child: MdrIcon(
-                  "delete_outline",
-                  color: AppColors.tint_rounded,
-                ),
-              )
-            ],
+                  ));
+            },
           ),
-        ));
+          Spacer(),
+          TextButton.icon(
+            onPressed: () {
+              _addAllToSongList(context);
+            },
+            icon: Icon(
+              Icons.create_new_folder_rounded,
+              color: AppColors.tintRounded,
+            ),
+            label: Text(
+              stringsOf(context).saveAll,
+              style: TextStyle(
+                color: AppColors.textTitle,
+                fontSize: 16,
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+          ),
+          Material(
+            child: IconButton(
+              onPressed: MusicService().clearPlaylistWithoutCurrentSong,
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              icon: Icon(
+                Icons.delete_outline_rounded,
+                color: AppColors.tintRounded,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _addAllToSongList(BuildContext context) async {
@@ -152,78 +152,77 @@ class _PlayingListSong extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Material(
+      child: Ink(
         height: 45,
-        child: ButtonTheme(
-          minWidth: 0,
-          height: 45,
-          child: FlatButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                MusicService().playSong(song);
-              },
-              padding: EdgeInsets.zero,
-              child: Row(
-                children: <Widget>[
-                  SizedBox(
-                    width: 16,
+        color: Colors.white,
+        child: InkWell(
+          onTap: () {
+            Navigator.of(context).pop();
+            MusicService().playSong(song);
+          },
+          child: Row(
+            children: <Widget>[
+              SizedBox(
+                width: 16,
+              ),
+              if (isPlaying)
+                Padding(
+                  padding: EdgeInsets.only(right: 5),
+                  child: Icon(
+                    Icons.volume_up_rounded,
+                    color: AppColors.accent,
                   ),
-                  if (isPlaying)
-                    Padding(
-                      padding: EdgeInsets.only(right: 5),
-                      child: MdrIcon(
-                        'volume_up',
-                        color: AppColors.accent,
-                      ),
-                    ),
-                  Expanded(
-                    flex: 1,
-                    child: Text.rich(
+                ),
+              Expanded(
+                flex: 1,
+                child: Text.rich(
+                  TextSpan(
+                    children: <TextSpan>[
                       TextSpan(
-                        children: <TextSpan>[
-                          TextSpan(
-                            text: song.name,
-                            style: TextStyle(
-                                color: isPlaying
-                                    ? AppColors.text_accent
-                                    : AppColors.text_title,
-                                fontSize: 16,
-                                fontWeight: FontWeight.normal),
-                          ),
-                          TextSpan(
-                            text: song.singer?.name != null &&
-                                    song.singer!.name.isNotEmpty
-                                ? ' - ${song.singer!.name}'
-                                : '',
-                            style: TextStyle(
-                                color: isPlaying
-                                    ? AppColors.text_accent
-                                    : AppColors.text_light,
-                                fontSize: 12,
-                                fontWeight: FontWeight.normal),
-                          ),
-                        ],
+                        text: song.name,
+                        style: TextStyle(
+                            color: isPlaying
+                                ? AppColors.textAccent
+                                : AppColors.textTitle,
+                            fontSize: 16,
+                            fontWeight: FontWeight.normal),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  if (!isPlaying)
-                    FlatButton(
-                      onPressed: () =>
-                          MusicService().deleteSongFromPlaylist(song),
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: MdrIcon(
-                        "close",
-                        color: AppColors.tint_rounded,
+                      TextSpan(
+                        text: song.singer?.name != null &&
+                                song.singer!.name.isNotEmpty
+                            ? ' - ${song.singer!.name}'
+                            : '',
+                        style: TextStyle(
+                            color: isPlaying
+                                ? AppColors.textAccent
+                                : AppColors.textLight,
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal),
                       ),
-                    ),
-                  SizedBox(
-                    width: 5,
+                    ],
                   ),
-                ],
-              )),
-        ));
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (!isPlaying)
+                IconButton(
+                  onPressed: () => MusicService().deleteSongFromPlaylist(song),
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: AppColors.tintRounded,
+                  ),
+                ),
+              SizedBox(
+                width: 5,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -242,24 +241,21 @@ class _PlayingListBottom extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
+      height: 50,
       width: double.infinity,
-      child: ButtonTheme(
-          layoutBehavior: ButtonBarLayoutBehavior.padded,
-          minWidth: 0,
-          height: 50,
-          child: FlatButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              padding: EdgeInsets.zero,
-              child: Text(
-                stringsOf(context).close,
-                style: TextStyle(
-                  color: AppColors.text_title,
-                  fontSize: 16,
-                  fontWeight: FontWeight.normal,
-                ),
-              ))),
+      child: TextButton(
+        onPressed: () {
+          Navigator.of(context).pop();
+        },
+        child: Text(
+          stringsOf(context).close,
+          style: TextStyle(
+            color: AppColors.textTitle,
+            fontSize: 16,
+            fontWeight: FontWeight.normal,
+          ),
+        ),
+      ),
     );
   }
 }

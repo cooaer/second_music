@@ -1,20 +1,21 @@
+import 'package:flutter/material.dart';
 import 'package:second_music/entity/enum.dart';
 
 class AppImages {
-  static String playModeIcon(PlayMode mode) {
+  static IconData playModeIcon(PlayMode mode) {
     switch (mode) {
       case PlayMode.repeatOne:
-        return 'repeat_one';
+        return Icons.repeat_one_rounded;
       case PlayMode.random:
-        return 'shuffle';
+        return Icons.shuffle_rounded;
       case PlayMode.repeat:
       default:
-        return 'repeat';
+        return Icons.repeat_rounded;
     }
   }
 
-  static String favorIcon(bool isFavor) {
-    return isFavor ? 'favorite' : 'favorite_border';
+  static IconData favorIcon(bool isFavor) {
+    return isFavor ? Icons.favorite_rounded : Icons.favorite_border_rounded;
   }
 
   static String playIcon(bool playing) {

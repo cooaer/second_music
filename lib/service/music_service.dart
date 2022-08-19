@@ -529,11 +529,6 @@ class MusicService {
 
 //=============== utils ===============
 
-  List<Song> _filterInPlaylist(List<Song> songs) {
-    return songs
-        .where((song) => !_allSongs.containsKey(song.uniqueId))
-        .toList();
-  }
 }
 
 extension PlayerSongExtension on Song {

@@ -114,8 +114,3 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
-
-  fonts:
-    - family: Material Icons Round
-      fonts:
-        - asset: assets/fonts/Material-Icons-Round.ttf

@@ -31,11 +31,16 @@ Future initApp() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final flatButtonStyle = TextButton.styleFrom(
+      primary: Colors.grey,
+    );
+
     return MaterialApp(
       onGenerateTitle: (context) => stringsOf(context).appName,
       theme: ThemeData(
         // useMaterial3: true,
         primarySwatch: Colors.red,
+        textButtonTheme: TextButtonThemeData(style: flatButtonStyle),
       ),
       home: HomePage(),
       localizationsDelegates: [

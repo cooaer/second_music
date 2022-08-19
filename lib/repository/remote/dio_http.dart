@@ -58,18 +58,18 @@ class AddHeaderInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     const replace_referer = true;
-    var replace_origin = true;
-    const add_referer = true;
-    var add_origin = true;
-    var referer_value = '';
+    var replaceOrigin = true;
+    const addReferer = true;
+    var addOrigin = true;
+    var refererValue = '';
 
     var url = options.uri.toString();
 
     if (url.indexOf('://music.163.com/') != -1) {
-      referer_value = 'http://music.163.com/';
+      refererValue = 'http://music.163.com/';
     }
     if (url.indexOf('://gist.githubusercontent.com/') != -1) {
-      referer_value = 'https://gist.githubusercontent.com/';
+      refererValue = 'https://gist.githubusercontent.com/';
     }
 
     if ((url.indexOf('c.y.qq.com/') != -1) ||
@@ -77,30 +77,30 @@ class AddHeaderInterceptor extends Interceptor {
         (url.indexOf('qqmusic.qq.com/') != -1) ||
         (url.indexOf('music.qq.com/') != -1) ||
         (url.indexOf('imgcache.qq.com/') != -1)) {
-      referer_value = 'https://y.qq.com/';
+      refererValue = 'https://y.qq.com/';
     }
 
     if (url.indexOf('c.y.qq.com/soso/fcgi-bin/client_search_cp') != -1) {
-      referer_value = '';
+      refererValue = '';
     }
 
     if (url.indexOf('c.y.qq.com/soso/fcgi-bin/client_music_search_songlist') !=
         -1) {
-      add_origin = false;
+      addOrigin = false;
     }
 
     if (url.indexOf('.kugou.com/') != -1) {
-      referer_value = 'http://www.kugou.com/';
+      refererValue = 'http://www.kugou.com/';
     }
 
     if (url.indexOf('.kuwo.cn/') != -1) {
-      referer_value = 'http://www.kuwo.cn/';
+      refererValue = 'http://www.kuwo.cn/';
     }
 
     if (url.indexOf('.bilibili.com/') != -1) {
-      referer_value = 'http://www.bilibili.com/';
-      replace_origin = false;
-      add_origin = false;
+      refererValue = 'http://www.bilibili.com/';
+      replaceOrigin = false;
+      addOrigin = false;
     }
 
     var isRefererSet = false;
@@ -109,24 +109,24 @@ class AddHeaderInterceptor extends Interceptor {
 
     if (replace_referer &&
         headers.containsKey('Referer') &&
-        referer_value.isNotEmpty) {
-      headers['Referer'] = referer_value;
+        refererValue.isNotEmpty) {
+      headers['Referer'] = refererValue;
       isRefererSet = true;
     }
 
-    if (replace_origin &&
+    if (replaceOrigin &&
         headers.containsKey('Origin') &&
-        referer_value.isNotEmpty) {
-      headers['Origin'] = referer_value;
+        refererValue.isNotEmpty) {
+      headers['Origin'] = refererValue;
       isOriginSet = true;
     }
 
-    if (add_referer && !isRefererSet && referer_value.isNotEmpty) {
-      headers['Referer'] = referer_value;
+    if (addReferer && !isRefererSet && refererValue.isNotEmpty) {
+      headers['Referer'] = refererValue;
     }
 
-    if (add_origin && !isOriginSet && referer_value.isNotEmpty) {
-      headers['Origin'] = referer_value;
+    if (addOrigin && !isOriginSet && refererValue.isNotEmpty) {
+      headers['Origin'] = refererValue;
     }
     return super.onRequest(options, handler);
   }

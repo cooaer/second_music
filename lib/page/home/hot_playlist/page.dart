@@ -4,11 +4,11 @@ import 'package:second_music/entity/enum.dart';
 import 'package:second_music/entity/playlist.dart';
 import 'package:second_music/entity/playlist_set.dart';
 import 'package:second_music/entity/song_list.dart';
+import 'package:second_music/page/basic_types.dart';
 import 'package:second_music/page/home/hot_playlist/model.dart';
 import 'package:second_music/page/navigator.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/widget/loading_more.dart';
-import 'package:second_music/widget/material_icon_round.dart';
 
 class HotPlaylistModelProvider extends InheritedWidget {
   final HotPlaylistModel model;
@@ -39,7 +39,7 @@ class HomeHotPlaylistPlatform extends StatefulWidget {
 class HomeHotPlaylistPlatformState extends State
     with AutomaticKeepAliveClientMixin {
   static final int crossAxisCount = 3;
-  var _100dp = 50.0;
+  var _loadMorePixels = 50.0;
 
   HotPlaylistModel _hotPlaylistModel;
 
@@ -61,7 +61,7 @@ class HomeHotPlaylistPlatformState extends State
   Widget build(BuildContext context) {
     super.build(context);
 
-    _100dp = MediaQuery.of(context).devicePixelRatio * 50;
+    _loadMorePixels = MediaQuery.of(context).devicePixelRatio * 50;
 
     return HotPlaylistModelProvider(_hotPlaylistModel,
         child: StreamBuilder(
@@ -102,20 +102,17 @@ class HomeHotPlaylistPlatformState extends State
         sliver: SliverGrid(
             delegate: SliverChildBuilderDelegate((context, index) {
               var item = playlists[index];
-              return FlatButton(
-                onPressed: () {
-                  AppNavigator.instance
-                      .navigateTo(context, AppNavigator.song_list, params: {
-                    'plt': item.plt.name,
-                    'songListId': item.pltId,
-                    'songListType': SongListType.playlist
-                  });
-                },
-                padding: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5)),
-                child: HomeHotPlaylistItem(item, key: Key(item.pltId)),
-              );
+
+              final onPressed = () {
+                AppNavigator.instance
+                    .navigateTo(context, AppNavigator.song_list, params: {
+                  'plt': item.plt.name,
+                  'songListId': item.pltId,
+                  'songListType': SongListType.playlist
+                });
+              };
+              return HomeHotPlaylistItem(item,
+                  onPressed: onPressed, key: Key(item.pltId));
             }, childCount: playlists.length),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,
@@ -155,7 +152,7 @@ class HomeHotPlaylistPlatformState extends State
 
   Future _onScroll() async {
     if (_scrollController.position.pixels >
-        _scrollController.position.maxScrollExtent - _100dp) {
+        _scrollController.position.maxScrollExtent - _loadMorePixels) {
       _hotPlaylistModel.requestMore(false);
     }
   }
@@ -163,77 +160,84 @@ class HomeHotPlaylistPlatformState extends State
 
 class HomeHotPlaylistItem extends StatelessWidget {
   final Playlist playlist;
+  final VoidCallback? onPressed;
 
-  HomeHotPlaylistItem(this.playlist, {Key? key}) : super(key: key);
+  HomeHotPlaylistItem(this.playlist, {this.onPressed, Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        ClipRRect(
-          borderRadius: BorderRadius.circular(5),
-          child: Stack(
-            alignment: Alignment.topCenter,
-            children: <Widget>[
-              //封面
-              AspectRatio(
-                aspectRatio: 1,
-                child: CachedNetworkImage(
-                  imageUrl: playlist.cover,
-                  fit: BoxFit.cover,
-                ),
-              ),
-
-              //播放量
-              Container(
-                  height: 30,
-                  alignment: Alignment.topRight,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.black26, Colors.transparent],
-                      begin: AlignmentDirectional.topCenter,
-                      end: AlignmentDirectional.bottomCenter,
-                    ),
+    return InkWell(
+      onTap: this.onPressed,
+      borderRadius: BorderRadius.circular(5),
+      child: Column(
+        children: <Widget>[
+          ClipRRect(
+            borderRadius: BorderRadius.circular(5),
+            child: Stack(
+              alignment: Alignment.topCenter,
+              children: <Widget>[
+                //封面
+                AspectRatio(
+                  aspectRatio: 1,
+                  child: CachedNetworkImage(
+                    imageUrl: playlist.cover,
+                    fit: BoxFit.cover,
                   ),
-                  padding: EdgeInsets.symmetric(vertical: 2, horizontal: 6),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: <Widget>[
-                      MdrIcon(
-                        'play_arrow',
-                        size: 18,
-                        color: AppColors.text_embed,
+                ),
+
+                //播放量
+                Container(
+                    height: 30,
+                    alignment: Alignment.topRight,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.black26, Colors.transparent],
+                        begin: AlignmentDirectional.topCenter,
+                        end: AlignmentDirectional.bottomCenter,
                       ),
-                      Text(
-                        stringsOf(context).displayPlayCount(playlist.playCount),
-                        style: TextStyle(
-                          color: AppColors.text_embed,
-                          fontSize: 12,
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 2, horizontal: 6),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        Icon(
+                          Icons.play_arrow_rounded,
+                          size: 18,
+                          color: AppColors.textEmbed,
                         ),
-                      ),
-                    ],
-                  ))
-            ],
-          ),
-        ),
-        //标题
-        Expanded(
-          flex: 1,
-          child: Container(
-            margin: EdgeInsets.only(top: 8),
-            child: Text(
-              playlist.title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: AppColors.text_title,
-                fontSize: 14,
-                fontWeight: FontWeight.normal,
-              ),
+                        Text(
+                          stringsOf(context)
+                              .displayPlayCount(playlist.playCount),
+                          style: TextStyle(
+                            color: AppColors.textEmbed,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ))
+              ],
             ),
           ),
-        )
-      ],
+          //标题
+          Expanded(
+            flex: 1,
+            child: Container(
+              margin: EdgeInsets.only(top: 8),
+              child: Text(
+                playlist.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: AppColors.textTitle,
+                  fontSize: 14,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+            ),
+          )
+        ],
+      ),
     );
   }
 }

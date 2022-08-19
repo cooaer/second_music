@@ -108,7 +108,6 @@ class InfinitePageController extends PageController {
   }
 
   ///获得页面真实的index
-  @override
   int? get realPage {
     final currentPage = super.page;
     if (currentPage == null) return null;

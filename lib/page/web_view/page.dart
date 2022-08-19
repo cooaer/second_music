@@ -13,16 +13,16 @@ class WebViewPage extends StatelessWidget {
       appBar: AppBar(
         centerTitle: true,
         leading: BackButton(
-          color: AppColors.text_title,
+          color: AppColors.textTitle,
         ),
         title: Text(
           Uri.parse(url).host,
           style: TextStyle(
             fontSize: 18,
-            color: AppColors.text_title,
+            color: AppColors.textTitle,
           ),
         ),
-        backgroundColor: AppColors.main_bg,
+        backgroundColor: AppColors.mainBg,
         bottom: PreferredSize(
             child: Divider(
               height: 1,

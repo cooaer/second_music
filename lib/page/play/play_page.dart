@@ -11,7 +11,6 @@ import 'package:second_music/page/play/play_logic.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/service/music_service.dart';
 import 'package:second_music/widget/infinite_page_view.dart';
-import 'package:second_music/widget/material_icon_round.dart';
 import 'package:second_music/widget/play_progress_slider.dart';
 
 class PlayPage extends StatefulWidget {
@@ -80,7 +79,7 @@ class _PlayBackground extends StatelessWidget {
 
   Widget _buildContent(BuildContext context, String? coverUrl) {
     return Container(
-      color: AppColors.grey_bg,
+      color: AppColors.greyBg,
       child: Stack(
         alignment: Alignment.center,
         children: <Widget>[
@@ -93,7 +92,7 @@ class _PlayBackground extends StatelessWidget {
                 : Container(
                     width: double.infinity,
                     height: double.infinity,
-                    color: AppColors.cover_bg,
+                    color: AppColors.coverBg,
                   ),
           ),
           BackdropFilter(
@@ -134,12 +133,12 @@ class _PlayTopBar extends StatelessWidget {
           children: <Widget>[
             Text(song?.name ?? "",
                 style: TextStyle(
-                    color: AppColors.text_embed,
+                    color: AppColors.textEmbed,
                     fontSize: 16,
                     fontWeight: FontWeight.w600)),
             Text(song?.singer?.name ?? "",
                 style: TextStyle(
-                    color: AppColors.text_embed_half_transparent,
+                    color: AppColors.textEmbedHalfTransparent,
                     fontSize: 13,
                     fontWeight: FontWeight.normal))
           ],
@@ -249,10 +248,10 @@ class _PlayCoverContainerState extends State<_PlayCoverContainer> {
               height: 80,
               width: screenWidth / 5,
               alignment: Alignment.center,
-              child: GestureDetector(
-                onTap: () {},
-                child: MdrIcon(
-                  'more_vert',
+              child: IconButton(
+                onPressed: () {},
+                icon: Icon(
+                  Icons.more_vert_rounded,
                   color: Colors.white70,
                   size: 30,
                 ),
@@ -354,9 +353,9 @@ class _FavorIconState extends State<_FavorIcon> {
       height: 80,
       width: MediaQuery.of(context).size.width / 5,
       alignment: Alignment.center,
-      child: GestureDetector(
-        onTap: tapCallback,
-        child: MdrIcon(
+      child: IconButton(
+        onPressed: tapCallback,
+        icon: Icon(
           AppImages.favorIcon(isFavorite),
           color: Colors.white70,
           size: 30,
@@ -381,7 +380,7 @@ class _PlayLyricContainer extends StatelessWidget {
         alignment: Alignment.center,
         child: Text(
           '暂不支持显示歌词',
-          style: TextStyle(color: AppColors.text_embed),
+          style: TextStyle(color: AppColors.textEmbed),
         ));
   }
 }
@@ -411,23 +410,25 @@ class _MiniPlayer extends StatelessWidget {
                       AppImages.playModeIcon(snapshot.data!), 32);
                 },
               ),
-              _buildMiniPlayerIcon(context, 'play_pre', 'skip_previous', 40),
+              _buildMiniPlayerIcon(
+                  context, 'play_pre', Icons.skip_previous_rounded, 40),
               StreamBuilder(
                 initialData: MusicService().playing,
                 stream: MusicService().playingStream,
                 builder: (context, AsyncSnapshot<bool> snapshot) {
                   if (snapshot.data == true) {
-                    return _buildMiniPlayerIcon(
-                        context, 'playOrPause', 'pause_circle_filled', 70);
+                    return _buildMiniPlayerIcon(context, 'playOrPause',
+                        Icons.pause_circle_filled_rounded, 70);
                   } else {
-                    return _buildMiniPlayerIcon(
-                        context, 'playOrPause', 'play_circle_filled', 70);
+                    return _buildMiniPlayerIcon(context, 'playOrPause',
+                        Icons.play_circle_filled_rounded, 70);
                   }
                 },
               ),
-              _buildMiniPlayerIcon(context, 'play_next', 'skip_next', 40),
               _buildMiniPlayerIcon(
-                  context, 'playing_list', 'playlist_play', 40),
+                  context, 'play_next', Icons.skip_next_rounded, 40),
+              _buildMiniPlayerIcon(
+                  context, 'playing_list', Icons.playlist_play_rounded, 40),
             ],
           )
         ],
@@ -463,7 +464,7 @@ class _MiniPlayer extends StatelessWidget {
   }
 
   Widget _buildMiniPlayerIcon(
-      BuildContext context, String tag, String iconName, double iconSize) {
+      BuildContext context, String tag, IconData icon, double iconSize) {
     return Expanded(
       flex: 1,
       child: Container(
@@ -471,8 +472,8 @@ class _MiniPlayer extends StatelessWidget {
         alignment: Alignment.center,
         child: GestureDetector(
           onTap: () => _onTapControlIcon(context, tag),
-          child: MdrIcon(
-            iconName,
+          child: Icon(
+            icon,
             color: Colors.white70,
             size: iconSize,
           ),
