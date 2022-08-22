@@ -126,25 +126,27 @@ class _PlayTopBar extends StatelessWidget {
     return AppBar(
       elevation: 0,
       backgroundColor: AppColors.transparent,
-      title: GestureDetector(
-        onTap: () {},
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(song?.name ?? "",
-                style: TextStyle(
-                    color: AppColors.textEmbed,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600)),
-            Text(song?.singer?.name ?? "",
-                style: TextStyle(
-                    color: AppColors.textEmbedHalfTransparent,
-                    fontSize: 13,
-                    fontWeight: FontWeight.normal))
-          ],
-        ),
+      title: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text(song?.name ?? "",
+              style: TextStyle(
+                  color: AppColors.textEmbed,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600)),
+          Text(song?.singer?.name ?? "",
+              style: TextStyle(
+                  color: AppColors.textEmbedHalfTransparent,
+                  fontSize: 13,
+                  fontWeight: FontWeight.normal))
+        ],
       ),
       centerTitle: true,
+      actions: [
+        SizedBox(
+          width: 48,
+        )
+      ],
     );
   }
 }
