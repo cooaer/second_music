@@ -1,43 +1,30 @@
 import 'package:second_music/repository/remote/dio_http.dart';
 
-enum HttpMethod { get, post }
+abstract class HttpMaker {
+  factory HttpMaker() {
+    return DioHttpMaker();
+  }
 
-class HttpMakerParams {
-  static const url = 'url';
-  static const method = 'method';
-  static const data = 'data';
-  static const headers = "headers";
-  static const methodGet = 'get';
-  static const methodPost = 'post';
+  Future<String> get(String url,
+      {Map<String, dynamic>? queryParameters, Map<String, dynamic>? headers});
+
+  Future<String> post(String url, dynamic data,
+      {Map<String, dynamic>? headers});
 }
 
-typedef T HttpMaker<T>(Map<String, dynamic> params);
-
-Future<ResponseResult> dioHttpMaker(Map<String, dynamic> params) {
-  final String url = params.remove(HttpMakerParams.url);
-  HttpMethod method = params.remove(HttpMakerParams.method);
-  final String data = params.remove(HttpMakerParams.data);
-  final Map<String, dynamic>? headers = params.remove(HttpMakerParams.headers);
-  switch (method) {
-    case HttpMethod.get:
-      return dioGet(url, headers: headers);
-    case HttpMethod.post:
-      return dioPost(url, data, headers: headers);
+class DioHttpMaker implements HttpMaker {
+  @override
+  Future<String> get(String url,
+      {Map<String, dynamic>? queryParameters, Map<String, dynamic>? headers}) {
+    return dioGetDefault(url,
+        queryParameters: queryParameters, headers: headers);
   }
-}
 
-Future<String> dioHttpMakerDefault(Map<String, dynamic> params) async {
-  final String url = params.remove(HttpMakerParams.url);
-  String method = params.remove(HttpMakerParams.method);
-  final data = params.remove(HttpMakerParams.data);
-  final Map<String, dynamic>? headers = params.remove(HttpMakerParams.headers);
-  switch (method) {
-    case "get":
-      return await dioGetDefault(url, queryParameters: data, headers: headers);
-    case "post":
-      return await dioPostDefault(url, data, headers: headers);
+  @override
+  Future<String> post(String url, dynamic data,
+      {Map<String, dynamic>? headers}) {
+    return dioPostDefault(url, data, headers: headers);
   }
-  return "";
 }
 
 class ResponseResult<String> {

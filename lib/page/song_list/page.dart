@@ -377,7 +377,7 @@ class _ControlBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Ink(
+    return Container(
       color: AppColors.mainBg,
       height: 50,
       child: InkWell(

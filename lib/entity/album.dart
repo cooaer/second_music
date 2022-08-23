@@ -17,8 +17,13 @@ class Album {
   int playCount = 0; //播放量
   int favorCount = 0; //收藏量
 
+  Singer? _singer;
+
+  Singer? get singer => _singer ?? singers.firstOrNull;
+
+  set singer(singer) => this._singer = singer;
+
   List<Singer> singers = []; //歌手
-  Singer? get singer => singers.firstOrNull;
 
   int songTotal = 0; //歌曲的数量
   List<Song> songs = [];

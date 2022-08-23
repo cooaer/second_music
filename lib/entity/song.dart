@@ -13,7 +13,7 @@ class Song {
   String name = "";
   String subtitle = ""; //子标题
   String cover = "";
-  String streamUrl = ""; //歌曲播放流地址
+  String soundUrl = ""; //歌曲播放流地址
   String description = ""; //描述
   bool isPlayable = true; //该歌曲在当前平台上非登录状态下是否可播放，不可播放的原因有：1：没有版权，2：需要付费
   String lyricUrl = "";
@@ -33,7 +33,7 @@ class Song {
   ///最近一次播放时间, 本地数据库字段
   DateTime? playedTime;
 
-  //migu平台获取streamUrl时使用
+  //migu平台获取soundUrl时使用
   String quality = "";
   //migu平台获取songSource时使用
   String copyrightId = "";
@@ -47,7 +47,7 @@ class Song {
     required this.name,
     required this.subtitle,
     required this.cover,
-    required this.streamUrl,
+    required this.soundUrl,
     required this.description,
     required this.isPlayable,
     required String singerId,
@@ -82,7 +82,7 @@ class Song {
         name: name,
         subtitle: subtitle,
         cover: cover,
-        streamUrl: streamUrl,
+        soundUrl: soundUrl,
         description: description,
         isPlayable: isPlayable,
         singerId: singer?.pltId ?? "",
@@ -99,7 +99,7 @@ class Song {
     this.name = map['name'];
     this.subtitle = map['subtitle'];
     this.cover = map["cover"];
-    this.streamUrl = map["streamUrl"];
+    this.soundUrl = map["soundUrl"];
     this.description = map["description"];
 
     this.album = new Album()
@@ -122,7 +122,7 @@ class Song {
       "name": this.name,
       "subtitle": this.subtitle,
       "cover": this.cover,
-      "streamUrl": this.streamUrl,
+      "soundUrl": this.soundUrl,
       "description": this.description,
       "albumId": this.album?.pltId ?? "",
       "albumName": this.album?.name ?? "",
@@ -161,6 +161,6 @@ class Song {
 
   @override
   String toString() {
-    return 'Song{id: $id, plt: $plt, pltId: $pltId, name: $name, subtitle: $subtitle, cover: $cover, streamUrl: $streamUrl, description: $description, singers: $singers, album: $album, playedTime: $playedTime}';
+    return 'Song{id: $id, plt: $plt, pltId: $pltId, name: $name, subtitle: $subtitle, cover: $cover, soundUrl: $soundUrl, description: $description, singers: $singers, album: $album, playedTime: $playedTime}';
   }
 }

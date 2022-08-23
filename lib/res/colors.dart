@@ -42,8 +42,8 @@ class AppColors {
       //   return Color(0xfffdb340);
       // case MusicPlatform.kugou:
       //   return Color(0xff3f80f6);
-      // case MusicPlatform.bilibili:
-      //   return Color(0xffde819d);
+      case MusicPlatform.bilibili:
+        return Color(0xffde819d);
       // default:
       //   return accent;
     }

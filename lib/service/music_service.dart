@@ -24,7 +24,9 @@ class MusicService {
 
   static MusicService? _instance;
 
-  final _audioPlayer = AudioPlayer();
+  final _audioPlayer = AudioPlayer(
+      userAgent:
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36");
   ConcatenatingAudioSource? _playlist;
 
   final _songDao = SongDao();
@@ -280,7 +282,7 @@ class MusicService {
     _currentIndex = index;
     _currentIndexController.add(index);
     debugPrint(
-        "setCurrentIndex: currentSong = ${currentSong?.name}, streamUrl = ${currentSong?.streamUrl}");
+        "setCurrentIndex: currentSong = ${currentSong?.name}, soundUrl = ${currentSong?.soundUrl}");
     PlayingStorage.instance.savePlayingSongId(currentSong?.id ?? 0);
   }
 
@@ -414,13 +416,13 @@ class MusicService {
       playSongWithShowingListIndex(index);
       return;
     }
-    // if (song.streamUrl.isEmpty) {
+    // if (song.soundUrl.isEmpty) {
     //   await MusicProvider(song.plt).parseTrack(song);
     // }
-    // if (song.streamUrl.isEmpty) {
+    // if (song.soundUrl.isEmpty) {
     //   return;
     // }
-    debugPrint("playSong: name = ${song.name}, streamUrl = ${song.streamUrl}");
+    debugPrint("playSong: name = ${song.name}, soundUrl = ${song.soundUrl}");
     _allSongs[song.uniqueId] = song;
     final int songIndex;
     if (_playlist == null) {
@@ -533,7 +535,11 @@ class MusicService {
 
 extension PlayerSongExtension on Song {
   AudioSource toAudioSource() {
-    return ResolvingAudioSource(Uri.parse(this.source), parseStreamUrl,
+    final headers = MusicProvider(plt).playHeaders;
+    return ResolvingAudioSource(
+        uniqueId: this.uniqueId,
+        resolveSoundUrl: parseSoundUrl,
+        headers: headers,
         tag: MediaItem(
           id: this.uniqueId,
           title: this.name,
@@ -543,8 +549,8 @@ extension PlayerSongExtension on Song {
         ));
   }
 
-  Future<String> parseStreamUrl() async {
-    await MusicProvider(plt).parseTrack(this);
-    return streamUrl;
+  Future<Uri?> parseSoundUrl(String uniqueId) async {
+    await MusicProvider(plt).parseSoundUrl(this);
+    return Uri.tryParse(this.soundUrl);
   }
 }

@@ -43,7 +43,7 @@ class AppLocalizations {
 
   String get kuwoMusic => '酷我音乐';
 
-  String get bilibiliMusic => '哔哩哔哩音乐';
+  String get bilibiliMusic => '哔哩哔哩音乐区';
 
   String get miguMusic => '咪咕音乐';
 
@@ -73,8 +73,8 @@ class AppLocalizations {
       //   return kugou;
       // case MusicPlatform.kuwo:
       //   return kuwo;
-      // case MusicPlatform.bilibili:
-      //   return bilibili;
+      case MusicPlatform.bilibili:
+        return bilibili;
       // case MusicPlatform.local:
       //   return local;
     }
@@ -92,8 +92,8 @@ class AppLocalizations {
       //   return kugou;
       // case MusicPlatform.kuwo:
       //   return kuwo;
-      // case MusicPlatform.bilibili:
-      //   return bilibili;
+      case MusicPlatform.bilibili:
+        return bilibiliMusic;
       // case MusicPlatform.local:
       //   return local;
     }

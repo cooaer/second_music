@@ -47,6 +47,7 @@ class HotPlaylistModel {
   /// 请求更多的歌单
   Future<void> requestMore(bool force) async {
     if (_lastError && !force) return;
+    if (!_set.hasNext) return;
     return _request(false);
   }
 

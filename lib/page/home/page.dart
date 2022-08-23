@@ -174,11 +174,7 @@ class _HomeTopBar extends StatelessWidget {
 }
 
 class _HomeTabs extends StatelessWidget {
-  static const List<MusicPlatform> tabPlts = [
-    MusicPlatform.netease,
-    MusicPlatform.qq,
-    MusicPlatform.migu,
-  ];
+  static List<MusicPlatform> tabPlts = List.of(MusicPlatform.values);
 
   @override
   Widget build(BuildContext context) {

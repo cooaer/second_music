@@ -71,7 +71,7 @@ class SongTable extends Table {
 
   TextColumn get cover => text()();
 
-  TextColumn get streamUrl => text()();
+  TextColumn get soundUrl => text()();
 
   TextColumn get description => text()();
 

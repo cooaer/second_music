@@ -9,6 +9,7 @@ import 'package:second_music/entity/singer.dart';
 import 'package:second_music/entity/song.dart';
 import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/repository/remote/http_maker.dart';
+import 'package:second_music/repository/remote/platform/bilibili_music.dart';
 import 'package:second_music/repository/remote/platform/migu_music.dart';
 import 'package:second_music/repository/remote/platform/netease_music.dart';
 import 'package:second_music/repository/remote/platform/qq_music.dart';
@@ -24,16 +25,20 @@ abstract class MusicProvider {
     if (_instances.containsKey(plt)) {
       return _instances[plt]!;
     }
+    final dioHttpMaker = HttpMaker();
     MusicProvider instance;
     switch (plt) {
       case MusicPlatform.netease:
-        instance = NeteaseMusic(dioHttpMakerDefault);
+        instance = NeteaseMusic(dioHttpMaker);
         break;
       case MusicPlatform.qq:
-        instance = QQMusic(dioHttpMakerDefault);
+        instance = QQMusic(dioHttpMaker);
         break;
       case MusicPlatform.migu:
-        instance = MiguMusic(dioHttpMakerDefault);
+        instance = MiguMusic(dioHttpMaker);
+        break;
+      case MusicPlatform.bilibili:
+        instance = BilibiliMusic(dioHttpMaker);
         break;
     }
     _instances[plt] = instance;
@@ -45,16 +50,14 @@ abstract class MusicProvider {
       {int offset = 0, int count = DEFAULT_REQUEST_COUNT});
 
   ///获取歌单的详情
-  Future<Playlist> playlist(String playlistId,
-      {int offset = 0, int count = DEFAULT_REQUEST_COUNT});
+  Future<Playlist> playlist(String playlistId);
 
   ///获取歌手详情，包含歌曲和专辑
   Future<Singer> singer(String artistId, MusicObjectType type,
       {int offset = 0, int count = DEFAULT_REQUEST_COUNT});
 
   ///获取专辑详情，包含所有歌曲
-  Future<Album> album(String albumId,
-      {int offset = 0, int count = DEFAULT_REQUEST_COUNT});
+  Future<Album> album(String albumId);
 
   ///搜索歌曲、歌单、专辑
   Future<SearchResult> search(String text, MusicObjectType type,
@@ -73,13 +76,12 @@ abstract class MusicProvider {
       {int page = 0, int count = DEFAULT_REQUEST_COUNT});
 
   ///获取音乐流地址
-  Future<bool> parseTrack(Song song);
+  Future<bool> parseSoundUrl(Song song);
 
   ///获取歌曲的歌词
   Future<String> lyric(String songId);
 
-  Future<SongList> songList(SongListType type, String songListId,
-      {int offset = 0, int count = DEFAULT_REQUEST_COUNT});
+  Future<SongList> songList(SongListType type, String songListId);
 
   String playlistSource(String playlistId);
 
@@ -100,6 +102,8 @@ abstract class MusicProvider {
   bool get searchEnabled;
 
   MusicPlatform get platform;
+
+  Map<String, String>? get playHeaders;
 }
 
 abstract class BaseMusicProvider implements MusicProvider {
@@ -122,14 +126,13 @@ abstract class BaseMusicProvider implements MusicProvider {
     }
   }
 
-  Future<SongList> songList(SongListType type, String songListId,
-      {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
+  Future<SongList> songList(SongListType type, String songListId) async {
     switch (type) {
       case SongListType.album:
-        var data = await album(songListId, offset: offset, count: count);
+        var data = await album(songListId);
         return SongList.fromAlbum(data);
       case SongListType.playlist:
-        var data = await playlist(songListId, offset: offset, count: count);
+        var data = await playlist(songListId);
         return SongList.fromPlaylist(data);
     }
   }
@@ -158,4 +161,7 @@ abstract class BaseMusicProvider implements MusicProvider {
 
   @override
   bool get searchEnabled => false;
+
+  @override
+  Map<String, String>? get playHeaders => null;
 }

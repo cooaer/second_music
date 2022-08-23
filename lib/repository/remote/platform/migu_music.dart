@@ -20,14 +20,10 @@ class MiguMusic extends BaseMusicProvider {
   MiguMusic(HttpMaker httpMaker) : super(httpMaker);
 
   @override
-  Future<Album> album(String albumId,
-      {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
+  Future<Album> album(String albumId) async {
     final targetUrl =
         'https://app.c.nf.migu.cn/MIGUM2.0/v1.0/content/resourceinfo.do?needSimple=00&resourceType=2003&resourceId=$albumId';
-    final httpResp = await httpMaker({
-      HttpMakerParams.url: targetUrl,
-      HttpMakerParams.method: HttpMakerParams.methodGet
-    });
+    final httpResp = await httpMaker.get(targetUrl);
     final Map<String, dynamic> respJson = await jsonDecode(httpResp);
     final resourceJson = respJson.getList("resource");
     final Map<String, dynamic>? albumJson = resourceJson.firstOrNull;
@@ -56,7 +52,7 @@ class MiguMusic extends BaseMusicProvider {
       ..cover = secondImgJson.getString('img')
       ..description = albumJson.getString('summary')
       ..releaseTime = albumJson.getString('publishTime')
-      ..singers = [singer]
+      ..singer = singer
       ..songTotal = songTotal
       ..songs =
           await _querySongListSongs(SongListType.album, albumId, songTotal);
@@ -89,10 +85,7 @@ class MiguMusic extends BaseMusicProvider {
             "https://app.c.nf.migu.cn/MIGUM2.0/v1.0/content/queryAlbumSong?albumId=$listId&pageNo=$page&pageSize=$count";
         break;
     }
-    final httpResp = await httpMaker({
-      HttpMakerParams.url: targetUrl,
-      HttpMakerParams.method: HttpMakerParams.methodGet,
-    });
+    final httpResp = await httpMaker.get(targetUrl);
     final respJson = jsonDecode(httpResp);
     final List<dynamic>? songsJson;
     switch (songListType) {
@@ -146,7 +139,7 @@ class MiguMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<bool> parseTrack(Song song) async {
+  Future<bool> parseSoundUrl(Song song) async {
     // String toneFlag;
     // switch (song.quality) {
     //   case '110000':
@@ -163,11 +156,10 @@ class MiguMusic extends BaseMusicProvider {
     // }
     final targetUrl =
         'https://app.c.nf.migu.cn/MIGUM2.0/strategy/listen-url/v2.2?netType=01&resourceType=E&songId=${song.pltId}&toneFlag=PQ';
-    final httpResp = await httpMaker({
-      HttpMakerParams.url: targetUrl,
-      HttpMakerParams.method: HttpMakerParams.methodGet,
-      HttpMakerParams.headers: {"channel": '0146951', "uid": 111111},
-    });
+    final httpResp = await httpMaker.get(
+      targetUrl,
+      headers: {"channel": '0146951', "uid": 111111},
+    );
     debugPrint("migu.parseTrack, result = $httpResp");
     final Map<String, dynamic> respJson = jsonDecode(httpResp);
     final dataJson = respJson.getMap('data');
@@ -178,7 +170,7 @@ class MiguMusic extends BaseMusicProvider {
     if (soundUrl.startsWith('//')) {
       soundUrl = "http:$soundUrl";
     }
-    song.streamUrl = soundUrl;
+    song.soundUrl = soundUrl;
     return true;
   }
 
@@ -186,14 +178,10 @@ class MiguMusic extends BaseMusicProvider {
   MusicPlatform get platform => MusicPlatform.migu;
 
   @override
-  Future<Playlist> playlist(String playlistId,
-      {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
+  Future<Playlist> playlist(String playlistId) async {
     final targetUrl =
         'https://app.c.nf.migu.cn/MIGUM2.0/v1.0/content/resourceinfo.do?needSimple=00&resourceType=2021&resourceId=$playlistId';
-    final httpResp = await httpMaker({
-      HttpMakerParams.url: targetUrl,
-      HttpMakerParams.method: HttpMakerParams.methodGet,
-    });
+    final httpResp = await httpMaker.get(targetUrl);
     final Map<String, dynamic> respJson = jsonDecode(httpResp);
     final resourceJson = respJson.getList('resource');
     final Map<String, dynamic>? playlistJson = resourceJson.firstOrNull;
@@ -254,7 +242,7 @@ class MiguMusic extends BaseMusicProvider {
         ..name = albumJson.getString('name')
         ..cover = secondImgItemJson.getString('img')
         ..releaseTime = albumSource('publishTime')
-        ..singers = [singer]
+        ..singer = singer
         ..songTotal = -1;
     }).toList();
     return SearchResult()
@@ -372,11 +360,7 @@ class MiguMusic extends BaseMusicProvider {
       'uiVersion': 'A_music_3.3.0',
       'version': '7.0.4',
     };
-    final httpResp = await httpMaker({
-      HttpMakerParams.url: targetUrl,
-      HttpMakerParams.method: HttpMakerParams.methodGet,
-      HttpMakerParams.headers: headers,
-    });
+    final httpResp = await httpMaker.get(targetUrl, headers: headers);
     return jsonDecode(httpResp);
   }
 
@@ -386,10 +370,7 @@ class MiguMusic extends BaseMusicProvider {
     final start = offset ~/ count + 1;
     final targetUrl =
         'https://app.c.nf.migu.cn/MIGUM2.0/v2.0/content/getMusicData.do?count=$count&start=$start&templateVersion=5&type=1';
-    final httpResp = await httpMaker({
-      HttpMakerParams.method: HttpMakerParams.methodGet,
-      HttpMakerParams.url: targetUrl,
-    });
+    final httpResp = await httpMaker.get(targetUrl);
     final Map<String, dynamic> respJson = await jsonDecode(httpResp);
     debugPrint("migu.showPlayList, result = $respJson");
     final List<dynamic>? contentItemList = respJson['data']['contentItemList'];

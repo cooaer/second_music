@@ -480,7 +480,7 @@ class SongTableCompanion extends UpdateCompanion<Song> {
   final Value<String> name;
   final Value<String> subtitle;
   final Value<String> cover;
-  final Value<String> streamUrl;
+  final Value<String> soundUrl;
   final Value<String> description;
   final Value<bool> isPlayable;
   final Value<String> singerId;
@@ -497,7 +497,7 @@ class SongTableCompanion extends UpdateCompanion<Song> {
     this.name = const Value.absent(),
     this.subtitle = const Value.absent(),
     this.cover = const Value.absent(),
-    this.streamUrl = const Value.absent(),
+    this.soundUrl = const Value.absent(),
     this.description = const Value.absent(),
     this.isPlayable = const Value.absent(),
     this.singerId = const Value.absent(),
@@ -515,7 +515,7 @@ class SongTableCompanion extends UpdateCompanion<Song> {
     required String name,
     required String subtitle,
     required String cover,
-    required String streamUrl,
+    required String soundUrl,
     required String description,
     required bool isPlayable,
     required String singerId,
@@ -530,7 +530,7 @@ class SongTableCompanion extends UpdateCompanion<Song> {
         name = Value(name),
         subtitle = Value(subtitle),
         cover = Value(cover),
-        streamUrl = Value(streamUrl),
+        soundUrl = Value(soundUrl),
         description = Value(description),
         isPlayable = Value(isPlayable),
         singerId = Value(singerId),
@@ -546,7 +546,7 @@ class SongTableCompanion extends UpdateCompanion<Song> {
     Expression<String>? name,
     Expression<String>? subtitle,
     Expression<String>? cover,
-    Expression<String>? streamUrl,
+    Expression<String>? soundUrl,
     Expression<String>? description,
     Expression<bool>? isPlayable,
     Expression<String>? singerId,
@@ -564,7 +564,7 @@ class SongTableCompanion extends UpdateCompanion<Song> {
       if (name != null) 'name': name,
       if (subtitle != null) 'subtitle': subtitle,
       if (cover != null) 'cover': cover,
-      if (streamUrl != null) 'stream_url': streamUrl,
+      if (soundUrl != null) 'stream_url': soundUrl,
       if (description != null) 'description': description,
       if (isPlayable != null) 'is_playable': isPlayable,
       if (singerId != null) 'singer_id': singerId,
@@ -584,7 +584,7 @@ class SongTableCompanion extends UpdateCompanion<Song> {
       Value<String>? name,
       Value<String>? subtitle,
       Value<String>? cover,
-      Value<String>? streamUrl,
+      Value<String>? soundUrl,
       Value<String>? description,
       Value<bool>? isPlayable,
       Value<String>? singerId,
@@ -601,7 +601,7 @@ class SongTableCompanion extends UpdateCompanion<Song> {
       name: name ?? this.name,
       subtitle: subtitle ?? this.subtitle,
       cover: cover ?? this.cover,
-      streamUrl: streamUrl ?? this.streamUrl,
+      soundUrl: soundUrl ?? this.soundUrl,
       description: description ?? this.description,
       isPlayable: isPlayable ?? this.isPlayable,
       singerId: singerId ?? this.singerId,
@@ -635,8 +635,8 @@ class SongTableCompanion extends UpdateCompanion<Song> {
     if (cover.present) {
       map['cover'] = Variable<String>(cover.value);
     }
-    if (streamUrl.present) {
-      map['stream_url'] = Variable<String>(streamUrl.value);
+    if (soundUrl.present) {
+      map['stream_url'] = Variable<String>(soundUrl.value);
     }
     if (description.present) {
       map['description'] = Variable<String>(description.value);
@@ -677,7 +677,7 @@ class SongTableCompanion extends UpdateCompanion<Song> {
           ..write('name: $name, ')
           ..write('subtitle: $subtitle, ')
           ..write('cover: $cover, ')
-          ..write('streamUrl: $streamUrl, ')
+          ..write('soundUrl: $soundUrl, ')
           ..write('description: $description, ')
           ..write('isPlayable: $isPlayable, ')
           ..write('singerId: $singerId, ')
@@ -729,9 +729,9 @@ class $SongTableTable extends SongTable with TableInfo<$SongTableTable, Song> {
   late final GeneratedColumn<String?> cover = GeneratedColumn<String?>(
       'cover', aliasedName, false,
       type: const StringType(), requiredDuringInsert: true);
-  final VerificationMeta _streamUrlMeta = const VerificationMeta('streamUrl');
+  final VerificationMeta _soundUrlMeta = const VerificationMeta('soundUrl');
   @override
-  late final GeneratedColumn<String?> streamUrl = GeneratedColumn<String?>(
+  late final GeneratedColumn<String?> soundUrl = GeneratedColumn<String?>(
       'stream_url', aliasedName, false,
       type: const StringType(), requiredDuringInsert: true);
   final VerificationMeta _descriptionMeta =
@@ -791,7 +791,7 @@ class $SongTableTable extends SongTable with TableInfo<$SongTableTable, Song> {
         name,
         subtitle,
         cover,
-        streamUrl,
+        soundUrl,
         description,
         isPlayable,
         singerId,
@@ -845,10 +845,10 @@ class $SongTableTable extends SongTable with TableInfo<$SongTableTable, Song> {
       context.missing(_coverMeta);
     }
     if (data.containsKey('stream_url')) {
-      context.handle(_streamUrlMeta,
-          streamUrl.isAcceptableOrUnknown(data['stream_url']!, _streamUrlMeta));
+      context.handle(_soundUrlMeta,
+          soundUrl.isAcceptableOrUnknown(data['stream_url']!, _soundUrlMeta));
     } else if (isInserting) {
-      context.missing(_streamUrlMeta);
+      context.missing(_soundUrlMeta);
     }
     if (data.containsKey('description')) {
       context.handle(
@@ -939,7 +939,7 @@ class $SongTableTable extends SongTable with TableInfo<$SongTableTable, Song> {
           .mapFromDatabaseResponse(data['${effectivePrefix}subtitle'])!,
       cover: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}cover'])!,
-      streamUrl: const StringType()
+      soundUrl: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}stream_url'])!,
       description: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}description'])!,

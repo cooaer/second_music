@@ -28,10 +28,7 @@ class QQMusic extends BaseMusicProvider {
         '&loginUin=0&hostUin=0&format=json&inCharset=utf8&outCharset=utf-8'
         '&notice=0&platform=yqq.json&needNewCode=0'
         '&categoryId=10000000&sortId=5&sin=$offset&ein=${19 + offset}';
-    final response = await httpMaker({
-      HttpMakerParams.url: targetUrl,
-      HttpMakerParams.method: HttpMakerParams.methodGet,
-    });
+    final response = await httpMaker.get(targetUrl);
 
     Map<String, dynamic> data = jsonDecode(response);
     final dataData = Json.getMap(data, 'data');
@@ -50,13 +47,13 @@ class QQMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<bool> parseTrack(Song song) async {
-    await _parseStreamUrl([song]);
+  Future<bool> parseSoundUrl(Song song) async {
+    await _parseSoundUrl([song]);
     return true;
   }
 
-  Future<void> _parseStreamUrl(List<Song> songs) async {
-    final _parseStreamUrlInternal = (List<Song> songs) async {
+  Future<void> _parseSoundUrl(List<Song> songs) async {
+    final _parseSoundUrlInternal = (List<Song> songs) async {
       final url = 'https://u.y.qq.com/cgi-bin/musicu.fcg';
       final guid = '10000';
       final songIdList = songs.map((song) => song.pltId).toList();
@@ -123,13 +120,9 @@ class QQMusic extends BaseMusicProvider {
         'data': jsonEncode(reqData),
       };
 
-      final httpResult = await httpMaker({
-        HttpMakerParams.url: url,
-        HttpMakerParams.method: HttpMakerParams.methodGet,
-        HttpMakerParams.data: params,
-      });
+      final httpResult = await httpMaker.get(url, queryParameters: params);
 
-      debugPrint("QQMusic.parseStreamUrl, httpResult = $httpResult");
+      debugPrint("QQMusic.parseSoundUrl, httpResult = $httpResult");
       final Map<String, dynamic>? respJson = json.decode(httpResult);
       final List<dynamic>? sips = respJson?['req_0']?['data']?['sip'];
       final String? baseUrl = sips.isNotNullOrEmpty() ? sips!.first : null;
@@ -149,33 +142,29 @@ class QQMusic extends BaseMusicProvider {
         if (purl.isNullOrEmpty()) {
           continue;
         }
-        song.streamUrl = baseUrl! + purl!;
+        song.soundUrl = baseUrl! + purl!;
         debugPrint(
-            "QQMusic.parseStreamUrl: name = ${song.name}, url = ${song.streamUrl}");
+            "QQMusic.parseSoundUrl: name = ${song.name}, url = ${song.soundUrl}");
       }
     };
 
     var startIndex = 0;
     while (startIndex < songs.length) {
-      await _parseStreamUrlInternal(
+      await _parseSoundUrlInternal(
           songs.sublist(startIndex, min(startIndex + 20, songs.length)));
       startIndex += 20;
     }
   }
 
   @override
-  Future<Album> album(String albumId,
-      {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
+  Future<Album> album(String albumId) async {
     final url = 'http://i.y.qq.com/v8/fcg-bin/fcg_v8_album_info_cp.fcg?'
         'platform=h5page&albummid=$albumId&g_tk=938407465&uin=0&'
         'format=jsonp&inCharset=utf-8&outCharset=utf-8&notice=0&'
         'platform=h5&needNewCode=1&_=1459961045571&'
         'jsonpCallback=asonglist1459961045566';
 
-    final result = await httpMaker({
-      HttpMakerParams.url: url,
-      HttpMakerParams.method: HttpMakerParams.methodGet
-    });
+    final result = await httpMaker.get(url);
     final jsonStr = result.substring(
         ' asonglist1459961045566('.length, result.length - ')'.length);
     final jsonMap = json.decode(jsonStr);
@@ -184,7 +173,7 @@ class QQMusic extends BaseMusicProvider {
 
     final songs =
         await Future.wait(listJson.map((item) => _convertSong2(item)));
-    // await _parseStreamUrl(songs);
+    // await _parseSoundUrl(songs);
 
     final singer = Singer()
       ..plt = MusicPlatform.qq
@@ -213,8 +202,7 @@ class QQMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<Playlist> playlist(String listId,
-      {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
+  Future<Playlist> playlist(String listId) async {
     // final targetUrl =
     //     'https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg?'
     //     'type=1&json=1&utf8=1&onlysong=0&new_format=1&disstid=$listId&g_tk=1062527372&'
@@ -227,10 +215,7 @@ class QQMusic extends BaseMusicProvider {
         '&format=jsonp&inCharset=GB2312&outCharset=utf-8&notice=0' +
         '&platform=yqq&jsonpCallback=jsonCallback&needNewCode=0';
 
-    String response = await httpMaker({
-      HttpMakerParams.url: targetUrl,
-      HttpMakerParams.method: HttpMakerParams.methodGet
-    });
+    String response = await httpMaker.get(targetUrl);
     final jsonString =
         response.substring('jsonCallback('.length, response.lastIndexOf(')'));
     Map<String, dynamic> data = json.decode(jsonString);
@@ -247,7 +232,7 @@ class QQMusic extends BaseMusicProvider {
 
     final listJson = Json.getList(dataCdlist0, 'songlist');
     final songList = await Future.wait(listJson.map((e) => _convertSong2(e)));
-    // await _parseStreamUrl(songList);
+    // await _parseSoundUrl(songList);
 
     final playlist = Playlist();
     playlist.pltId = listId;
@@ -276,10 +261,7 @@ class QQMusic extends BaseMusicProvider {
         'page_no=$page&query=$enKeyword&format=json&outCharset=utf-8&inCharset=utf-8&'
         'num_per_page=$count&searchid=$searchId&remoteplace=txt.mac.search';
 
-    final String response = await httpMaker({
-      HttpMakerParams.url: url,
-      HttpMakerParams.method: HttpMakerParams.methodGet
-    });
+    final String response = await httpMaker.get(url);
 
     if (response.isEmpty) {
       return SearchResult();
@@ -337,10 +319,7 @@ class QQMusic extends BaseMusicProvider {
         'searchid=$searchId&t=$type&p=$page&n=$count&w=$enKeyword&catZhida=$catZhida&'
         'format=json&inCharset=utf8&outCharset=utf-8&platform=yqq.json';
 
-    final response = await httpMaker({
-      HttpMakerParams.url: url,
-      HttpMakerParams.method: HttpMakerParams.methodGet
-    });
+    final response = await httpMaker.get(url);
 
     if (response.isEmpty) {
       return SearchResult();
@@ -366,7 +345,7 @@ class QQMusic extends BaseMusicProvider {
       final songJson = Json.getMap(dataJson, 'song');
       final listJson = Json.getList(songJson, 'list');
       final songs = await Future.wait(listJson.map((e) => _convertSong2(e)));
-      // await _parseStreamUrl(songs);
+      // await _parseSoundUrl(songs);
 
       result.total = Json.getInt(songJson, 'totalnum');
       result.items = songs;

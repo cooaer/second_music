@@ -30,16 +30,12 @@ class NeteaseMusic extends BaseMusicProvider {
     String targetUrl =
         'http://music.163.com/discover/playlist/?order=hot&limit=$count&offset=$offset';
 
-    final response = await httpMaker({
-      HttpMakerParams.url: targetUrl,
-      HttpMakerParams.method: HttpMakerParams.methodGet,
-    });
+    final response = await httpMaker.get(targetUrl);
     return await asyncParseHtmlToObject(_DataObjectTags.playlistSet, response);
   }
 
   @override
-  Future<Playlist> playlist(String listId,
-      {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
+  Future<Playlist> playlist(String listId) async {
     final url = "http://music.163.com/weapi/v3/playlist/detail";
     final params = {
       'id': listId,
@@ -77,13 +73,9 @@ class NeteaseMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<Album> album(String albumId,
-      {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
+  Future<Album> album(String albumId) async {
     final url = 'http://music.163.com/api/album/$albumId';
-    final respStr = await httpMaker({
-      HttpMakerParams.url: url,
-      HttpMakerParams.method: HttpMakerParams.methodGet
-    });
+    final respStr = await httpMaker.get(url);
     final respMap = json.decode(respStr);
 
     return _convertAlbum(Json.getMap(respMap, 'album'));
@@ -135,7 +127,7 @@ class NeteaseMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<bool> parseTrack(Song song) {
+  Future<bool> parseSoundUrl(Song song) {
     return _parseTrackByWeapi(song);
   }
 
@@ -153,7 +145,7 @@ class NeteaseMusic extends BaseMusicProvider {
     final respMap = json.decode(respStr);
     final dataList = Json.getList(respMap, 'data');
     final firstTrackMap = dataList.isNotEmpty ? dataList[0] : null;
-    song.streamUrl = Json.getString(firstTrackMap, 'url');
+    song.soundUrl = Json.getString(firstTrackMap, 'url');
     return true;
   }
 
@@ -170,7 +162,7 @@ class NeteaseMusic extends BaseMusicProvider {
     final respMap = json.decode(respStr);
     final dataList = Json.getList(respMap, 'data');
     final firstTrackMap = dataList.isNotEmpty ? dataList[0] : null;
-    song.streamUrl = Json.getString(firstTrackMap, 'url');
+    song.soundUrl = Json.getString(firstTrackMap, 'url');
     return true;
   }
 
@@ -208,13 +200,8 @@ class NeteaseMusic extends BaseMusicProvider {
     final data = await NeteaseMusicCipher.encryptWeapi(json.encode(params));
     final body =
         'encSecKey=${Uri.encodeQueryComponent(data['encSecKey'])}&params=${Uri.encodeQueryComponent(data['params'])}';
-    return await httpMaker({
-      HttpMakerParams.url: url,
-      HttpMakerParams.method: HttpMakerParams.methodPost,
-      HttpMakerParams.data: body,
-      HttpMakerParams.headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      }
+    return await httpMaker.post(url, body, headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
     });
   }
 
@@ -226,13 +213,8 @@ class NeteaseMusic extends BaseMusicProvider {
     final expire =
         DateTime.now().millisecondsSinceEpoch + 100 * 365 * 24 * 60 * 60 * 1000;
     await setCookie('https://interface3.music.163.com', "os", "pc", expire);
-    return await httpMaker({
-      HttpMakerParams.url: targetUrl,
-      HttpMakerParams.method: HttpMakerParams.methodPost,
-      HttpMakerParams.data: body,
-      HttpMakerParams.headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      }
+    return await httpMaker.post(targetUrl, body, headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
     });
   }
 

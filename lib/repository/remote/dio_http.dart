@@ -57,7 +57,7 @@ Future<String> dioPostDefault(String url, dynamic data,
 class AddHeaderInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    const replace_referer = true;
+    var replaceReferer = true;
     var replaceOrigin = true;
     const addReferer = true;
     var addOrigin = true;
@@ -97,17 +97,25 @@ class AddHeaderInterceptor extends Interceptor {
       refererValue = 'http://www.kuwo.cn/';
     }
 
-    if (url.indexOf('.bilibili.com/') != -1) {
+    if (url.contains('.bilibili.com/') || url.contains('.bilivideo.com/')) {
       refererValue = 'http://www.bilibili.com/';
       replaceOrigin = false;
       addOrigin = false;
+    }
+
+    if (url.contains('.migu.cn')) {
+      refererValue = 'https://music.migu.cn/v3/music/player/audio?from=migu';
+    }
+
+    if (url.contains('m.music.migu.cn')) {
+      refererValue = 'https://m.music.migu.cn/';
     }
 
     var isRefererSet = false;
     var isOriginSet = false;
     var headers = options.headers;
 
-    if (replace_referer &&
+    if (replaceReferer &&
         headers.containsKey('Referer') &&
         refererValue.isNotEmpty) {
       headers['Referer'] = refererValue;
