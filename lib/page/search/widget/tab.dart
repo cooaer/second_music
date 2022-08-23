@@ -212,8 +212,10 @@ class _SearchResultSong extends StatelessWidget {
       height: 60,
       child: InkWell(
         onTap: () {
-          AppNavigator.instance.navigateTo(context, AppNavigator.play,
-              params: {'song': _song}, overlay: true);
+          if (_song.isPlayable) {
+            AppNavigator.instance.navigateTo(context, AppNavigator.play,
+                params: {'song': _song}, overlay: true);
+          }
         },
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -258,7 +260,9 @@ class _SearchResultSong extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 16,
-                      color: AppColors.textTitle,
+                      color: _song.isPlayable
+                          ? AppColors.textTitle
+                          : AppColors.textDisabled,
                       fontWeight: FontWeight.normal,
                     ),
                   ),
@@ -272,7 +276,9 @@ class _SearchResultSong extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textLight,
+                      color: _song.isPlayable
+                          ? AppColors.textTitle
+                          : AppColors.textDisabled,
                       fontWeight: FontWeight.normal,
                     ),
                   ),

@@ -254,11 +254,11 @@ class AppLocalizations {
   String playAllCount(int count) => '(共$count首)';
 
   String collectAll(bool collected, int count) {
-    if (collected) {
-      return '已收藏(${_displayCount(count)})';
-    } else {
-      return count > 0 ? '+收藏(${_displayCount(count)})' : '+收藏';
+    var str = collected ? '已收藏' : '+收藏';
+    if (count > 0) {
+      str += '(${_displayCount(count)})';
     }
+    return str;
   }
 
   String get description => '简介';

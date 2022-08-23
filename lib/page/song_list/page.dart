@@ -428,6 +428,7 @@ class _ControlBar extends StatelessWidget {
                       padding: EdgeInsets.symmetric(horizontal: 15),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20)),
+                      minimumSize: Size(96, 36),
                     ),
                     onPressed: () {
                       if (_isCollectedEnable && songList != null) {

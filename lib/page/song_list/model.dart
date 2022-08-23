@@ -21,6 +21,7 @@ class SongListModel {
   SongListModel(this.plt, this.songListId, this.songListType);
 
   SongList? _songList;
+
   SongList? get songList => _songList;
   var _songListStreamController = StreamController<SongList>.broadcast();
 
@@ -40,16 +41,16 @@ class SongListModel {
       songList =
           await MusicProvider(musicPlatform).songList(songListType, songListId);
       debugPrint(
-          "refreshSongList: remote, isCollected = $_isCollected, songTotal = ${songList.songTotal}");
+          "refreshSongList: remote, isCollected = $_isCollected, songTotal = ${songList?.songTotal}");
     }
 
-    if (songList.songs.isNotEmpty) {
+    if (songList != null && songList.songs.isNotEmpty) {
       _songList = songList;
       _songListStreamController.add(songList);
     }
 
     //更新AppBar颜色
-    if (songList.hasDisplayCover) {
+    if (songList != null && songList.hasDisplayCover) {
       _generateBarColor(songList.displayCover);
     }
   }

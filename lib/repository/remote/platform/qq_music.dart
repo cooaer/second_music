@@ -20,7 +20,7 @@ class QQMusic extends BaseMusicProvider {
   QQMusic(HttpMaker httpMaker) : super(httpMaker);
 
   @override
-  Future<PlaylistSet> showPlayList(
+  Future<PlaylistSet?> showPlayList(
       {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
     final targetUrl =
         'https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_by_tag.fcg'
@@ -29,6 +29,9 @@ class QQMusic extends BaseMusicProvider {
         '&notice=0&platform=yqq.json&needNewCode=0'
         '&categoryId=10000000&sortId=5&sin=$offset&ein=${19 + offset}';
     final response = await httpMaker.get(targetUrl);
+    if (response.isEmpty) {
+      return null;
+    }
 
     Map<String, dynamic> data = jsonDecode(response);
     final dataData = Json.getMap(data, 'data');
@@ -157,7 +160,7 @@ class QQMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<Album> album(String albumId) async {
+  Future<Album?> album(String albumId) async {
     final url = 'http://i.y.qq.com/v8/fcg-bin/fcg_v8_album_info_cp.fcg?'
         'platform=h5page&albummid=$albumId&g_tk=938407465&uin=0&'
         'format=jsonp&inCharset=utf-8&outCharset=utf-8&notice=0&'
@@ -165,6 +168,9 @@ class QQMusic extends BaseMusicProvider {
         'jsonpCallback=asonglist1459961045566';
 
     final result = await httpMaker.get(url);
+    if (result.isEmpty) {
+      return null;
+    }
     final jsonStr = result.substring(
         ' asonglist1459961045566('.length, result.length - ')'.length);
     final jsonMap = json.decode(jsonStr);
@@ -195,14 +201,13 @@ class QQMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<Singer> singer(String artistId, MusicObjectType type,
+  Future<Singer?> singer(String artistId, MusicObjectType type,
       {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
-    //TODO implement
-    return Singer();
+    return null;
   }
 
   @override
-  Future<Playlist> playlist(String listId) async {
+  Future<Playlist?> playlist(String listId) async {
     // final targetUrl =
     //     'https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg?'
     //     'type=1&json=1&utf8=1&onlysong=0&new_format=1&disstid=$listId&g_tk=1062527372&'
@@ -216,6 +221,9 @@ class QQMusic extends BaseMusicProvider {
         '&platform=yqq&jsonpCallback=jsonCallback&needNewCode=0';
 
     String response = await httpMaker.get(targetUrl);
+    if (response.isEmpty) {
+      return null;
+    }
     final jsonString =
         response.substring('jsonCallback('.length, response.lastIndexOf(')'));
     Map<String, dynamic> data = json.decode(jsonString);
@@ -251,7 +259,7 @@ class QQMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<SearchResult> searchPlaylist(String keyword,
+  Future<SearchResult?> searchPlaylist(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) async {
     final enKeyword = Uri.encodeComponent(keyword);
     final searchId = (Random().nextDouble() * 9655).floor().toString();
@@ -264,7 +272,7 @@ class QQMusic extends BaseMusicProvider {
     final String response = await httpMaker.get(url);
 
     if (response.isEmpty) {
-      return SearchResult();
+      return null;
     }
 
     final respJson = json.decode(response);
@@ -289,40 +297,41 @@ class QQMusic extends BaseMusicProvider {
   // n: 每页歌曲数目
 
   @override
-  Future<SearchResult> searchSong(String keyword,
+  Future<SearchResult?> searchSong(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {
     return _searchCpInternal(keyword, 0, 0, page: page, count: count);
   }
 
   @override
-  Future<SearchResult> searchAlbum(String keyword,
+  Future<SearchResult?> searchAlbum(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {
     return _searchCpInternal(keyword, 8, 0, page: page, count: count);
   }
 
   @override
-  Future<SearchResult> searchSinger(String keyword,
+  Future<SearchResult?> searchSinger(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {
-    return _searchCpInternal(keyword, 0, 1, page: page, count: count);
+    return _searchCpInternal(keyword, 1, 1, page: page, count: count);
   }
 
   /// 搜索歌曲、专辑、歌手，
-  /// type=0:歌曲，type=8:专辑，
+  /// type, 0:歌曲，8:专辑，1:mv,
   /// catZhida=1，返回歌手信息
-  Future<SearchResult> _searchCpInternal(String keyword, int type, int catZhida,
+  Future<SearchResult?> _searchCpInternal(
+      String keyword, int type, int catZhida,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) async {
     final enKeyword = Uri.encodeComponent(keyword);
-    final searchId = (Random().nextDouble() * 9655).floor().toString();
 
-    final url =
-        'https://c.y.qq.com/soso/fcgi-bin/client_search_cp?remoteplace=txt.yqq.center&'
-        'searchid=$searchId&t=$type&p=$page&n=$count&w=$enKeyword&catZhida=$catZhida&'
-        'format=json&inCharset=utf8&outCharset=utf-8&platform=yqq.json';
+    final targetUrl = 'https://c.y.qq.com/soso/fcgi-bin/search_for_qq_cp?'
+        'g_tk=5381&uin=0&format=json&inCharset=utf-8&outCharset=utf-8¬ice=0'
+        '&platform=h5&needNewCode=1&w=$enKeyword&zhidaqu=1&catZhida=$catZhida&t=$type&flag=1'
+        '&ie=utf-8&sem=1&aggr=0&perpage=$count&n=$count&p=$page&remoteplace=txt.mqq.all'
+        '&_=1520833663464';
 
-    final response = await httpMaker.get(url);
+    final response = await httpMaker.get(targetUrl);
 
     if (response.isEmpty) {
-      return SearchResult();
+      return null;
     }
 
     final respJson = json.decode(response);
@@ -332,9 +341,8 @@ class QQMusic extends BaseMusicProvider {
 
     if (dataJson.containsKey('zhida')) {
       final zhidaJson = Json.getMap(dataJson, 'zhida');
-      if (zhidaJson.containsKey('zhida_singer')) {
-        final singerJson = Json.getMap(zhidaJson, 'zhida_singer');
-        final singer = _convertSinger(singerJson);
+      if (zhidaJson.containsKey('singermid')) {
+        final singer = _convertSinger2(zhidaJson);
         result.total = 1;
         result.items = [singer];
         return result;
@@ -356,7 +364,7 @@ class QQMusic extends BaseMusicProvider {
       final albumJson = Json.getMap(dataJson, 'album');
       final listJson = Json.getList(albumJson, 'list');
       result.total = Json.getInt(albumJson, 'totalnum');
-      result.items = listJson.map((item) => _convertAlbum(item)).toList();
+      result.items = listJson.map((item) => _convertAlbum2(item)).toList();
       return result;
     }
     return result;
@@ -466,6 +474,21 @@ class QQMusic extends BaseMusicProvider {
       ..songTotal = Json.getInt(json, 'song_count');
   }
 
+  Album _convertAlbum2(Map<String, dynamic> json) {
+    final singer = Singer()
+      ..plt = MusicPlatform.qq
+      ..pltId = Json.getString(json, 'singerMID')
+      ..name = Json.getString(json, 'singerName');
+
+    return Album()
+      ..plt = MusicPlatform.qq
+      ..pltId = Json.getString(json, 'albumMID')
+      ..name = Json.getString(json, 'albumName')
+      ..cover = Json.getString(json, 'albumPic')
+      ..releaseTime = Json.getString(json, 'publicTime')
+      ..singer = singer;
+  }
+
   Singer _convertSinger(Map<String, dynamic> json) {
     final albumsJson = Json.getList(json, 'hotalbum');
     final albums = albumsJson.map((item) {
@@ -492,6 +515,14 @@ class QQMusic extends BaseMusicProvider {
       ..albums = albums
       ..songTotal = Json.getInt(json, 'songNum')
       ..songs = songs;
+  }
+
+  Singer _convertSinger2(Map<String, dynamic> json) {
+    return Singer()
+      ..plt = platform
+      ..pltId = Json.getString(json, 'singermid')
+      ..name = Json.getString(json, 'singername')
+      ..songTotal = Json.getInt(json, 'songnum');
   }
 
   Playlist _convertPlaylist(Map<String, dynamic> json) {

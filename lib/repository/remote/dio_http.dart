@@ -5,7 +5,7 @@ import 'package:second_music/repository/remote/cookie.dart';
 import 'package:second_music/repository/remote/http_maker.dart';
 
 final dio = Dio()
-  ..options = BaseOptions(connectTimeout: 30 * 1000, receiveTimeout: 30 * 1000)
+  ..options = BaseOptions(connectTimeout: 10 * 1000, receiveTimeout: 10 * 1000)
   ..interceptors.add(LogInterceptor(requestBody: true, responseBody: true))
   ..interceptors.add(CookieManager(cookieJar))
   ..interceptors.add(AddHeaderInterceptor());

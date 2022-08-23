@@ -147,9 +147,9 @@ class SearchObjectModel {
 
       final musicProvider = MusicProvider(plt);
 
-      SearchResult result = await musicProvider.search(_keyword, type,
+      final result = await musicProvider.search(_keyword, type,
           page: _lastResult.nextPage, count: REQUEST_COUNT);
-      if (result.items.isNotEmpty) {
+      if (result != null && result.items.isNotEmpty) {
         _lastResult.page++;
         _lastResult.hasError = false;
         _lastResult.total = result.total;

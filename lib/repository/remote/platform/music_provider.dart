@@ -46,42 +46,42 @@ abstract class MusicProvider {
   }
 
   ///主页精选的歌单（简略信息）
-  Future<PlaylistSet> showPlayList(
+  Future<PlaylistSet?> showPlayList(
       {int offset = 0, int count = DEFAULT_REQUEST_COUNT});
 
   ///获取歌单的详情
-  Future<Playlist> playlist(String playlistId);
+  Future<Playlist?> playlist(String playlistId);
 
   ///获取歌手详情，包含歌曲和专辑
-  Future<Singer> singer(String artistId, MusicObjectType type,
+  Future<Singer?> singer(String artistId, MusicObjectType type,
       {int offset = 0, int count = DEFAULT_REQUEST_COUNT});
 
   ///获取专辑详情，包含所有歌曲
-  Future<Album> album(String albumId);
+  Future<Album?> album(String albumId);
 
   ///搜索歌曲、歌单、专辑
-  Future<SearchResult> search(String text, MusicObjectType type,
+  Future<SearchResult?> search(String text, MusicObjectType type,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT});
 
-  Future<SearchResult> searchSong(String keyword,
+  Future<SearchResult?> searchSong(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT});
 
-  Future<SearchResult> searchPlaylist(String keyword,
+  Future<SearchResult?> searchPlaylist(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT});
 
-  Future<SearchResult> searchAlbum(String keyword,
+  Future<SearchResult?> searchAlbum(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT});
 
-  Future<SearchResult> searchSinger(String keyword,
+  Future<SearchResult?> searchSinger(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT});
 
   ///获取音乐流地址
   Future<bool> parseSoundUrl(Song song);
 
-  ///获取歌曲的歌词
+  ///获取歌词
   Future<String> lyric(String songId);
 
-  Future<SongList> songList(SongListType type, String songListId);
+  Future<SongList?> songList(SongListType type, String songListId);
 
   String playlistSource(String playlistId);
 
@@ -112,7 +112,7 @@ abstract class BaseMusicProvider implements MusicProvider {
   BaseMusicProvider(this.httpMaker);
 
   @override
-  Future<SearchResult> search(String keyword, MusicObjectType type,
+  Future<SearchResult?> search(String keyword, MusicObjectType type,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) async {
     switch (type) {
       case MusicObjectType.song:
@@ -126,14 +126,14 @@ abstract class BaseMusicProvider implements MusicProvider {
     }
   }
 
-  Future<SongList> songList(SongListType type, String songListId) async {
+  Future<SongList?> songList(SongListType type, String songListId) async {
     switch (type) {
       case SongListType.album:
         var data = await album(songListId);
-        return SongList.fromAlbum(data);
+        return data == null ? null : SongList.fromAlbum(data);
       case SongListType.playlist:
         var data = await playlist(songListId);
-        return SongList.fromPlaylist(data);
+        return data == null ? null : SongList.fromPlaylist(data);
     }
   }
 

@@ -24,9 +24,9 @@ class BilibiliMusic extends BaseMusicProvider {
   BilibiliMusic(HttpMaker httpMaker) : super(httpMaker);
 
   @override
-  Future<Album> album(String albumId,
+  Future<Album?> album(String albumId,
       {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
-    return Album();
+    return null;
   }
 
   @override
@@ -88,10 +88,13 @@ class BilibiliMusic extends BaseMusicProvider {
   MusicPlatform get platform => MusicPlatform.bilibili;
 
   @override
-  Future<Playlist> playlist(String playlistId) async {
+  Future<Playlist?> playlist(String playlistId) async {
     final infoUrl =
         'https://www.bilibili.com/audio/music-service-c/web/menu/info?sid=$playlistId';
     final infoResp = await httpMaker.get(infoUrl);
+    if (infoResp.isEmpty) {
+      return null;
+    }
     final infoRespJson = jsonDecode(infoResp) as Map<String, dynamic>;
     final infoDataJson = infoRespJson.getMap("data");
     final playlist = _convertPlaylist(infoDataJson);
@@ -142,25 +145,25 @@ class BilibiliMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<SearchResult> searchAlbum(String keyword,
+  Future<SearchResult?> searchAlbum(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) async {
-    return SearchResult();
+    return null;
   }
 
   @override
-  Future<SearchResult> searchPlaylist(String keyword,
+  Future<SearchResult?> searchPlaylist(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) async {
-    return SearchResult();
+    return null;
   }
 
   @override
-  Future<SearchResult> searchSinger(String keyword,
+  Future<SearchResult?> searchSinger(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) async {
-    return SearchResult();
+    return null;
   }
 
   @override
-  Future<SearchResult> searchSong(String keyword,
+  Future<SearchResult?> searchSong(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) async {
     final encodedKeyword = Uri.encodeComponent(keyword);
     final targetUrl = 'https://api.bilibili.com/x/web-interface/search/type?'
@@ -168,9 +171,12 @@ class BilibiliMusic extends BaseMusicProvider {
         '&platform=pc&highlight=1&single_column=0&keyword=$encodedKeyword'
         '&category_id=&search_type=video&dynamic_offset=0&preload=true&com2co=true';
     final httpResp = await httpMaker.get(targetUrl);
+    if (httpResp.isEmpty) {
+      return null;
+    }
     final respJson = jsonDecode(httpResp) as Map<String, dynamic>;
-    final totalCount = respJson.getInt('numResults');
     final dataJson = respJson.getMap('data');
+    final totalCount = dataJson.getInt('numResults');
     final dataDataJson = dataJson.getList('result');
     final songs = dataDataJson.map((e) => _convertSong2(e)).toList();
 
@@ -182,6 +188,13 @@ class BilibiliMusic extends BaseMusicProvider {
   Song _convertSong2(Map<String, dynamic> songJson) {
     final songPic = songJson.getString('pic');
     final songName = songJson.getString('title');
+
+    final singer = Singer()
+      ..plt = MusicPlatform.bilibili
+      ..pltId = songJson.getString('mid')
+      ..name = songJson.getString('author')
+      ..avatar = songJson.getString('upic');
+
     return Song()
       ..plt = MusicPlatform.bilibili
       ..pltId = songJson.getString('bvid')
@@ -190,17 +203,21 @@ class BilibiliMusic extends BaseMusicProvider {
           .replaceAll('</em>', '')
       ..cover = songPic.startsWith("//") ? "https:$songPic" : songPic
       ..description = songJson.getString('description')
-      ..isPlayable = songJson.getInt('is_pay') == 0;
+      ..isPlayable = songJson.getInt('is_pay') == 0
+      ..singer = singer;
   }
 
   @override
-  Future<PlaylistSet> showPlayList(
+  Future<PlaylistSet?> showPlayList(
       {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
     //page 从 1 开始
     final page = (offset / count).ceil() + 1;
     final targetUrl =
         'https://www.bilibili.com/audio/music-service-c/web/menu/hit?ps=$count&pn=$page';
     final httpResp = await httpMaker.get(targetUrl);
+    if (httpResp.isEmpty) {
+      return null;
+    }
     final respJson = jsonDecode(httpResp) as Map<String, dynamic>;
     final dataJson = respJson.getMap("data");
     final dataDataJson = dataJson.getList('data');
@@ -234,9 +251,9 @@ class BilibiliMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<Singer> singer(String artistId, MusicObjectType type,
+  Future<Singer?> singer(String artistId, MusicObjectType type,
       {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
-    return Singer();
+    return null;
   }
 
   @override

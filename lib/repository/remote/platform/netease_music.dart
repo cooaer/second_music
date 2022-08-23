@@ -25,17 +25,20 @@ class NeteaseMusic extends BaseMusicProvider {
   NeteaseMusic(HttpMaker httpMaker) : super(httpMaker);
 
   @override
-  Future<PlaylistSet> showPlayList(
+  Future<PlaylistSet?> showPlayList(
       {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
     String targetUrl =
         'http://music.163.com/discover/playlist/?order=hot&limit=$count&offset=$offset';
 
     final response = await httpMaker.get(targetUrl);
+    if (response.isEmpty) {
+      return null;
+    }
     return await asyncParseHtmlToObject(_DataObjectTags.playlistSet, response);
   }
 
   @override
-  Future<Playlist> playlist(String listId) async {
+  Future<Playlist?> playlist(String listId) async {
     final url = "http://music.163.com/weapi/v3/playlist/detail";
     final params = {
       'id': listId,
@@ -48,7 +51,7 @@ class NeteaseMusic extends BaseMusicProvider {
 
     final respStr = await _weapiRequest(url, params);
     if (respStr.isEmpty) {
-      return Playlist();
+      return null;
     }
 
     final respMap = json.decode(respStr);
@@ -67,15 +70,18 @@ class NeteaseMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<Singer> singer(String artistId, MusicObjectType type,
+  Future<Singer?> singer(String artistId, MusicObjectType type,
       {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
-    return Singer();
+    return null;
   }
 
   @override
-  Future<Album> album(String albumId) async {
+  Future<Album?> album(String albumId) async {
     final url = 'http://music.163.com/api/album/$albumId';
     final respStr = await httpMaker.get(url);
+    if (respStr.isEmpty) {
+      return null;
+    }
     final respMap = json.decode(respStr);
 
     return _convertAlbum(Json.getMap(respMap, 'album'));
@@ -84,27 +90,49 @@ class NeteaseMusic extends BaseMusicProvider {
   @override
   bool get searchEnabled => true;
 
-  Future<SearchResult> searchSong(String keyword,
+  Future<SearchResult?> searchSong(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {
-    return _searchInternal(1, keyword, page: page, count: count);
+    return _searchByApiSearch(1, keyword, page: page, count: count);
   }
 
-  Future<SearchResult> searchPlaylist(String keyword,
+  Future<SearchResult?> searchPlaylist(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {
-    return _searchInternal(1000, keyword, page: page, count: count);
+    return _searchByApiSearch(1000, keyword, page: page, count: count);
   }
 
-  Future<SearchResult> searchAlbum(String keyword,
+  Future<SearchResult?> searchAlbum(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {
-    return _searchInternal(10, keyword, page: page, count: count);
+    return _searchByApiSearch(10, keyword, page: page, count: count);
   }
 
-  Future<SearchResult> searchSinger(String keyword,
+  Future<SearchResult?> searchSinger(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {
-    return _searchInternal(100, keyword, page: page, count: count);
+    return _searchByApiSearch(100, keyword, page: page, count: count);
   }
 
-  Future<SearchResult> _searchInternal(int type, String keyword,
+  Future<SearchResult?> _searchByApiSearch(int type, String keyword,
+      {int page = 0, int count = DEFAULT_REQUEST_COUNT}) async {
+    final targetUrl = "https://music.163.com/api/search/pc";
+    final reqData = {
+      's': keyword,
+      'offset': page * count,
+      'limint': count,
+      'type': type,
+    };
+    final httpResp = await httpMaker.post(targetUrl, reqData, headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+    //debugPrint('netase.search, result = $httpResp');
+    if (httpResp.isEmpty) {
+      return null;
+    }
+    final respMap = json.decode(httpResp);
+    final resultMap = Json.getMap(respMap, 'result');
+    return _convertSearchResult(resultMap);
+  }
+
+  Future<SearchResult?> _searchInternalByWeapiCloudSearch(
+      int type, String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) async {
     final url = 'https://music.163.com/weapi/cloudsearch/get/web';
     final params = {
@@ -119,7 +147,7 @@ class NeteaseMusic extends BaseMusicProvider {
     };
     final respStr = await _weapiRequest(url, params);
     if (respStr.isEmpty) {
-      return SearchResult();
+      return null;
     }
     final respMap = json.decode(respStr);
     final resultMap = Json.getMap(respMap, 'result');
@@ -332,7 +360,7 @@ class NeteaseMusic extends BaseMusicProvider {
 
     if (map.containsKey('songs')) {
       final songs = await Future.wait(
-          Json.getList(map, 'songs').map((e) => _convertSong(e)));
+          Json.getList(map, 'songs').map((e) => _convertSong2(e)));
       searchResult.total = Json.getInt(map, 'songCount');
       searchResult.items = songs;
       return searchResult;

@@ -20,16 +20,19 @@ class MiguMusic extends BaseMusicProvider {
   MiguMusic(HttpMaker httpMaker) : super(httpMaker);
 
   @override
-  Future<Album> album(String albumId) async {
+  Future<Album?> album(String albumId) async {
     final targetUrl =
         'https://app.c.nf.migu.cn/MIGUM2.0/v1.0/content/resourceinfo.do?needSimple=00&resourceType=2003&resourceId=$albumId';
     final httpResp = await httpMaker.get(targetUrl);
     final Map<String, dynamic> respJson = await jsonDecode(httpResp);
+    if (respJson.isEmpty) {
+      return null;
+    }
     final resourceJson = respJson.getList("resource");
     final Map<String, dynamic>? albumJson = resourceJson.firstOrNull;
 
     if (albumJson == null) {
-      return Album();
+      return null;
     }
 
     final imgsJson = albumJson.getList('imgItems');
@@ -178,7 +181,7 @@ class MiguMusic extends BaseMusicProvider {
   MusicPlatform get platform => MusicPlatform.migu;
 
   @override
-  Future<Playlist> playlist(String playlistId) async {
+  Future<Playlist?> playlist(String playlistId) async {
     final targetUrl =
         'https://app.c.nf.migu.cn/MIGUM2.0/v1.0/content/resourceinfo.do?needSimple=00&resourceType=2021&resourceId=$playlistId';
     final httpResp = await httpMaker.get(targetUrl);
@@ -186,7 +189,7 @@ class MiguMusic extends BaseMusicProvider {
     final resourceJson = respJson.getList('resource');
     final Map<String, dynamic>? playlistJson = resourceJson.firstOrNull;
     if (playlistJson == null) {
-      return Playlist();
+      return null;
     }
 
     final imageItemJson = playlistJson.getMap("imgItem");
@@ -220,10 +223,13 @@ class MiguMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<SearchResult> searchAlbum(String keyword,
+  Future<SearchResult?> searchAlbum(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) async {
     final respJson = await _searchInternal(keyword, MusicObjectType.album,
         page: page, count: count);
+    if (respJson == null) {
+      return null;
+    }
     final albumResultDataJson = respJson.getMap("albumResultData");
     final totalCount = albumResultDataJson.getInt("totalCount");
     final resultJson = albumResultDataJson.getList("result");
@@ -251,10 +257,13 @@ class MiguMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<SearchResult> searchPlaylist(String keyword,
+  Future<SearchResult?> searchPlaylist(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) async {
     final respJson = await _searchInternal(keyword, MusicObjectType.playlist,
         page: page, count: count);
+    if (respJson == null) {
+      return null;
+    }
     final songListResultDataJson = respJson.getMap("songListResultData");
     final resultJson = songListResultDataJson.getList("result");
     final total = songListResultDataJson.getInt("totalCount");
@@ -282,10 +291,13 @@ class MiguMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<SearchResult> searchSinger(String keyword,
+  Future<SearchResult?> searchSinger(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) async {
     final respJson = await _searchInternal(keyword, MusicObjectType.singer,
         page: page, count: count);
+    if (respJson == null) {
+      return null;
+    }
     final singerResultDataJson = respJson.getMap("singerResultData");
     final resultJson = singerResultDataJson.getList("result");
     final totalCount = singerResultDataJson.getInt("totalCount");
@@ -307,10 +319,13 @@ class MiguMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<SearchResult> searchSong(String keyword,
+  Future<SearchResult?> searchSong(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) async {
     final respJson = await _searchInternal(keyword, MusicObjectType.song,
         page: page, count: count);
+    if (respJson == null) {
+      return null;
+    }
     final songResultDataJson = respJson.getMap("songResultData");
     final resultJson = songResultDataJson.getList("result");
     final songs = resultJson.map((songJson) => _convertSong(songJson)).toList();
@@ -320,7 +335,7 @@ class MiguMusic extends BaseMusicProvider {
       ..total = songTotal;
   }
 
-  Future<Map<String, dynamic>> _searchInternal(
+  Future<Map<String, dynamic>?> _searchInternal(
       String keyword, MusicObjectType type,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) async {
     final sid =
@@ -361,17 +376,20 @@ class MiguMusic extends BaseMusicProvider {
       'version': '7.0.4',
     };
     final httpResp = await httpMaker.get(targetUrl, headers: headers);
-    return jsonDecode(httpResp);
+    return httpResp.isEmpty ? null : jsonDecode(httpResp);
   }
 
   @override
-  Future<PlaylistSet> showPlayList(
+  Future<PlaylistSet?> showPlayList(
       {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
     final start = offset ~/ count + 1;
     final targetUrl =
         'https://app.c.nf.migu.cn/MIGUM2.0/v2.0/content/getMusicData.do?count=$count&start=$start&templateVersion=5&type=1';
     final httpResp = await httpMaker.get(targetUrl);
-    final Map<String, dynamic> respJson = await jsonDecode(httpResp);
+    if (httpResp.isEmpty) {
+      return null;
+    }
+    final Map<String, dynamic> respJson = jsonDecode(httpResp);
     debugPrint("migu.showPlayList, result = $respJson");
     final List<dynamic>? contentItemList = respJson['data']['contentItemList'];
     final List<dynamic> itemList = contentItemList?.firstOrNull?['itemList'];
@@ -396,9 +414,9 @@ class MiguMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<Singer> singer(String artistId, MusicObjectType type,
-      {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) {
-    throw UnimplementedError();
+  Future<Singer?> singer(String artistId, MusicObjectType type,
+      {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
+    return null;
   }
 
   @override
