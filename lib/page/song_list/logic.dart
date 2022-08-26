@@ -43,7 +43,7 @@ class SongListLogic {
           "refreshSongList: remote, isCollected = $_isCollected, songTotal = ${songList?.songTotal}");
     }
 
-    if (songList != null && songList.songs.isNotEmpty) {
+    if (songList != null) {
       _songList = songList;
       _songListStreamController.add(songList);
     }

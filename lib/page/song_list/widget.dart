@@ -5,6 +5,7 @@ import 'package:second_music/entity/song.dart';
 import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/page/basic_types.dart';
 import 'package:second_music/page/home/my_song_list/logic.dart';
+import 'package:second_music/page/home/my_song_list/page.dart';
 import 'package:second_music/page/navigator.dart';
 import 'package:second_music/page/song_list/logic.dart';
 import 'package:second_music/repository/local/database/song/dao.dart';
@@ -279,28 +280,7 @@ class _SelectSongListContentItem extends StatelessWidget {
           height: 60,
           child: Row(
             children: <Widget>[
-              ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(5)),
-                child: songList.cover.isEmpty
-                    ? Container(
-                        width: 50,
-                        height: 50,
-                        color: AppColors.coverBg,
-                      )
-                    : CachedNetworkImage(
-                        imageUrl: songList.cover,
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) {
-                          return Container(
-                            width: 50,
-                            height: 50,
-                            color: AppColors.coverBg,
-                          );
-                        },
-                      ),
-              ),
+              songList.buildCoverWidget(context),
               SizedBox(
                 width: 10,
               ),

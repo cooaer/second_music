@@ -62,14 +62,15 @@ class SongDao extends BasicDao {
       return null;
     }
 
-    final result = await (db.select(db.songListJoinSongTable).join([
+    final songsResult = await (db.select(db.songListJoinSongTable).join([
       innerJoin(db.songTable,
           db.songListJoinSongTable.songId.equalsExp(db.songTable.id))
     ])
-          ..where(db.songListJoinSongTable.songListId.equals(songList.id)))
+          ..where(db.songListJoinSongTable.songListId.equals(songList.id))
+          ..orderBy([OrderingTerm.desc(db.songListJoinSongTable.addedTime)]))
         .get();
 
-    songList.songs = result.map((row) {
+    songList.songs = songsResult.map((row) {
       return row.readTable(db.songTable);
     }).toList();
 
@@ -110,6 +111,24 @@ class SongDao extends BasicDao {
       selectStatement.where((tbl) => tbl.plt.equals(plt));
     }
     final songLists = await selectStatement.get();
+    final noCoverSongLists = songLists.filter((song) => song.cover.isEmpty);
+    if (noCoverSongLists.isNotEmpty) {
+      final Map<int, SongList> idSongLists = Map.fromIterable(noCoverSongLists,
+          key: (songList) => songList.id, value: (songList) => songList);
+      for (var idSongList in idSongLists.entries) {
+        final songResult = await (db.select(db.songListJoinSongTable).join([
+          innerJoin(db.songTable,
+              db.songListJoinSongTable.songId.equalsExp(db.songTable.id))
+        ])
+              ..where(
+                  db.songListJoinSongTable.songListId.equals(idSongList.key))
+              ..orderBy([OrderingTerm.desc(db.songListJoinSongTable.addedTime)])
+              ..limit(1))
+            .getSingleOrNull();
+        final song = songResult?.readTable(db.songTable);
+        idSongList.value.cover = song?.cover ?? "";
+      }
+    }
     return songLists;
   }
 
@@ -141,6 +160,7 @@ class SongDao extends BasicDao {
           return false;
         }
       }
+
       return true;
     });
   }
@@ -174,11 +194,11 @@ class SongDao extends BasicDao {
       }
       if (addedRows > 0) {
         await _addSongTotal(songListId, addedRows);
-        final cover =
-            songs.firstWhereOrNull((song) => song.cover.isNotEmpty)?.cover;
-        if (cover != null) {
-          await _fillDefaultCoverToMyPlaylist(songListId, cover);
-        }
+        // final cover =
+        //     songs.firstWhereOrNull((song) => song.cover.isNotEmpty)?.cover;
+        // if (cover != null) {
+        //   await _fillDefaultCoverToMyPlaylist(songListId, cover);
+        // }
       }
       return addedRows;
     });
@@ -229,7 +249,7 @@ class SongDao extends BasicDao {
   Future<bool> _fillDefaultCoverToMyPlaylist(
       int songListId, String cover) async {
     final updateRows = await (db.update(db.songListTable)
-          ..where((tbl) => tbl.id.equals(songListId) & tbl.cover.equals("")))
+          ..where((tbl) => tbl.id.equals(songListId)))
         .write(SongListTableCompanion(cover: Value(cover)));
     return updateRows > 0;
   }
@@ -244,10 +264,8 @@ class SongDao extends BasicDao {
       if (deletedRows <= 0) {
         return false;
       }
-      final deletedSongRows = await deleteUnusedSong();
-      if (deletedSongRows > 0) {
-        await _addSongTotal(songListId, -1);
-      }
+      await deleteUnusedSong();
+      await _addSongTotal(songListId, -1);
       return true;
     });
   }

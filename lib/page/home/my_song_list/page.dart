@@ -243,82 +243,104 @@ class _HomeMySongListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-        onTap: () {
-          AppNavigator().navigateTo(context, AppNavigator.song_list, params: {
-            'plt': songList.plt,
-            'songListId': songList.pltId,
-            'songListType': songList.type,
-          });
-        },
-        child: Container(
-          padding: EdgeInsets.fromLTRB(16, 5, 0, 5),
-          height: 60,
-          child: Row(
-            children: <Widget>[
-              ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(5)),
-                child: songList.cover.isEmpty
-                    ? Container(
-                        width: 50,
-                        height: 50,
-                        color: AppColors.coverBg,
-                      )
-                    : CachedNetworkImage(
-                        imageUrl: songList.cover,
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) {
-                          return Container(
-                            width: 50,
-                            height: 50,
-                            color: AppColors.coverBg,
-                          );
-                        },
-                      ),
-              ),
-              SizedBox(
-                width: 10,
-              ),
-              Expanded(
-                flex: 1,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      songList.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                          color: AppColors.textTitle,
-                          fontSize: 16,
-                          fontWeight: FontWeight.normal),
+      onTap: () {
+        AppNavigator().navigateTo(context, AppNavigator.song_list, params: {
+          'plt': songList.plt,
+          'songListId': songList.pltId,
+          'songListType': songList.type,
+        });
+      },
+      child: Container(
+        padding: EdgeInsets.fromLTRB(16, 5, 0, 5),
+        height: 60,
+        child: Row(
+          children: <Widget>[
+            songList.buildCoverWidget(context),
+            SizedBox(
+              width: 10,
+            ),
+            Expanded(
+              flex: 1,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    songList.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        color: AppColors.textTitle,
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal),
+                  ),
+                  Text(
+                    stringsOf(context).songListCountAndCreator(
+                        this.songList.songTotal, this.songList.userName),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: AppColors.textLight,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
                     ),
-                    Text(
-                      stringsOf(context).songListCountAndCreator(
-                          this.songList.songTotal, this.songList.userName),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: AppColors.textLight,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    )
-                  ],
-                ),
+                  )
+                ],
               ),
-              IconButton(
-                onPressed: () => showSongListMenu(context, songList),
-                padding: EdgeInsets.zero,
-                icon: Icon(
-                  Icons.more_vert,
-                  color: AppColors.tintRounded,
-                ),
+            ),
+            IconButton(
+              onPressed: () => showSongListMenu(context, songList),
+              padding: EdgeInsets.zero,
+              icon: Icon(
+                Icons.more_vert,
+                color: AppColors.tintRounded,
               ),
-            ],
-          ),
-        ));
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+extension SongListWidgetBuilder on SongList {
+  Widget buildCoverWidget(BuildContext context) {
+    Widget coverView;
+    if (this.isFavor) {
+      coverView = Container(
+        width: 50,
+        height: 50,
+        color: AppColors.coverBg,
+        child: Icon(
+          Icons.favorite_rounded,
+          size: 32,
+          color: AppColors.accent,
+        ),
+      );
+    } else if (this.cover.isNotEmpty) {
+      coverView = CachedNetworkImage(
+        imageUrl: this.cover,
+        width: 50,
+        height: 50,
+        fit: BoxFit.cover,
+        placeholder: (context, url) {
+          return Container(
+            width: 50,
+            height: 50,
+            color: AppColors.coverBg,
+          );
+        },
+      );
+    } else {
+      coverView = Container(
+        width: 50,
+        height: 50,
+        color: AppColors.coverBg,
+      );
+    }
+    return ClipRRect(
+      borderRadius: BorderRadius.all(Radius.circular(5)),
+      child: coverView,
+    );
   }
 }
