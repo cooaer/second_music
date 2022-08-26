@@ -153,21 +153,16 @@ class _HomeTopBar extends StatelessWidget {
                   ),
                 ),
               ),
-              Material(
-                child: Container(
-                  alignment: Alignment.center,
-                  width: 48,
-                  height: 48,
-                  child: IconButton(
-                    padding: EdgeInsets.all(0),
-                    splashRadius: 24,
-                    onPressed: () => AppNavigator().navigateTo(
-                        context, AppNavigator.setting,
-                        overlay: true),
-                    icon: Icon(
-                      Icons.settings_outlined,
-                      color: Colors.grey.shade600,
-                    ),
+              Container(
+                alignment: Alignment.center,
+                width: 48,
+                height: 48,
+                child: TextButton(
+                  onPressed: () => AppNavigator()
+                      .navigateTo(context, AppNavigator.setting, overlay: true),
+                  child: Icon(
+                    Icons.settings_outlined,
+                    color: Colors.grey.shade600,
                   ),
                 ),
               ),

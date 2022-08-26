@@ -48,7 +48,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
         SafeArea(
           top: false,
           child: Container(
-            height: 54,
+            height: MiniPlayer.ALL_HEIGHT,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: <Widget>[
@@ -61,10 +61,9 @@ class _MiniPlayerState extends State<MiniPlayer> {
                   width: 48,
                   height: 48,
                   alignment: Alignment.center,
-                  child: IconButton(
-                    padding: EdgeInsets.zero,
+                  child: TextButton(
                     onPressed: () => showPlayingList(context),
-                    icon: Icon(
+                    child: Icon(
                       Icons.playlist_play_rounded,
                       size: 36,
                       color: AppColors.textLight,
@@ -104,26 +103,21 @@ class _MiniPlayerState extends State<MiniPlayer> {
   }
 
   Widget _buildPlayIcon(BuildContext context) {
-    return Container(
-      width: 48,
-      height: 48,
-      alignment: Alignment.center,
-      child: IconButton(
-          padding: EdgeInsets.zero,
+    return StreamBuilder(
+      initialData: MusicService().playing,
+      stream: MusicService().playingStream,
+      builder: (context, AsyncSnapshot<bool> snapshot) {
+        return TextButton(
           onPressed: () => MusicService().playOrPause(),
-          icon: StreamBuilder(
-            initialData: MusicService().playing,
-            stream: MusicService().playingStream,
-            builder: (context, AsyncSnapshot<bool> snapshot) {
-              return Icon(
-                snapshot.data!
-                    ? Icons.pause_circle_outline_rounded
-                    : Icons.play_circle_outline_rounded,
-                size: 30,
-                color: AppColors.textLight,
-              );
-            },
-          )),
+          child: Icon(
+            snapshot.data!
+                ? Icons.pause_circle_outline_rounded
+                : Icons.play_circle_outline_rounded,
+            size: 30,
+            color: AppColors.textLight,
+          ),
+        );
+      },
     );
   }
 
@@ -142,8 +136,7 @@ class _MiniPlayerSong extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    return InkWell(
       onTap: () {
         if (index >= 0 && song != null) {
           AppNavigator().navigateTo(context, AppNavigator.play,
@@ -153,8 +146,8 @@ class _MiniPlayerSong extends StatelessWidget {
       child: Row(
         children: <Widget>[
           Container(
-            width: 48,
-            height: 48,
+            width: MiniPlayer.BAR_HEIGHT,
+            height: MiniPlayer.BAR_HEIGHT,
             alignment: Alignment.center,
             margin: EdgeInsets.only(left: 6, bottom: 6),
             decoration: BoxDecoration(

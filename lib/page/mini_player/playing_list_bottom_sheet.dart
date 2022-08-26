@@ -113,14 +113,12 @@ class _PlayingListTitle extends StatelessWidget {
               ),
             ),
           ),
-          Material(
-            child: IconButton(
-              onPressed: MusicService().clearPlaylistWithoutCurrentSong,
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              icon: Icon(
-                Icons.delete_outline_rounded,
-                color: AppColors.tintRounded,
-              ),
+          TextButton(
+            style: TextButton.styleFrom(minimumSize: Size.square(40)),
+            onPressed: MusicService().clearPlaylistWithoutCurrentSong,
+            child: Icon(
+              Icons.delete_outline_rounded,
+              color: AppColors.tintRounded,
             ),
           ),
         ],
@@ -207,10 +205,9 @@ class _PlayingListSong extends StatelessWidget {
                 ),
               ),
               if (!isPlaying)
-                IconButton(
+                TextButton(
                   onPressed: () => MusicService().deleteSongFromPlaylist(song),
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  icon: Icon(
+                  child: Icon(
                     Icons.close_rounded,
                     color: AppColors.tintRounded,
                   ),

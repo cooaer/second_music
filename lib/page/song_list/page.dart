@@ -247,7 +247,7 @@ class _SongListHeader extends StatelessWidget {
                           ),
                           //创建者
                           if (songList != null && songList!.isUserAvailable)
-                            GestureDetector(
+                            InkWell(
                               onTap: () => _onTapUser(context),
                               child: Row(
                                 children: <Widget>[
@@ -295,8 +295,9 @@ class _SongListHeader extends StatelessWidget {
                               ),
                             ),
                           //歌单描述
-                          if (songList?.description != null)
-                            GestureDetector(
+                          if (songList != null &&
+                              songList!.description.isNotEmpty)
+                            InkWell(
                               onTap: () => showSongListDescriptionDialog(
                                   context, songList!.description),
                               child: Row(

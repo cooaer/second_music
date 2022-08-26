@@ -132,7 +132,7 @@ class _HomeMyCommonItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         height: 50,
-        child: GestureDetector(
+        child: InkWell(
           onTap: () => {},
           child: Row(
             children: <Widget>[

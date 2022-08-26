@@ -33,6 +33,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final flatButtonStyle = TextButton.styleFrom(
       primary: Colors.grey,
+      minimumSize: Size.square(40),
     );
 
     return MaterialApp(
