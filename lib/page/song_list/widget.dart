@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:second_music/entity/enum.dart';
 import 'package:second_music/entity/song.dart';
@@ -14,8 +13,10 @@ import 'package:second_music/res/res.dart';
 void showSongMenu(BuildContext context, Song song, SongList? songList,
     SongListLogic? songListLogic) {
   showModalBottomSheet(
-      context: context,
-      builder: (context) => _SongMenu(song, songList, songListLogic));
+    context: context,
+    builder: (context) =>
+        SafeArea(child: _SongMenu(song, songList, songListLogic)),
+  );
 }
 
 //下一首播放
@@ -253,12 +254,19 @@ Future<SongList?> selectSongList(
             ),
             titlePadding: EdgeInsets.zero,
             content: SingleChildScrollView(
-              child: ListBody(
-                  children: List.generate(songLists.length, (index) {
-                var songList = songLists[index];
-                return _SelectSongListContentItem(songList,
-                    key: ValueKey(songList.pltId));
-              })),
+              child: Padding(
+                padding: EdgeInsets.only(bottom: 10),
+                child: ListBody(
+                  children: List.generate(
+                    songLists.length,
+                    (index) {
+                      var songList = songLists[index];
+                      return _SelectSongListContentItem(songList,
+                          key: ValueKey(songList.pltId));
+                    },
+                  ),
+                ),
+              ),
             ),
             contentPadding: EdgeInsets.zero,
           ));
