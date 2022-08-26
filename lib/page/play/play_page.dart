@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -8,6 +9,7 @@ import 'package:second_music/entity/playing_progress.dart';
 import 'package:second_music/entity/song.dart';
 import 'package:second_music/page/mini_player/playing_list_bottom_sheet.dart';
 import 'package:second_music/page/play/play_logic.dart';
+import 'package:second_music/page/song_list/widget.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/service/music_service.dart';
 import 'package:second_music/widget/infinite_page_view.dart';
@@ -227,7 +229,7 @@ class _PlayCoverContainerState extends State<_PlayCoverContainer> {
         Padding(
           padding: EdgeInsets.only(bottom: 40),
           child: songCount == 0
-              ? _PlayingSongCover("", key: Key('default_cover'))
+              ? _PlayingSongCoverTransition("", key: Key('default_cover'))
               : InfinitePageView<Song>(
                   songCount,
                   _pageController,
@@ -237,7 +239,7 @@ class _PlayCoverContainerState extends State<_PlayCoverContainer> {
                         MusicService().showingSongList[showingListIndex];
                     print(
                         "PlayPage.buildContent, index = $index, realIndex=$realIndex, count = $songCount");
-                    return _PlayingSongCover(song.cover,
+                    return _PlayingSongCoverTransition(song.cover,
                         key: Key(song.uniqueId));
                   },
                 ),
@@ -251,7 +253,11 @@ class _PlayCoverContainerState extends State<_PlayCoverContainer> {
               width: screenWidth / 5,
               alignment: Alignment.center,
               child: IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  if (currentSong != null) {
+                    showSongMenu(context, currentSong, null, null);
+                  }
+                },
                 icon: Icon(
                   Icons.more_vert_rounded,
                   color: Colors.white70,
@@ -272,10 +278,68 @@ class _PlayCoverContainerState extends State<_PlayCoverContainer> {
   }
 }
 
-class _PlayingSongCover extends StatelessWidget {
+class _PlayingSongCoverTransition extends StatefulWidget {
   final String cover;
 
-  _PlayingSongCover(this.cover, {Key? key}) : super(key: key);
+  _PlayingSongCoverTransition(this.cover, {Key? key}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() {
+    return _PlayingSongCoverTransitionState();
+  }
+}
+
+class _PlayingSongCoverTransitionState
+    extends State<_PlayingSongCoverTransition>
+    with SingleTickerProviderStateMixin {
+  late Animation<double> animation;
+  late AnimationController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller =
+        AnimationController(duration: Duration(seconds: 12), vsync: this);
+    animation = Tween(begin: 0.0, end: 2 * math.pi).animate(controller);
+    void resetController(bool playing) {
+      if (playing) {
+        controller.repeat();
+      } else {
+        controller.stop();
+      }
+    }
+
+    MusicService().playingStream.listen((playing) {
+      resetController(playing);
+    });
+    resetController(MusicService().playing);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+        child: _PlayingSongCover(cover: widget.cover),
+        animation: animation,
+        builder: (context, child) => Transform.rotate(
+              angle: animation.value,
+              child: child,
+            ));
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+}
+
+class _PlayingSongCover extends StatelessWidget {
+  const _PlayingSongCover({
+    Key? key,
+    required this.cover,
+  }) : super(key: key);
+
+  final String cover;
 
   @override
   Widget build(BuildContext context) {

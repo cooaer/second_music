@@ -35,9 +35,10 @@ class AppNavigator {
       {Map<String, dynamic>? params,
       bool clearTask = false,
       bool replace = false,
-      bool overlay = false}) {
+      bool overlay = false}) async {
     PageRoute route = buildRoute(context, name, params);
-    NavigatorState state = of(context, rootNavigator: overlay);
+    NavigatorState state = await of(context, rootNavigator: overlay);
+
     Future future;
     if (clearTask) {
       future = state.pushAndRemoveUntil(route, (route) => false);
@@ -49,11 +50,24 @@ class AppNavigator {
     return future;
   }
 
-  NavigatorState of(BuildContext context, {bool rootNavigator = false}) {
+  Future<NavigatorState> of(BuildContext context,
+      {bool rootNavigator = false}) async {
+    final rootNavigatorState =
+        Navigator.of(context, rootNavigator: rootNavigator);
     if (rootNavigator) {
-      return Navigator.of(context, rootNavigator: true);
+      return rootNavigatorState;
     }
-    return navigatorKey.currentState as NavigatorState;
+    final miniPlayerNavigatorState =
+        navigatorKey.currentState as NavigatorState;
+    if (rootNavigatorState != miniPlayerNavigatorState) {
+      rootNavigatorState.pop();
+      await Future.delayed(Duration(milliseconds: 200));
+    }
+    return miniPlayerNavigatorState;
+  }
+
+  Future<void> pop(BuildContext context) async {
+    (await of(context)).pop();
   }
 
   Widget matchPage(String name, {Map<String, dynamic>? params}) {

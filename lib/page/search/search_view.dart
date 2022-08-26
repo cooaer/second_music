@@ -130,7 +130,7 @@ class SearchBar extends StatelessWidget {
             ),
           ),
           TextButton(
-            onPressed: AppNavigator().of(context).pop,
+            onPressed: () => AppNavigator().pop(context),
             child: Text(
               stringsOf(context).cancel,
               style: TextStyle(
