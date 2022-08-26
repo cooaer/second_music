@@ -517,15 +517,20 @@ class MusicService {
     //从缓存中删除除当前歌曲之外的playingSongs
     final deleteSongIds = <int>[];
     _showingSongList.asMap().entries.forEach((entry) {
-      if (entry.key != currentIndex) deleteSongIds.add(entry.value.id);
+      if (entry.key != currentIndex) {
+        deleteSongIds.add(entry.value.id);
+        _allSongs.remove(entry.value.uniqueId);
+      }
     });
     await _songDao.deletePlayingSongs(deleteSongIds);
     //从播放列表中删除
-    if (currentIndex != 0) {
+    bool deletePrevSongs = currentIndex != 0;
+    bool deleteNextSongs = currentIndex != playlistSize - 1;
+    if (deletePrevSongs) {
       await _playlist?.removeRange(0, currentIndex);
     }
-    if (currentIndex != playlistSize - 1) {
-      await _playlist?.removeRange(currentIndex + 1, playlistSize);
+    if (deleteNextSongs) {
+      await _playlist?.removeRange(1, _playlist?.length ?? 0);
     }
   }
 
