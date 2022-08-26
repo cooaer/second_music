@@ -1,7 +1,7 @@
 import 'package:dart_extensions_methods/dart_extension_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:second_music/page/navigator.dart';
-import 'package:second_music/page/search/model.dart';
+import 'package:second_music/page/search/search_logic.dart';
 import 'package:second_music/page/search/widget/history.dart';
 import 'package:second_music/page/search/widget/result.dart';
 import 'package:second_music/res/res.dart';
@@ -12,12 +12,12 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  var searchModel = SearchModel();
+  var searchLogic = SearchLogic();
 
   @override
   Widget build(BuildContext context) {
-    return SearchModelProvider(
-      searchModel,
+    return SearchLogicProvider(
+      searchLogic,
       Scaffold(
         appBar: PreferredSize(
             child: SafeArea(
@@ -28,7 +28,7 @@ class _SearchPageState extends State<SearchPage> {
                 child: SearchBar()),
             preferredSize: Size.fromHeight(50)),
         body: StreamBuilder(
-          stream: searchModel.keywordStream,
+          stream: searchLogic.keywordStream,
           builder: (context, AsyncSnapshot<String> snapshot) {
             if (snapshot.data.isNullOrEmpty()) {
               return SearchHistoryWidget();
@@ -44,28 +44,28 @@ class _SearchPageState extends State<SearchPage> {
   @override
   void dispose() {
     super.dispose();
-    searchModel.dispose();
+    searchLogic.dispose();
   }
 }
 
-class SearchModelProvider extends InheritedWidget {
-  final SearchModel model;
+class SearchLogicProvider extends InheritedWidget {
+  final SearchLogic logic;
 
-  SearchModelProvider(this.model, Widget child, {Key? key})
+  SearchLogicProvider(this.logic, Widget child, {Key? key})
       : super(child: child, key: key);
 
   @override
-  bool updateShouldNotify(SearchModelProvider oldWidget) =>
-      model != oldWidget.model;
+  bool updateShouldNotify(SearchLogicProvider oldWidget) =>
+      logic != oldWidget.logic;
 
-  static SearchModelProvider of(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<SearchModelProvider>()!;
+  static SearchLogicProvider of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<SearchLogicProvider>()!;
 }
 
 class SearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    var searchModel = SearchModelProvider.of(context).model;
+    var searchLogic = SearchLogicProvider.of(context).logic;
     return Container(
       padding: EdgeInsets.only(left: 15),
       height: 50,
@@ -93,10 +93,10 @@ class SearchBar extends StatelessWidget {
                   Expanded(
                     flex: 1,
                     child: TextField(
-                      controller: searchModel.searchEditingController,
+                      controller: searchLogic.searchEditingController,
                       autofocus: true,
                       textInputAction: TextInputAction.search,
-                      onSubmitted: searchModel.submit,
+                      onSubmitted: searchLogic.submit,
                       decoration: InputDecoration(
                         hintText: stringsOf(context).searchHint,
                         hintStyle: TextStyle(
@@ -115,7 +115,7 @@ class SearchBar extends StatelessWidget {
                     height: 36,
                     child: InkWell(
                       onTap: () {
-                        searchModel.setInputText('');
+                        searchLogic.setInputText('');
                       },
                       borderRadius: BorderRadius.circular(18),
                       child: Icon(
@@ -130,7 +130,7 @@ class SearchBar extends StatelessWidget {
             ),
           ),
           TextButton(
-            onPressed: AppNavigator.instance.of(context).pop,
+            onPressed: AppNavigator().of(context).pop,
             child: Text(
               stringsOf(context).cancel,
               style: TextStyle(
@@ -145,11 +145,3 @@ class SearchBar extends StatelessWidget {
     );
   }
 }
-
-// class SearchMorePage extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     // TODO: implement build
-//     return null;
-//   }
-// }

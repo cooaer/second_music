@@ -55,7 +55,7 @@ class MiguMusic extends BaseMusicProvider {
       ..cover = secondImgJson.getString('img')
       ..description = albumJson.getString('summary')
       ..releaseTime = albumJson.getString('publishTime')
-      ..singer = singer
+      ..singers = [singer]
       ..songTotal = songTotal
       ..songs =
           await _querySongListSongs(SongListType.album, albumId, songTotal);
@@ -125,7 +125,7 @@ class MiguMusic extends BaseMusicProvider {
       ..cover = secondAlbumImgJson.getString("img")
       ..lyricUrl = songJson.getString('lrcUrl')
       ..isPlayable = songJson.getInt("copyright") == 1
-      ..singer = singer
+      ..singers = [singer]
       ..album = album
       ..quality = songJson.getString('toneControl');
     return song;
@@ -210,7 +210,6 @@ class MiguMusic extends BaseMusicProvider {
       ..description = playlistJson.getString('summary')
       ..playCount = opNumItemJson.getInt('playNum')
       ..favorCount = opNumItemJson.getInt('keepNum')
-      ..source = "https://music.migu.cn/v3/music/playlist/$playlistId"
       ..creator = creator
       ..songTotal = songTotal
       ..songs = await _querySongListSongs(
@@ -248,7 +247,7 @@ class MiguMusic extends BaseMusicProvider {
         ..name = albumJson.getString('name')
         ..cover = secondImgItemJson.getString('img')
         ..releaseTime = albumSource('publishTime')
-        ..singer = singer
+        ..singers = [singer]
         ..songTotal = -1;
     }).toList();
     return SearchResult()
@@ -329,7 +328,7 @@ class MiguMusic extends BaseMusicProvider {
     final songResultDataJson = respJson.getMap("songResultData");
     final resultJson = songResultDataJson.getList("result");
     final songs = resultJson.map((songJson) => _convertSong(songJson)).toList();
-    final songTotal = songResultDataJson.getInt('total');
+    final songTotal = songResultDataJson.getInt('totalCount');
     return SearchResult()
       ..items = songs
       ..total = songTotal;
@@ -338,6 +337,7 @@ class MiguMusic extends BaseMusicProvider {
   Future<Map<String, dynamic>?> _searchInternal(
       String keyword, MusicObjectType type,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) async {
+    final miguPage = page + 1;
     final sid =
         'USSc798b291d73849c78b6c9dc4b7ef046b51d4f04b92e84174b4c9094c19b1bdd7';
     var searchSwitch = '';
@@ -358,7 +358,9 @@ class MiguMusic extends BaseMusicProvider {
     final encodedKeyword = Uri.encodeComponent(keyword);
     final encodedSearchSwitch = Uri.encodeComponent(searchSwitch);
     var targetUrl =
-        'https://jadeite.migu.cn/music_search/v2/search/searchAll?pageNo=$page&pageSize=$count&sort=1&text=$encodedKeyword&searchSwitch=$encodedSearchSwitch&sid=$sid&isCopyright=1&isCorrect=1';
+        'https://jadeite.migu.cn/music_search/v2/search/searchAll?pageNo=$miguPage&pageSize=$count&sort=1&text=$encodedKeyword&searchSwitch=$encodedSearchSwitch&sid=$sid&isCopyright=1&isCorrect=1';
+    debugPrint(
+        'migu.search, keyword = $keyword, page = $miguPage, count = $count');
 
     final appId = 'yyapp2';
     final deviceId = md5(sid).toUpperCase(); // 设备的UUID
@@ -382,7 +384,7 @@ class MiguMusic extends BaseMusicProvider {
   @override
   Future<PlaylistSet?> showPlayList(
       {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
-    final start = offset ~/ count + 1;
+    final start = (offset / count).ceil() + 1;
     final targetUrl =
         'https://app.c.nf.migu.cn/MIGUM2.0/v2.0/content/getMusicData.do?count=$count&start=$start&templateVersion=5&type=1';
     final httpResp = await httpMaker.get(targetUrl);
@@ -414,9 +416,68 @@ class MiguMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<Singer?> singer(String artistId, MusicObjectType type,
-      {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
+  Future<Singer?> singer(String singerId) async {
     return null;
+  }
+
+  @override
+  Future<Singer?> singerAlbums(String singerId,
+      {int offset = 0, int count = DEFAULT_REQUEST_SINGER_ALBUMS_COUNT}) async {
+    final targetUrl =
+        'https://app.c.nf.migu.cn/bmw/singer/album/v1.0?singerId=$singerId';
+    final httpResp = await httpMaker.get(targetUrl);
+    if (httpResp.isEmpty) {
+      return null;
+    }
+    final respJson = jsonDecode(httpResp) as Map<String, dynamic>;
+    final dataJson = respJson.getMap('data');
+    final contentsJson = dataJson.getList('contents');
+    final albums = contentsJson.map((e) => _convertAlbum(e)).toList();
+    return Singer()
+      ..plt = MusicPlatform.migu
+      ..pltId = singerId
+      ..albums = albums;
+  }
+
+  Album _convertAlbum(Map<String, dynamic> albumJson) {
+    return Album()
+      ..plt = MusicPlatform.migu
+      ..pltId = albumJson.getString('resId')
+      ..name = albumJson.getString('txt')
+      ..cover = albumJson.getString('img')
+      ..releaseTime = albumJson.getString('txt3');
+  }
+
+  @override
+  Future<Singer?> singerSongs(String singerId,
+      {int offset = 0, int count = DEFAULT_REQUEST_SINGER_SONGS_COUNT}) async {
+    final page = (offset / count).ceil() + 1;
+    final pageSize = count;
+    final targetUrl =
+        'https://app.c.nf.migu.cn/MIGUM2.0/v1.0/content/singer_songs.do?pageNo=$page&pageSize=$pageSize&resourceType=2&singerId=$singerId';
+    final httpResp = await httpMaker.get(targetUrl);
+    if (httpResp.isEmpty) {
+      return null;
+    }
+    final respJson = jsonDecode(httpResp) as Map<String, dynamic>;
+    final songsJson = respJson.getList('songlist');
+    final songs = songsJson.map((e) => _convertSong(e)).toList();
+    final songTotal = respJson.getInt('songNum');
+    final singerJson = respJson.getMap('singer');
+    return _convertSinger(singerJson)
+      ..songTotal = songTotal
+      ..songs = songs;
+  }
+
+  Singer _convertSinger(Map<String, dynamic> json) {
+    final imgsJson = json.getList('imgs');
+    final firstImgJson = imgsJson.firstOrNull as Map<String, dynamic>?;
+    return Singer()
+      ..plt = MusicPlatform.migu
+      ..pltId = json.getString('singerId')
+      ..name = json.getString('singer')
+      ..introduction = json.getString('summary')
+      ..avatar = firstImgJson?.getString('img') ?? "";
   }
 
   @override

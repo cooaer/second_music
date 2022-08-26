@@ -146,7 +146,7 @@ class _MiniPlayerSong extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: () {
         if (index >= 0 && song != null) {
-          AppNavigator.instance.navigateTo(context, AppNavigator.play,
+          AppNavigator().navigateTo(context, AppNavigator.play,
               params: {"index": index, "song": song}, overlay: true);
         }
       },

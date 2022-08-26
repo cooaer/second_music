@@ -7,9 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:second_music/entity/enum.dart';
 import 'package:second_music/entity/song.dart';
 import 'package:second_music/entity/song_list.dart';
-import 'package:second_music/page/mini_player/mini_player_page.dart';
 import 'package:second_music/page/navigator.dart';
-import 'package:second_music/page/song_list/model.dart';
+import 'package:second_music/page/song_list/logic.dart';
 import 'package:second_music/page/song_list/widget.dart';
 import 'package:second_music/res/res.dart';
 import 'package:toast/toast.dart';
@@ -27,27 +26,27 @@ class SongListPage extends StatefulWidget {
 }
 
 class _SongListPageState extends State<SongListPage> {
-  late SongListModel _model;
+  late SongListLogic _logic;
 
   @override
   void initState() {
     super.initState();
-    _model = SongListModel(widget.plt, widget.songListId, widget.songListType);
-    _model.refresh();
+    _logic = SongListLogic(widget.plt, widget.songListId, widget.songListType);
+    _logic.refresh();
   }
 
   @override
   Widget build(BuildContext context) {
-    return _SongListModelProvider(
-      _model,
+    return _SongListLogicProvider(
+      _logic,
       child: Scaffold(
         backgroundColor: AppColors.mainBg,
         body: StreamBuilder(
-          stream: _model.songListStream,
+          stream: _logic.songListStream,
           builder: (context, AsyncSnapshot<SongList> snapshot) {
             return StreamBuilder(
-              initialData: _model.barColor,
-              stream: _model.barColorStream,
+              initialData: _logic.barColor,
+              stream: _logic.barColorStream,
               builder: (context, AsyncSnapshot<Color> snapshot2) {
                 return _buildBody(context, snapshot.data, snapshot2.data);
               },
@@ -92,10 +91,9 @@ class _SongListPageState extends State<SongListPage> {
             ),
             IconButton(
               onPressed: () {
-                final songListSource = _model.songList?.source;
+                final songListSource = _logic.songList?.source;
                 if (songListSource.isNotNullOrEmpty()) {
-                  AppNavigator.instance.navigateTo(
-                      context, AppNavigator.web_view,
+                  AppNavigator().navigateTo(context, AppNavigator.web_view,
                       params: {"url": songListSource});
                 }
               },
@@ -109,20 +107,15 @@ class _SongListPageState extends State<SongListPage> {
           pinned: true,
         ),
         if (songList != null && songList.songs.isNotEmpty)
-          SliverPadding(
-            padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).padding.bottom +
-                    MiniPlayer.BAR_HEIGHT),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  var song = songList.songs[index];
-                  return _SongListItem(index, song,
-                      () => showSongMenu(context, song, songList, _model),
-                      key: Key(song.pltId));
-                },
-                childCount: songList.songs.length,
-              ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                var song = songList.songs[index];
+                return SongListItem(index, song,
+                    () => showSongMenu(context, song, songList, _logic),
+                    key: Key(song.pltId));
+              },
+              childCount: songList.songs.length,
             ),
           ),
       ],
@@ -132,22 +125,22 @@ class _SongListPageState extends State<SongListPage> {
   @override
   void dispose() {
     super.dispose();
-    _model.dispose();
+    _logic.dispose();
   }
 }
 
-class _SongListModelProvider extends InheritedWidget {
-  final SongListModel model;
+class _SongListLogicProvider extends InheritedWidget {
+  final SongListLogic logic;
 
-  _SongListModelProvider(this.model, {Key? key, required Widget child})
+  _SongListLogicProvider(this.logic, {Key? key, required Widget child})
       : super(key: key, child: child);
 
   @override
   bool updateShouldNotify(InheritedWidget oldWidget) => true;
 
-  static _SongListModelProvider of(BuildContext context) {
+  static _SongListLogicProvider of(BuildContext context) {
     return context
-        .dependOnInheritedWidgetOfExactType<_SongListModelProvider>()!;
+        .dependOnInheritedWidgetOfExactType<_SongListLogicProvider>()!;
   }
 }
 
@@ -255,15 +248,7 @@ class _SongListHeader extends StatelessWidget {
                           //创建者
                           if (songList != null && songList!.isUserAvailable)
                             GestureDetector(
-                              onTap: () {
-                                final userSource = songList!.userSource;
-                                if (userSource.isNotEmpty) {
-                                  AppNavigator.instance.navigateTo(
-                                      context, AppNavigator.web_view,
-                                      params: {'url': songList!.userSource},
-                                      overlay: true);
-                                }
-                              },
+                              onTap: () => _onTapUser(context),
                               child: Row(
                                 children: <Widget>[
                                   ClipRRect(
@@ -346,6 +331,24 @@ class _SongListHeader extends StatelessWidget {
       ),
     );
   }
+
+  void _onTapUser(BuildContext context) {
+    if (songList == null) {
+      return;
+    }
+    final userSource = songList!.userSource;
+    if (userSource.isEmpty) {
+      return;
+    }
+    if (songList!.type == SongListType.playlist) {
+      AppNavigator().navigateTo(context, AppNavigator.web_view,
+          params: {'url': songList!.userSource}, overlay: true);
+    } else {
+      final plt = MusicPlatforms.fromString(songList!.userPlt);
+      AppNavigator().navigateTo(context, AppNavigator.singer,
+          params: {'plt': plt, 'singerId': songList!.userId});
+    }
+  }
 }
 
 class _ControlBarDelegate extends SliverPersistentHeaderDelegate {
@@ -382,8 +385,8 @@ class _ControlBar extends StatelessWidget {
       height: 50,
       child: InkWell(
         onTap: () {
-          final model = _SongListModelProvider.of(context).model;
-          model.playAll();
+          final logic = _SongListLogicProvider.of(context).logic;
+          logic.playAll();
         },
         child: Row(
           children: <Widget>[
@@ -419,7 +422,7 @@ class _ControlBar extends StatelessWidget {
               StreamBuilder(
                 initialData: null,
                 stream:
-                    _SongListModelProvider.of(context).model.isCollectedStream,
+                    _SongListLogicProvider.of(context).logic.isCollectedStream,
                 builder: (context, AsyncSnapshot<bool?> snapshot) {
                   var _isCollectedEnable = snapshot.data != null;
                   var _isCollected = snapshot.data == true;
@@ -432,8 +435,8 @@ class _ControlBar extends StatelessWidget {
                     ),
                     onPressed: () {
                       if (_isCollectedEnable && songList != null) {
-                        _SongListModelProvider.of(context)
-                            .model
+                        _SongListLogicProvider.of(context)
+                            .logic
                             .togglePlaylistCollection(songList!);
                       }
                     },
@@ -459,12 +462,12 @@ class _ControlBar extends StatelessWidget {
   }
 }
 
-class _SongListItem extends StatelessWidget {
+class SongListItem extends StatelessWidget {
   final int index;
   final Song song;
   final VoidCallback onTapMenu;
 
-  _SongListItem(this.index, this.song, this.onTapMenu, {Key? key})
+  SongListItem(this.index, this.song, this.onTapMenu, {Key? key})
       : super(key: key);
 
   @override
@@ -475,7 +478,7 @@ class _SongListItem extends StatelessWidget {
       child: InkWell(
         onTap: () {
           if (isPlayable) {
-            AppNavigator.instance.navigateTo(context, AppNavigator.play,
+            AppNavigator().navigateTo(context, AppNavigator.play,
                 params: {'song': song}, overlay: true);
           } else {
             Toast.show(stringsOf(context).playFailBecauseOfCopyright);

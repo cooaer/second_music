@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:second_music/entity/enum.dart';
 import 'package:second_music/page/home/page.dart';
 import 'package:second_music/page/play/play_page.dart';
-import 'package:second_music/page/search/page.dart';
+import 'package:second_music/page/search/more/more.dart';
+import 'package:second_music/page/search/search_view.dart';
 import 'package:second_music/page/setting/page.dart';
+import 'package:second_music/page/singer/singer_view.dart';
 import 'package:second_music/page/song_list/page.dart';
 import 'package:second_music/page/ui_style.dart';
 import 'package:second_music/page/web_view/page.dart';
+
+import '../entity/singer.dart';
 
 var navigatorKey = GlobalKey();
 
@@ -17,15 +22,12 @@ class AppNavigator {
   static const play = '/play';
   static const web_view = '/web_view';
   static const setting = '/setting';
+  static const singer = '/singer';
+  static const search_more = '/search_more';
 
   static AppNavigator? _instance;
 
-  static AppNavigator get instance {
-    if (_instance == null) {
-      _instance = AppNavigator._();
-    }
-    return _instance!;
-  }
+  factory AppNavigator() => _instance ?? (_instance = AppNavigator._());
 
   AppNavigator._();
 
@@ -68,6 +70,10 @@ class AppNavigator {
         return buildWebView(params: params);
       case setting:
         return buildSetting(params: params);
+      case singer:
+        return buildSinger(params: params);
+      case search_more:
+        return buildSearchMore(params: params);
       default:
         debugPrint("Error: invalid route name $name");
         return buildHome(params: params);
@@ -136,5 +142,23 @@ class AppNavigator {
 
   Widget buildSetting({Map<String, dynamic>? params}) {
     return SettingPage();
+  }
+
+  Widget buildSinger({Map<String, dynamic>? params}) {
+    MusicPlatform? plt = params?['plt'];
+    String? singerId = params?['singerId'];
+    Singer? singer = params?['singer'];
+    return SingerPage(
+      plt ?? (singer?.plt)!,
+      singerId ?? (singer?.pltId)!,
+      singer: singer,
+    );
+  }
+
+  Widget buildSearchMore({Map<String, dynamic>? params}) {
+    final plt = params?['plt'];
+    final type = params?['type'];
+    final keyword = params?['keyword'];
+    return SearchMorePage(plt, type, keyword);
   }
 }

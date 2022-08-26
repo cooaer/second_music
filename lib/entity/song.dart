@@ -19,12 +19,7 @@ class Song {
   String lyricUrl = "";
 
   ///歌手
-  Singer? _singer;
-
-  Singer? get singer => _singer ?? singers.firstOrNull;
-
-  set singer(Singer? singer) => _singer = singer;
-
+  Singer? get singer => singers.firstOrNull;
   List<Singer> singers = [];
 
   ///专辑
@@ -35,6 +30,7 @@ class Song {
 
   //migu平台获取soundUrl时使用
   String quality = "";
+
   //migu平台获取songSource时使用
   String copyrightId = "";
 
@@ -63,16 +59,21 @@ class Song {
       throw ArgumentError("plt");
     }
     this.plt = musicPlatform;
-    this._singer = Singer()
-      ..plt = this.plt
-      ..pltId = singerId
-      ..name = singerName
-      ..avatar = singerAvatar;
-    this.album = Album()
-      ..plt = this.plt
-      ..pltId = albumId
-      ..name = albumName
-      ..cover = albumCover;
+    if (singerId.isNotEmpty) {
+      Singer singer = Singer()
+        ..plt = this.plt
+        ..pltId = singerId
+        ..name = singerName
+        ..avatar = singerAvatar;
+      this.singers = [singer];
+    }
+    if (albumId.isNotEmpty) {
+      this.album = Album()
+        ..plt = this.plt
+        ..pltId = albumId
+        ..name = albumName
+        ..cover = albumCover;
+    }
   }
 
   SongTableCompanion toInsertable() {
@@ -102,17 +103,21 @@ class Song {
     this.soundUrl = map["soundUrl"];
     this.description = map["description"];
 
-    this.album = new Album()
-      ..plt = this.plt
-      ..pltId = map.getString("albumId")
-      ..name = map.getString("albumName")
-      ..cover = map.getString("albumCover");
-
-    this.singer = new Singer()
-      ..plt = this.plt
-      ..pltId = map.getString("singerId")
-      ..name = map.getString("singerName")
-      ..avatar = map.getString("singerAvatar");
+    if (map.containsKey('albumId')) {
+      this.album = new Album()
+        ..plt = this.plt
+        ..pltId = map.getString("albumId")
+        ..name = map.getString("albumName")
+        ..cover = map.getString("albumCover");
+    }
+    if (map.containsKey('singerId')) {
+      final singer = new Singer()
+        ..plt = this.plt
+        ..pltId = map.getString("singerId")
+        ..name = map.getString("singerName")
+        ..avatar = map.getString("singerAvatar");
+      this.singers = [singer];
+    }
   }
 
   Map<String, dynamic> toMap() {

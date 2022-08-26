@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:isolate';
 
 import 'package:dart_extensions_methods/dart_extension_methods.dart';
+import 'package:flutter/foundation.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart' show parse;
 import 'package:netease_music_cipher/netease_music_cipher.dart';
@@ -70,9 +71,43 @@ class NeteaseMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<Singer?> singer(String artistId, MusicObjectType type,
-      {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
+  Future<Singer?> singer(String singerId) async {
     return null;
+  }
+
+  @override
+  Future<Singer?> singerAlbums(String singerId,
+      {int offset = 0, int count = DEFAULT_REQUEST_SINGER_ALBUMS_COUNT}) async {
+    final targetUrl = "https://music.163.com/weapi/artist/albums/$singerId";
+    final params = {
+      'offset': offset,
+      'limit': count,
+      'total': 'true',
+    };
+    final resp = await _weapiRequest(targetUrl, params);
+    final respJson = jsonDecode(resp) as Map<String, dynamic>;
+    final singerJson = respJson.getMap('artist');
+    final singer = _convertSinger(singerJson);
+    final albumsJson = respJson.getList('hotAlbums');
+    final albums = albumsJson.map((e) => _convertAlbum(e)).toList();
+    return singer..albums = albums;
+  }
+
+  @override
+  Future<Singer?> singerSongs(String singerId,
+      {int offset = 0, int count = DEFAULT_REQUEST_SINGER_SONGS_COUNT}) async {
+    final targetUrl = 'https://music.163.com/api/artist/$singerId';
+    final httpResp = await httpMaker.get(targetUrl);
+    //debugPrint("netease.singer, result = $respJson");
+    if (httpResp.isEmpty) {
+      return null;
+    }
+    final respJson = jsonDecode(httpResp) as Map<String, dynamic>;
+    final singerJson = respJson.getMap('artist');
+    final singer = _convertSinger(singerJson);
+    final songsJson = respJson.getList('hotSongs');
+    final songs = songsJson.map((e) => _convertSong2(e)).toList();
+    return singer..songs = songs;
   }
 
   @override
@@ -119,10 +154,11 @@ class NeteaseMusic extends BaseMusicProvider {
       'limint': count,
       'type': type,
     };
+    debugPrint(
+        'netease.search, type = $type, keyword = $keyword, page = $page, count = $count');
     final httpResp = await httpMaker.post(targetUrl, reqData, headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     });
-    //debugPrint('netase.search, result = $httpResp');
     if (httpResp.isEmpty) {
       return null;
     }
@@ -187,6 +223,9 @@ class NeteaseMusic extends BaseMusicProvider {
       'csrf_token': ""
     };
     final respStr = await _weapiRequest(url, params);
+    if (respStr.isEmpty) {
+      return false;
+    }
     final respMap = json.decode(respStr);
     final dataList = Json.getList(respMap, 'data');
     final firstTrackMap = dataList.isNotEmpty ? dataList[0] : null;
@@ -238,12 +277,17 @@ class NeteaseMusic extends BaseMusicProvider {
     final data =
         await NeteaseMusicCipher.encryptEapi(eapiUrl, json.encode(params));
     final body = 'params=${Uri.encodeQueryComponent(data['params'])}';
-    final expire =
-        DateTime.now().millisecondsSinceEpoch + 100 * 365 * 24 * 60 * 60 * 1000;
-    await setCookie('https://interface3.music.163.com', "os", "pc", expire);
+    await _setCookies();
     return await httpMaker.post(targetUrl, body, headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     });
+  }
+
+  Future<void> _setCookies() async {
+    final expire =
+        DateTime.now().millisecondsSinceEpoch + 100 * 365 * 24 * 60 * 60 * 1000;
+    await setCookie('https://interface3.music.163.com', "os", "pc", expire);
+    await setCookie('https://music.163.com', "os", "pc", expire);
   }
 
   Future<List<Song>> _parseSongListTracks(List trackIds) async {
@@ -258,13 +302,12 @@ class NeteaseMusic extends BaseMusicProvider {
     }
     final respMap = json.decode(respStr);
     List songsMap = respMap['songs'];
-    return await Future.wait(songsMap.map((e) => _convertSong(e)));
+    return songsMap.map((e) => _convertSong(e)).toList();
   }
 
   Playlist _convertPlaylistWithoutSongs(Map<String, dynamic> map) {
     final playlist = Playlist()
       ..plt = MusicPlatform.netease
-      ..source = playlistSource(Json.getString(map, 'id'))
       ..pltId = Json.getString(map, 'id')
       ..cover = Json.getString(map, 'coverImgUrl')
       ..title = Json.getString(map, 'name')
@@ -279,7 +322,6 @@ class NeteaseMusic extends BaseMusicProvider {
   User _convertCreator(Map<String, dynamic> map) {
     final creator = User()
       ..plt = MusicPlatform.netease
-      ..source = userSource(map['userId'].toString())
       ..pltId = map['userId'].toString()
       ..name = map['nickname']
       ..avatar = map['avatarUrl'] ?? ""
@@ -288,7 +330,7 @@ class NeteaseMusic extends BaseMusicProvider {
     return creator;
   }
 
-  Future<Song> _convertSong(Map<String, dynamic> map) async {
+  Song _convertSong(Map<String, dynamic> map) {
     final song = Song()
       ..plt = MusicPlatform.netease
       ..pltId = Json.getString(map, 'id')
@@ -296,15 +338,14 @@ class NeteaseMusic extends BaseMusicProvider {
       ..subtitle = Json.getList(map, 'alia').join(' | ')
       ..cover = Json.getString(Json.getMap(map, 'al'), 'picUrl')
       ..isPlayable = _isSongPlayable(Json.getInt(map, "fee", defaultValue: 0))
-      ..album = await _convertAlbum(Json.getMap(map, 'al'))
+      ..album = _convertAlbum(Json.getMap(map, 'al'))
       ..singers = Json.getList(map, 'ar')
           .map<Singer>((e) => _convertSinger(e))
           .toList();
-    // await parseTrack(song);
     return song;
   }
 
-  Future<Song> _convertSong2(Map<String, dynamic> map) async {
+  Song _convertSong2(Map<String, dynamic> map) {
     final song = Song()
       ..plt = MusicPlatform.netease
       ..pltId = Json.getString(map, 'id')
@@ -312,35 +353,34 @@ class NeteaseMusic extends BaseMusicProvider {
       ..subtitle = Json.getList(map, 'alia').join(' | ')
       ..cover = Json.getString(Json.getMap(map, 'album'), 'picUrl')
       ..isPlayable = _isSongPlayable(Json.getInt(map, "fee", defaultValue: 0))
-      ..album = await _convertAlbum(Json.getMap(map, 'album'))
+      ..album = _convertAlbum(Json.getMap(map, 'album'))
       ..singers = Json.getList(map, 'artists')
           .map<Singer>((e) => _convertSinger(e))
           .toList();
-    // await parseTrack(song);
     return song;
   }
 
   Singer _convertSinger(Map<String, dynamic> map) {
     final singer = Singer()
       ..plt = MusicPlatform.netease
-      ..source = singerSource(Json.getString(map, 'id'))
       ..pltId = Json.getString(map, 'id')
       ..name = Json.getString(map, 'name')
-      ..avatar = Json.getString(map, 'picUrl');
+      ..avatar = Json.getString(map, 'picUrl')
+      ..songTotal = Json.getInt(map, 'musicSize')
+      ..albumTotal = map.getInt('albumSize');
     return singer;
   }
 
-  Future<Album> _convertAlbum(Map<String, dynamic> map) async {
+  Album _convertAlbum(Map<String, dynamic> map) {
     final singers = Json.getList(map, 'artists')
         .map<Singer>((e) => _convertSinger(e))
         .toList();
-    final songs = await Future.wait(
-        Json.getList(map, 'songs').map((e) => _convertSong2(e)));
+    final songs =
+        Json.getList(map, 'songs').map((e) => _convertSong2(e)).toList();
 
     final alias = Json.getList(map, 'alias');
     final album = Album()
       ..plt = MusicPlatform.netease
-      ..source = albumSource(Json.getString(map, 'id'))
       ..pltId = Json.getString(map, 'id')
       ..name = Json.getString(map, 'name')
       ..subtitle = alias.isNotEmpty ? alias[0] : ""
@@ -359,8 +399,8 @@ class NeteaseMusic extends BaseMusicProvider {
     final searchResult = SearchResult();
 
     if (map.containsKey('songs')) {
-      final songs = await Future.wait(
-          Json.getList(map, 'songs').map((e) => _convertSong2(e)));
+      final songs =
+          Json.getList(map, 'songs').map((e) => _convertSong2(e)).toList();
       searchResult.total = Json.getInt(map, 'songCount');
       searchResult.items = songs;
       return searchResult;
@@ -375,8 +415,8 @@ class NeteaseMusic extends BaseMusicProvider {
     }
 
     if (map.containsKey('albums')) {
-      final albums = await Future.wait(
-          Json.getList(map, 'albums').map((e) => _convertAlbum(e)));
+      final albums =
+          Json.getList(map, 'albums').map((e) => _convertAlbum(e)).toList();
       searchResult.total = Json.getInt(map, 'albumCount');
       searchResult.items = albums;
 
@@ -424,7 +464,6 @@ PlaylistSet _syncMapToObjOfPlaylistSet(Map<String, dynamic> objMap) {
       ..title = item['title']
       ..cover = item['cover']
       ..plt = item['plt']
-      ..source = item['source']
       ..playCount = item['playCount'];
 
     return playlist;
@@ -465,7 +504,6 @@ Map<String, dynamic> _syncParseDomToMapOfPlaylistSet(Document dom) {
         ele.querySelector('div a')?.attributes['title']?.trim() ?? "";
     item['cover'] = ele.querySelector('img')?.attributes['src'] ?? "";
     item['plt'] = MusicPlatform.netease;
-    item['source'] = 'http://music.163.com/#/playlist?id=' + item['id'];
     final countStr = ele.querySelector('.nb')?.text;
     item['playCount'] =
         countStr.isNullOrEmpty() ? 0 : _playCountFromText(countStr!) ?? 0;

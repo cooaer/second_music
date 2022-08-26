@@ -6,10 +6,10 @@ import 'package:second_music/entity/search.dart';
 import 'package:second_music/repository/local/preference/playing.dart';
 import 'package:second_music/repository/remote/platform/music_provider.dart';
 
-class SearchModel {
+class SearchLogic {
   late List<String> _searchKeywords;
 
-  SearchModel() {
+  SearchLogic() {
     _searchKeywords = PlayingStorage.instance.searchKeywords;
   }
 
@@ -64,16 +64,39 @@ class SearchModel {
   }
 }
 
-class SearchObjectModel {
+class SearchObjectLogic {
+  static const SEARCH_PLTS = [
+    MusicPlatform.netease,
+    MusicPlatform.qq,
+    MusicPlatform.migu
+  ];
+
+  static const REQUEST_COUNT = 5;
+  static const DISTANCE_TO_BOTTOM_REQUEST_MORE = 50;
+
   final MusicObjectType type;
   String _keyword;
   final List<MusicPlatform> _plts;
+  final int requestCount;
 
-  SearchObjectModel(this.type, this._keyword,
-      {List<MusicPlatform> plts = MusicPlatform.values})
-      : this._plts = plts;
+  final scrollController = ScrollController();
 
-  static const REQUEST_COUNT = 5;
+  SearchObjectLogic(this.type, this._keyword,
+      {List<MusicPlatform> plts = SEARCH_PLTS,
+      this.requestCount = REQUEST_COUNT})
+      : this._plts = plts {
+    _listenScrollToBottom();
+  }
+
+  void _listenScrollToBottom() {
+    scrollController.addListener(() {
+      if (scrollController.position.pixels >
+          scrollController.position.maxScrollExtent -
+              DISTANCE_TO_BOTTOM_REQUEST_MORE) {
+        requestMore(false);
+      }
+    });
+  }
 
   var _loading = false;
 
@@ -111,44 +134,58 @@ class SearchObjectModel {
 
     if (_keyword.isEmpty) return;
 
-    refresh(false);
+    refresh();
   }
 
   String get keyword => _keyword;
 
-  bool _selected = false;
-
-  set selected(bool selected) {
-    if (_selected == selected) return;
-    _selected = selected;
-    refresh(false);
+  void refresh() {
+    debugPrint("SearchObjLogic.request, start");
+    _refreshInternal();
   }
 
-  bool get selected => _selected;
-
-  void refresh(bool force, {List<MusicPlatform> plts = MusicPlatform.values}) {
-    if (!force && !selected) return;
-    _refreshInternal(plts);
-  }
-
-  void _refreshInternal(List<MusicPlatform> plts) async {
+  void _refreshInternal() async {
     _loading = true;
 
-    for (MusicPlatform plt in plts) {
+    var loadingPlts = _plts.length;
+
+    void onSearchPlatformFinished(MusicPlatform plt) {
+      loadingPlts--;
+      _loading = loadingPlts > 0;
+      if (!_loading) {
+        debugPrint("SearchObjLogic.requestInternal, end");
+      }
+
+      //网易云音乐每次搜索只返回10条，无法触发滚动自动加载更多，所以需要在请求一次
+      if (_plts.length == 1) {
+        final result = results[plt];
+        if (result == null) {
+          return;
+        }
+        if (!result.hasError && result.hasMore && result.items.length < 20) {
+          _refreshInternal();
+        }
+      }
+    }
+
+    void searchPlatform(MusicPlatform plt) async {
       SearchResult? _lastResult;
       if (_results.containsKey(plt)) {
         _lastResult = _results[plt];
         // 该平台已经搜索完毕
-        if (_lastResult == null || !_lastResult.hasMore) continue;
+        if (_lastResult == null || !_lastResult.hasMore) {
+          onSearchPlatformFinished(plt);
+          return;
+        }
       } else {
         _lastResult = SearchResult();
-        _results[plt] = _lastResult;
       }
 
-      final musicProvider = MusicProvider(plt);
+      final result = await MusicProvider(plt).search(_keyword, type,
+          page: _lastResult.nextPage, count: requestCount);
+      debugPrint(
+          "SearchObjLogic.searchPlatform, start plt = $plt, type = $type, keyword = $_keyword, page = ${_lastResult.nextPage}");
 
-      final result = await musicProvider.search(_keyword, type,
-          page: _lastResult.nextPage, count: REQUEST_COUNT);
       if (result != null && result.items.isNotEmpty) {
         _lastResult.page++;
         _lastResult.hasError = false;
@@ -157,17 +194,25 @@ class SearchObjectModel {
       } else {
         _lastResult.hasError = true;
       }
+
+      _results[plt] = _lastResult;
       if (!_resultController.isClosed) {
         _resultController.add(_results);
       }
+      onSearchPlatformFinished(plt);
     }
 
-    _loading = false;
+    for (MusicPlatform plt in _plts) {
+      searchPlatform(plt);
+    }
   }
 
-  void requestMore(bool force, List<MusicPlatform> plts) {
+  void requestMore(bool force) {
     if (!force && lastError) return;
-    refresh(force, plts: plts);
+    if (!hasMore()) return;
+    if (loading) return;
+    debugPrint("SearchObjLogic.requestMore, start, force = $force");
+    _refreshInternal();
   }
 
   void dispose() {

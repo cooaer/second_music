@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:second_music/entity/enum.dart';
 import 'package:second_music/entity/song.dart';
-import 'package:second_music/page/home/my_song_list/model.dart' as mySongList;
+import 'package:second_music/page/home/my_song_list/logic.dart' as mySongList;
 import 'package:second_music/page/song_list/widget.dart';
 import 'package:second_music/repository/local/database/song/dao.dart';
 import 'package:second_music/res/res.dart';

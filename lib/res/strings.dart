@@ -319,4 +319,12 @@ class AppLocalizations {
   String get playFailBecauseOfCopyright => "版权原因无法播放，请尝试其他平台";
 
   String get developing => "开发中...";
+
+  //歌手主页
+
+  String get singerHotSongs => '歌曲';
+
+  String get singerHotAlbums => '专辑';
+
+  List<String> get singerTabNames => [singerHotSongs, singerHotAlbums];
 }

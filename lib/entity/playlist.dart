@@ -13,7 +13,6 @@ class Playlist {
   String description = ""; //描述
   int playCount = 0; //播放量
   int favorCount = 0; //收藏量
-  String source = "";
 
   ///创建者，plt,id,name,avatar,source
   User? creator;

@@ -4,18 +4,17 @@ import 'package:second_music/entity/enum.dart';
 import 'package:second_music/entity/song.dart';
 import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/page/basic_types.dart';
-import 'package:second_music/page/home/my_song_list/model.dart';
-import 'package:second_music/page/mini_player/mini_player_page.dart';
+import 'package:second_music/page/home/my_song_list/logic.dart';
 import 'package:second_music/page/navigator.dart';
-import 'package:second_music/page/song_list/model.dart';
+import 'package:second_music/page/song_list/logic.dart';
 import 'package:second_music/repository/local/database/song/dao.dart';
 import 'package:second_music/res/res.dart';
 
 void showSongMenu(BuildContext context, Song song, SongList? songList,
-    SongListModel? songListModel) {
+    SongListLogic? songListLogic) {
   showModalBottomSheet(
       context: context,
-      builder: (context) => _SongMenu(song, songList, songListModel));
+      builder: (context) => _SongMenu(song, songList, songListLogic));
 }
 
 //下一首播放
@@ -27,9 +26,9 @@ void showSongMenu(BuildContext context, Song song, SongList? songList,
 class _SongMenu extends StatelessWidget {
   final Song song;
   final SongList? songList;
-  final SongListModel? songListModel;
+  final SongListLogic? songListLogic;
 
-  _SongMenu(this.song, this.songList, this.songListModel);
+  _SongMenu(this.song, this.songList, this.songListLogic);
 
   @override
   Widget build(BuildContext context) {
@@ -73,12 +72,7 @@ class _SongMenu extends StatelessWidget {
     ]);
 
     return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.only(
-            bottom:
-                MediaQuery.of(context).padding.bottom + MiniPlayer.BAR_HEIGHT),
-        child: Column(children: _buildMenuItems(context, items)),
-      ),
+      child: Column(children: _buildMenuItems(context, items)),
     );
   }
 
@@ -110,6 +104,7 @@ class _SongMenu extends StatelessWidget {
         _addToSongList(context);
         break;
       case 'singer':
+        _navigateToSinger(context);
         break;
       case 'album':
         _openAlbum(context);
@@ -138,18 +133,30 @@ class _SongMenu extends StatelessWidget {
     notifyMySongListChanged();
   }
 
+  void _navigateToSinger(BuildContext context) {
+    final singer = song.singer;
+    if (singer == null) {
+      return;
+    }
+    AppNavigator().navigateTo(context, AppNavigator.singer, params: {
+      'plt': singer.plt,
+      'singerId': singer.pltId,
+      'singer': singer,
+    });
+  }
+
   void _deleteFromSongList() async {
-    if (songList == null || songListModel == null) {
+    if (songList == null || songListLogic == null) {
       return;
     }
     var _songDao = SongDao();
     await _songDao.deleteSongFromSongList(songList!.id, song.id);
-    songListModel!.refresh();
+    songListLogic!.refresh();
     notifyMySongListChanged();
   }
 
   void _openAlbum(BuildContext context) {
-    AppNavigator.instance.navigateTo(context, AppNavigator.song_list, params: {
+    AppNavigator().navigateTo(context, AppNavigator.song_list, params: {
       "plt": song.plt.name,
       "songListId": song.album?.pltId,
       "songListType": SongListType.album
@@ -159,7 +166,7 @@ class _SongMenu extends StatelessWidget {
   void _openSource(BuildContext context) {
     final songSource = song.source;
     if (songSource.isNotEmpty) {
-      AppNavigator.instance.navigateTo(context, AppNavigator.web_view,
+      AppNavigator().navigateTo(context, AppNavigator.web_view,
           params: {"url": song.source});
     }
   }

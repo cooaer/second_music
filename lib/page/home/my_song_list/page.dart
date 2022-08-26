@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:second_music/entity/song_list.dart';
-import 'package:second_music/page/home/my_song_list/model.dart';
+import 'package:second_music/page/home/my_song_list/logic.dart';
 import 'package:second_music/page/home/my_song_list/widget.dart';
 import 'package:second_music/page/navigator.dart';
 import 'package:second_music/res/res.dart';
@@ -14,20 +14,20 @@ class HomeMySongList extends StatefulWidget {
 }
 
 class HomeMySongListState extends State with AutomaticKeepAliveClientMixin {
-  late MySongListModel _model;
+  late MySongListLogic _logic;
 
   @override
   void initState() {
     super.initState();
-    _model = MySongListModel.instance;
-    _model.refresh();
+    _logic = MySongListLogic.instance;
+    _logic.refresh();
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return StreamBuilder(
-      stream: MySongListModel.instance.mySongListStream,
+      stream: MySongListLogic.instance.mySongListStream,
       builder: (context, AsyncSnapshot<List<SongList>> snapshot) {
         return _buildContent(context, snapshot.data ?? []);
       },
@@ -35,9 +35,9 @@ class HomeMySongListState extends State with AutomaticKeepAliveClientMixin {
   }
 
   Widget _buildContent(BuildContext context, List<SongList> songLists) {
-    var createdPlaylists = MySongListModel.createdOfPlaylist(songLists);
-    var collectedPlaylists = MySongListModel.collectedOfPlaylist(songLists);
-    var collectedAlbums = MySongListModel.collectedOfAlbum(songLists);
+    var createdPlaylists = MySongListLogic.createdOfPlaylist(songLists);
+    var collectedPlaylists = MySongListLogic.collectedOfPlaylist(songLists);
+    var collectedAlbums = MySongListLogic.collectedOfAlbum(songLists);
     return CustomScrollView(
       slivers: <Widget>[
 // 暂不支持播放历史和本地音乐
@@ -244,8 +244,7 @@ class _HomeMySongListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
         onTap: () {
-          AppNavigator.instance
-              .navigateTo(context, AppNavigator.song_list, params: {
+          AppNavigator().navigateTo(context, AppNavigator.song_list, params: {
             'plt': songList.plt,
             'songListId': songList.pltId,
             'songListType': songList.type,

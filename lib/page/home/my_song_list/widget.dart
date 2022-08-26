@@ -2,8 +2,7 @@ import 'package:dart_extensions_methods/dart_extension_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/page/basic_types.dart';
-import 'package:second_music/page/home/my_song_list/model.dart';
-import 'package:second_music/page/mini_player/mini_player_page.dart';
+import 'package:second_music/page/home/my_song_list/logic.dart';
 import 'package:second_music/repository/local/database/song/dao.dart';
 import 'package:second_music/res/res.dart';
 
@@ -12,7 +11,7 @@ void showCreatePlaylistDialog(BuildContext context) {
       context: context,
       barrierDismissible: true,
       builder: (context) {
-        var model = CreatePlaylistModel();
+        var logic = CreatePlaylistLogic();
         return AlertDialog(
           title: Text(
             stringsOf(context).createPlaylist,
@@ -24,7 +23,7 @@ void showCreatePlaylistDialog(BuildContext context) {
           ),
           titlePadding: EdgeInsets.fromLTRB(20, 20, 20, 0),
           content: TextField(
-            controller: model.titleEditingController,
+            controller: logic.titleEditingController,
             autofocus: true,
             textInputAction: TextInputAction.done,
             onSubmitted: (text) {
@@ -46,14 +45,14 @@ void showCreatePlaylistDialog(BuildContext context) {
                 },
                 child: Text(stringsOf(context).cancel)),
             StreamBuilder(
-                stream: model.titleStream,
+                stream: logic.titleStream,
                 builder: (context, AsyncSnapshot<String> snapshot) {
                   final title = snapshot.data;
                   return TextButton(
                       onPressed: title.isNullOrEmpty()
                           ? null
                           : () => _createPlaylist(context,
-                              model.titleEditingController.text.trim()),
+                              logic.titleEditingController.text.trim()),
                       child: Text(stringsOf(context).ok));
                 }),
           ],
@@ -112,12 +111,7 @@ class _SongMenu extends StatelessWidget {
     listWidgets.addAll(_buildMenuItems(context, items));
 
     return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.only(
-            bottom:
-                MediaQuery.of(context).padding.bottom + MiniPlayer.ALL_HEIGHT),
-        child: Column(children: listWidgets),
-      ),
+      child: Column(children: listWidgets),
     );
   }
 

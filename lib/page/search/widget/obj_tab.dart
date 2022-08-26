@@ -9,11 +9,9 @@ import 'package:second_music/entity/search.dart';
 import 'package:second_music/entity/singer.dart';
 import 'package:second_music/entity/song.dart';
 import 'package:second_music/entity/song_list.dart';
-import 'package:second_music/page/mini_player/mini_player_page.dart';
 import 'package:second_music/page/navigator.dart';
-import 'package:second_music/page/search/model.dart';
+import 'package:second_music/page/search/search_logic.dart';
 import 'package:second_music/page/song_list/widget.dart';
-import 'package:second_music/repository/local/preference/config.dart';
 import 'package:second_music/res/res.dart';
 import 'package:second_music/widget/loading_more.dart';
 
@@ -29,21 +27,21 @@ class SearchObjectTab extends StatefulWidget {
 
 class _SearchObjectTabState extends State<SearchObjectTab>
     with AutomaticKeepAliveClientMixin {
-  late SearchObjectModel _model;
+  late SearchObjectLogic _logic;
 
   @override
   void initState() {
     super.initState();
-    _model = SearchObjectModel(widget.type, widget.keyword);
-    _model.selected = true;
+    _logic = SearchObjectLogic(widget.type, widget.keyword);
+    _logic.refresh();
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    var plts = AppConfig.instance.searchPltRank;
+    var plts = SearchObjectLogic.SEARCH_PLTS;
     return StreamBuilder(
-      stream: _model.resultStream,
+      stream: _logic.resultStream,
       builder:
           (context, AsyncSnapshot<Map<MusicPlatform, SearchResult>> snapshot) {
         return CustomScrollView(
@@ -60,17 +58,11 @@ class _SearchObjectTabState extends State<SearchObjectTab>
                       : Container();
                 }, childCount: plts.length),
               ),
-            if (_model.hasMore() &&
+            if (_logic.hasMore() &&
                 (snapshot.data == null || snapshot.data!.length < plts.length))
               SliverToBoxAdapter(
-                child: LoadingMore(_model.loading, _model.lastError, () {}),
+                child: LoadingMore(_logic.loading, _logic.lastError, () {}),
               ),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: MediaQuery.of(context).padding.bottom +
-                    MiniPlayer.ALL_HEIGHT,
-              ),
-            )
           ],
         );
       },
@@ -80,7 +72,7 @@ class _SearchObjectTabState extends State<SearchObjectTab>
   @override
   void dispose() {
     super.dispose();
-    _model.dispose();
+    _logic.dispose();
   }
 
   @override
@@ -103,8 +95,7 @@ class _SearchResultItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        _SearchResultTitle(plt, keyword, type,
-            searchResult.hasMore || searchResult.items.length > PLT_MAX_COUNT),
+        _SearchResultTitle(plt, keyword, type, searchResult.hasMore),
       ]..addAll(_buildItemsWidget(context, searchResult.items)),
     );
   }
@@ -114,16 +105,16 @@ class _SearchResultItemWidget extends StatelessWidget {
     return List.generate(maxCount, (index) {
       var item = items[index];
       if (item is Song) {
-        return _SearchResultSong(item);
+        return SearchResultSong(item);
       }
       if (item is Playlist) {
-        return _SearchResultSongList(SongList.fromPlaylist(item));
+        return SearchResultSongList(SongList.fromPlaylist(item));
       }
       if (item is Album) {
-        return _SearchResultSongList(SongList.fromAlbum(item));
+        return SearchResultSongList(SongList.fromAlbum(item));
       }
       if (item is Singer) {
-        return _SearchResultSinger(item);
+        return SearchResultSinger(item);
       }
       return null;
     }).whereType<Widget>().toList();
@@ -174,7 +165,7 @@ class _SearchResultTitle extends StatelessWidget {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 10),
               child: TextButton(
-                onPressed: () {},
+                onPressed: () => _onTapMoreButton(context),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
@@ -199,12 +190,20 @@ class _SearchResultTitle extends StatelessWidget {
       ),
     );
   }
+
+  void _onTapMoreButton(BuildContext context) {
+    AppNavigator().navigateTo(context, AppNavigator.search_more, params: {
+      'plt': plt,
+      'type': type,
+      'keyword': keyword,
+    });
+  }
 }
 
-class _SearchResultSong extends StatelessWidget {
+class SearchResultSong extends StatelessWidget {
   final Song _song;
 
-  _SearchResultSong(this._song) : super(key: ValueKey(_song));
+  SearchResultSong(this._song) : super(key: ValueKey(_song));
 
   @override
   Widget build(BuildContext context) {
@@ -213,7 +212,7 @@ class _SearchResultSong extends StatelessWidget {
       child: InkWell(
         onTap: () {
           if (_song.isPlayable) {
-            AppNavigator.instance.navigateTo(context, AppNavigator.play,
+            AppNavigator().navigateTo(context, AppNavigator.play,
                 params: {'song': _song}, overlay: true);
           }
         },
@@ -301,17 +300,16 @@ class _SearchResultSong extends StatelessWidget {
   }
 }
 
-class _SearchResultSongList extends StatelessWidget {
+class SearchResultSongList extends StatelessWidget {
   final SongList _songList;
 
-  _SearchResultSongList(this._songList, {Key? key}) : super(key: key);
+  SearchResultSongList(this._songList, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        AppNavigator.instance
-            .navigateTo(context, AppNavigator.song_list, params: {
+        AppNavigator().navigateTo(context, AppNavigator.song_list, params: {
           'plt': _songList.plt,
           'songListId': _songList.pltId,
           'songListType': _songList.type,
@@ -383,15 +381,21 @@ class _SearchResultSongList extends StatelessWidget {
   }
 }
 
-class _SearchResultSinger extends StatelessWidget {
+class SearchResultSinger extends StatelessWidget {
   final Singer _singer;
 
-  _SearchResultSinger(this._singer, {Key? key}) : super(key: key);
+  SearchResultSinger(this._singer, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        AppNavigator().navigateTo(context, AppNavigator.singer, params: {
+          'plt': _singer.plt,
+          'singerId': _singer.pltId,
+          'singer': _singer,
+        });
+      },
       child: Container(
         padding: EdgeInsets.fromLTRB(16, 5, 16, 5),
         height: 60,

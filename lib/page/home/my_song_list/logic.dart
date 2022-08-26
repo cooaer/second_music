@@ -6,15 +6,15 @@ import 'package:second_music/entity/song_list.dart';
 import 'package:second_music/repository/local/database/song/dao.dart';
 
 void notifyMySongListChanged() {
-  MySongListModel.instance.refresh();
+  MySongListLogic.instance.refresh();
 }
 
-class MySongListModel {
-  static MySongListModel? _instance;
+class MySongListLogic {
+  static MySongListLogic? _instance;
 
-  static MySongListModel get instance {
+  static MySongListLogic get instance {
     if (_instance == null) {
-      _instance = MySongListModel._();
+      _instance = MySongListLogic._();
     }
     return _instance!;
   }
@@ -52,7 +52,7 @@ class MySongListModel {
 
   var _songDao = SongDao();
 
-  MySongListModel._();
+  MySongListLogic._();
 
   var _mySongListController = StreamController<List<SongList>>.broadcast();
 
@@ -80,15 +80,8 @@ class MySongListModel {
   }
 }
 
-class HistoryModel {
-  // 获取所有历史播放歌曲总数
-
-  // 获取所有历史歌曲
-
-}
-
-class CreatePlaylistModel {
-  CreatePlaylistModel() {
+class CreatePlaylistLogic {
+  CreatePlaylistLogic() {
     _titleEditingController.addListener(() {
       _titleController.add(_titleEditingController.text.trim());
     });

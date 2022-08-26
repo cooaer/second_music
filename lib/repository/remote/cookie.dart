@@ -7,7 +7,8 @@ var cookieJar = PersistCookieJar(
     ignoreExpires: true,
     storage: FileStorage(AppPath.instance.tempCookieDirPath));
 
-Future<void> setCookie(String url, String name, String value, int expire) {
+Future<void> setCookie(
+    String url, String name, String value, int expire) async {
   return cookieJar.saveFromResponse(Uri.parse(url), [
     Cookie(name, value)..expires = DateTime.fromMillisecondsSinceEpoch(expire)
   ]);

@@ -11,6 +11,7 @@ import 'package:second_music/entity/search.dart';
 import 'package:second_music/entity/singer.dart';
 import 'package:second_music/entity/song.dart';
 import 'package:second_music/entity/user.dart';
+import 'package:second_music/repository/remote/cookie.dart';
 import 'package:second_music/repository/remote/http_maker.dart';
 import 'package:second_music/repository/remote/platform/music_provider.dart';
 
@@ -136,7 +137,7 @@ class BilibiliMusic extends BaseMusicProvider {
       ..cover = songJson.getString('cover')
       ..description = songJson.getString('intro')
       ..lyricUrl = songJson.getString('lyric')
-      ..singer = singer;
+      ..singers = [singer];
   }
 
   @override
@@ -170,6 +171,9 @@ class BilibiliMusic extends BaseMusicProvider {
         '__refresh__=true&_extra=&context=&page=${page + 1}&page_size=42'
         '&platform=pc&highlight=1&single_column=0&keyword=$encodedKeyword'
         '&category_id=&search_type=video&dynamic_offset=0&preload=true&com2co=true';
+
+    await _setCookies();
+
     final httpResp = await httpMaker.get(targetUrl);
     if (httpResp.isEmpty) {
       return null;
@@ -185,13 +189,20 @@ class BilibiliMusic extends BaseMusicProvider {
       ..items = songs;
   }
 
+  Future<void> _setCookies() async {
+    final expire =
+        DateTime.now().millisecondsSinceEpoch + 100 * 365 * 24 * 60 * 60 * 1000;
+    await setCookie("https://api.bilibili.com", 'buvid3',
+        'C9D5473D-2C8C-4631-BA66-799D2DF851E5138376infoc', expire);
+  }
+
   Song _convertSong2(Map<String, dynamic> songJson) {
     final songPic = songJson.getString('pic');
     final songName = songJson.getString('title');
 
     final singer = Singer()
       ..plt = MusicPlatform.bilibili
-      ..pltId = songJson.getString('mid')
+      ..pltId = "BV" + songJson.getString('mid')
       ..name = songJson.getString('author')
       ..avatar = songJson.getString('upic');
 
@@ -204,7 +215,7 @@ class BilibiliMusic extends BaseMusicProvider {
       ..cover = songPic.startsWith("//") ? "https:$songPic" : songPic
       ..description = songJson.getString('description')
       ..isPlayable = songJson.getInt('is_pay') == 0
-      ..singer = singer;
+      ..singers = [singer];
   }
 
   @override
@@ -251,9 +262,85 @@ class BilibiliMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<Singer?> singer(String artistId, MusicObjectType type,
-      {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
-    return null;
+  Future<Singer?> singer(String singerId) async {
+    final isBvUser = singerId.startsWith('BV');
+    final upId = isBvUser ? singerId.substring(3) : singerId;
+    final targetUrl =
+        'https://api.bilibili.com/x/space/acc/info?mid=$upId&jsonp=json';
+    await _setCookies();
+    final httpResp = await httpMaker.get(targetUrl);
+    final respJson = jsonDecode(httpResp) as Map<String, dynamic>;
+    final dataJson = respJson.getMap("data");
+    return Singer()
+      ..plt = MusicPlatform.bilibili
+      ..pltId = dataJson.getString('mid')
+      ..name = dataJson.getString('name')
+      ..avatar = dataJson.getString('face')
+      ..introduction = dataJson.getString('sign');
+  }
+
+  @override
+  Future<Singer?> singerAlbums(String singerId,
+      {int offset = 0, int count = DEFAULT_REQUEST_SINGER_ALBUMS_COUNT}) async {
+    return Singer()
+      ..plt = MusicPlatform.bilibili
+      ..pltId = singerId;
+  }
+
+  @override
+  Future<Singer?> singerSongs(String singerId,
+      {int offset = 0, int count = DEFAULT_REQUEST_SINGER_SONGS_COUNT}) async {
+    final uploader = await singer(singerId);
+    if (uploader == null) {
+      return null;
+    }
+    final songs =
+        await _parseUploaderSongs(singerId, offset: offset, count: count);
+    return uploader..songs = songs ?? List.empty();
+  }
+
+  Future<List<Song>?> _parseUploaderSongs(String singerId,
+      {int offset = 0, int count = DEFAULT_REQUEST_SINGER_SONGS_COUNT}) async {
+    final isBvUser = singerId.startsWith('BV');
+    final upId = isBvUser ? singerId.substring(3) : singerId;
+    if (isBvUser) {
+      return _uploaderVideos(upId, offset: offset, count: count);
+    } else {
+      return _uploaderSongs(upId, offset: offset, count: count);
+    }
+  }
+
+  Future<List<Song>?> _uploaderSongs(String upId,
+      {int offset = 0, int count = DEFAULT_REQUEST_SINGER_SONGS_COUNT}) async {
+    final page = (offset / count).ceil() + 1;
+    final targetUrl =
+        'https://api.bilibili.com/audio/music-service-c/web/song/upper?pn=$page&ps=$count&order=2&uid=$upId';
+    await _setCookies();
+    final httpResp = await httpMaker.get(targetUrl);
+    if (httpResp.isEmpty) {
+      return null;
+    }
+    final respJson = jsonDecode(httpResp) as Map<String, dynamic>;
+    final dataJson = respJson.getMap('data');
+    final dataDataJson = dataJson.getList('data');
+    return dataDataJson.map((e) => _convertSong(e)).toList();
+  }
+
+  Future<List<Song>?> _uploaderVideos(String upId,
+      {int offset = 0, int count = DEFAULT_REQUEST_SINGER_SONGS_COUNT}) async {
+    final page = (offset / count).ceil() + 1;
+    final targetUrl =
+        'https://api.bilibili.com/x/space/arc/search?mid=$upId&pn=$page&ps=$count&order=click&index=1&jsonp=json';
+    await _setCookies();
+    final httpResp = await httpMaker.get(targetUrl);
+    if (httpResp.isEmpty) {
+      return null;
+    }
+    final respJson = jsonDecode(httpResp) as Map<String, dynamic>;
+    final dataJson = respJson.getMap('data');
+    final listJson = dataJson.getMap('list');
+    final vlistJson = listJson.getList('vlist');
+    return vlistJson.map((e) => _convertSong2(e)).toList();
   }
 
   @override

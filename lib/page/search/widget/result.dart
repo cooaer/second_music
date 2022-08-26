@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:second_music/entity/enum.dart';
-import 'package:second_music/page/search/widget/tab.dart';
+import 'package:second_music/page/search/widget/obj_tab.dart';
 import 'package:second_music/res/res.dart';
 
 class SearchResultWidget extends StatelessWidget {

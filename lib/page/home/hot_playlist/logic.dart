@@ -4,7 +4,7 @@ import 'package:second_music/entity/enum.dart';
 import 'package:second_music/entity/playlist_set.dart';
 import 'package:second_music/repository/remote/platform/music_provider.dart';
 
-class HotPlaylistModel {
+class HotPlaylistLogic {
   final MusicPlatform plt;
 
   MusicProvider _provider;
@@ -38,7 +38,7 @@ class HotPlaylistModel {
         return _lastError;
       });
 
-  HotPlaylistModel(this.plt) : _provider = MusicProvider(plt);
+  HotPlaylistLogic(this.plt) : _provider = MusicProvider(plt);
 
   Future<void> refresh() {
     return _request(true);

@@ -1,24 +1,23 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_extensions_methods/dart_extension_methods.dart';
 import 'package:flutter/material.dart';
-import 'package:palette_generator/palette_generator.dart';
 import 'package:second_music/entity/enum.dart';
 import 'package:second_music/entity/song_list.dart';
-import 'package:second_music/page/home/my_song_list/model.dart';
+import 'package:second_music/page/home/my_song_list/logic.dart';
 import 'package:second_music/repository/local/database/song/dao.dart';
 import 'package:second_music/repository/remote/platform/music_provider.dart';
 import 'package:second_music/service/music_service.dart';
+import 'package:second_music/util/ColorMeter.dart';
 
-class SongListModel {
+class SongListLogic {
   final String plt;
   final String songListId;
   final SongListType songListType;
 
   var _songDao = SongDao();
 
-  SongListModel(this.plt, this.songListId, this.songListType);
+  SongListLogic(this.plt, this.songListId, this.songListType);
 
   SongList? _songList;
 
@@ -91,27 +90,11 @@ class SongListModel {
 
   Stream<Color> get barColorStream => _barColorController.stream;
 
-  PaletteGenerator? _paletteGenerator;
+  ColorMeter _colorMeter = ColorMeter();
 
   void _generateBarColor(String coverUrl) async {
-    if (_paletteGenerator == null) {
-      _paletteGenerator = await PaletteGenerator.fromImageProvider(
-          CachedNetworkImageProvider(coverUrl),
-          size: Size(140, 140));
-    }
-    _barColor = _headerBackgroundColor();
+    _barColor = await _colorMeter.generateTopBarColor(coverUrl);
     _barColorController.add(_barColor);
-  }
-
-  Color _headerBackgroundColor() {
-    var defColor = Color(0xff8f8f8f);
-    if (_paletteGenerator == null) return defColor;
-    return _paletteGenerator?.dominantColor?.color ??
-        _paletteGenerator?.lightVibrantColor?.color ??
-        _paletteGenerator?.lightMutedColor?.color ??
-        _paletteGenerator?.darkVibrantColor?.color ??
-        _paletteGenerator?.darkMutedColor?.color ??
-        defColor;
   }
 
   ///播放全部歌曲

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:second_music/page/search/page.dart';
+import 'package:second_music/page/search/search_view.dart';
 import 'package:second_music/repository/local/preference/playing.dart';
 import 'package:second_music/res/res.dart';
 
 class SearchHistoryWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    var searchModel = SearchModelProvider.of(context).model;
+    var searchLogic = SearchLogicProvider.of(context).logic;
     return Container(
       padding: EdgeInsets.fromLTRB(15, 0, 15, 20),
       child: Column(
@@ -26,7 +26,7 @@ class SearchHistoryWidget extends StatelessWidget {
                     ),
                   )),
               InkWell(
-                onTap: searchModel.clearKeywords,
+                onTap: searchLogic.clearKeywords,
                 borderRadius: BorderRadius.circular(22),
                 child: Padding(
                   padding: EdgeInsets.all(10),
@@ -41,7 +41,7 @@ class SearchHistoryWidget extends StatelessWidget {
           ),
           StreamBuilder(
             initialData: PlayingStorage.instance.searchKeywords,
-            stream: searchModel.keywordHistoryStream,
+            stream: searchLogic.keywordHistoryStream,
             builder: (context, AsyncSnapshot<List<String>> snapshot) {
               return Wrap(
                 spacing: 10,
@@ -71,7 +71,7 @@ class SearchHistoryWidget extends StatelessWidget {
         onTap: () {
           //隐藏键盘
           FocusScope.of(context).requestFocus(FocusNode());
-          SearchModelProvider.of(context).model.setInputText(key);
+          SearchLogicProvider.of(context).logic.setInputText(key);
         },
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),

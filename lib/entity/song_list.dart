@@ -81,7 +81,7 @@ class SongList {
     description = album.description;
     playCount = album.playCount;
     favorCount = album.favorCount;
-    userPlt = album.singer?.pltId ?? "";
+    userPlt = album.singer?.plt.name ?? "";
     userId = album.singer?.pltId ?? "";
     userName = album.singer?.name ?? "";
     userAvatar = album.singer?.avatar ?? "";

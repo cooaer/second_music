@@ -20,11 +20,18 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     ToastContext().init(context);
+    final navigatorPaddingBottom =
+        MediaQuery.of(context).padding.bottom + MiniPlayer.BAR_HEIGHT;
     return Material(
       child: Stack(
         alignment: AlignmentDirectional.bottomCenter,
         children: <Widget>[
-          _NavigatorContainer(),
+          Padding(
+            padding: EdgeInsets.only(
+              bottom: navigatorPaddingBottom,
+            ),
+            child: _NavigatorContainer(),
+          ),
           MiniPlayer(),
         ],
       ),
@@ -61,18 +68,13 @@ class _NavigatorContainer extends StatelessWidget {
 class _HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: <Widget>[
-          SafeArea(
-            child: Container(
-              padding: EdgeInsets.only(top: 50, bottom: 48),
-              child: _HomeTabs(),
-            ),
-          ),
-          _HomeTopBar(),
-        ],
-      ),
+    return Column(
+      children: <Widget>[
+        _HomeTopBar(),
+        Expanded(
+          child: _HomeTabBarAndView(),
+        ),
+      ],
     );
   }
 }
@@ -81,99 +83,103 @@ class _HomeTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        decoration: BoxDecoration(color: Colors.white, boxShadow: [
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.3),
             spreadRadius: 2,
             blurRadius: 2,
           )
-        ]),
-        child: SafeArea(
-            bottom: false,
-            left: false,
-            right: false,
-            child: Container(
-                height: 50,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        stringsOf(context).appNameForShort,
-                        style: TextStyle(
-                          fontSize: 28,
-                          color: AppColors.textTitle,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: SizedBox(
-                        height: 32,
-                        child: Material(
-                          child: Ink(
-                            decoration: BoxDecoration(
-                                color: AppColors.searchBg,
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(16))),
-                            child: InkWell(
-                              customBorder: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16)),
-                              onTap: () {
-                                AppNavigator.instance
-                                    .navigateTo(context, AppNavigator.search);
-                              },
-                              child: Row(
-                                children: <Widget>[
-                                  Padding(
-                                    padding:
-                                        EdgeInsets.only(left: 10, right: 6),
-                                    child: Icon(
-                                      Icons.search_rounded,
-                                      color: AppColors.tintRounded,
-                                      size: 20,
-                                    ),
-                                  ),
-                                  Text(
-                                    stringsOf(context).mainSearchHint,
-                                    style: TextStyle(
-                                      color: AppColors.textLight,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        left: false,
+        right: false,
+        child: Container(
+          height: 50,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  stringsOf(context).appNameForShort,
+                  style: TextStyle(
+                    fontSize: 28,
+                    color: AppColors.textTitle,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: SizedBox(
+                  height: 32,
+                  child: Material(
+                    child: Ink(
+                      decoration: BoxDecoration(
+                          color: AppColors.searchBg,
+                          borderRadius: BorderRadius.all(Radius.circular(16))),
+                      child: InkWell(
+                        customBorder: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
+                        onTap: () {
+                          AppNavigator()
+                              .navigateTo(context, AppNavigator.search);
+                        },
+                        child: Row(
+                          children: <Widget>[
+                            Padding(
+                              padding: EdgeInsets.only(left: 10, right: 6),
+                              child: Icon(
+                                Icons.search_rounded,
+                                color: AppColors.tintRounded,
+                                size: 20,
                               ),
                             ),
-                          ),
+                            Text(
+                              stringsOf(context).mainSearchHint,
+                              style: TextStyle(
+                                color: AppColors.textLight,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    Material(
-                      child: Container(
-                        alignment: Alignment.center,
-                        width: 48,
-                        height: 48,
-                        child: IconButton(
-                          padding: EdgeInsets.all(0),
-                          splashRadius: 24,
-                          onPressed: () => AppNavigator.instance.navigateTo(
-                              context, AppNavigator.setting,
-                              overlay: true),
-                          icon: Icon(
-                            Icons.settings_outlined,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ),
+                  ),
+                ),
+              ),
+              Material(
+                child: Container(
+                  alignment: Alignment.center,
+                  width: 48,
+                  height: 48,
+                  child: IconButton(
+                    padding: EdgeInsets.all(0),
+                    splashRadius: 24,
+                    onPressed: () => AppNavigator().navigateTo(
+                        context, AppNavigator.setting,
+                        overlay: true),
+                    icon: Icon(
+                      Icons.settings_outlined,
+                      color: Colors.grey.shade600,
                     ),
-                  ],
-                ))));
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
-class _HomeTabs extends StatelessWidget {
+class _HomeTabBarAndView extends StatelessWidget {
   static List<MusicPlatform> tabPlts = List.of(MusicPlatform.values);
 
   @override

@@ -17,6 +17,8 @@ import 'package:second_music/repository/remote/platform/qq_music.dart';
 typedef void Completion<T>(int code, String msg, T data);
 
 const int DEFAULT_REQUEST_COUNT = 30;
+const int DEFAULT_REQUEST_SINGER_SONGS_COUNT = 50;
+const int DEFAULT_REQUEST_SINGER_ALBUMS_COUNT = 50;
 
 abstract class MusicProvider {
   static final _instances = <MusicPlatform, MusicProvider>{};
@@ -52,9 +54,16 @@ abstract class MusicProvider {
   ///获取歌单的详情
   Future<Playlist?> playlist(String playlistId);
 
-  ///获取歌手详情，包含歌曲和专辑
-  Future<Singer?> singer(String artistId, MusicObjectType type,
-      {int offset = 0, int count = DEFAULT_REQUEST_COUNT});
+  ///获取歌手详情
+  Future<Singer?> singer(String singerId);
+
+  //获取歌手相关的歌曲
+  Future<Singer?> singerSongs(String singerId,
+      {int offset = 0, int count = DEFAULT_REQUEST_SINGER_SONGS_COUNT});
+
+  //获取歌手相关的专辑
+  Future<Singer?> singerAlbums(String singerId,
+      {int offset = 0, int count = DEFAULT_REQUEST_SINGER_ALBUMS_COUNT});
 
   ///获取专辑详情，包含所有歌曲
   Future<Album?> album(String albumId);

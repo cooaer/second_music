@@ -177,8 +177,7 @@ class QQMusic extends BaseMusicProvider {
     final dataJson = Json.getMap(jsonMap, 'data');
     final listJson = Json.getList(dataJson, 'list');
 
-    final songs =
-        await Future.wait(listJson.map((item) => _convertSong2(item)));
+    final songs = listJson.map((item) => _convertSong2(item)).toList();
     // await _parseSoundUrl(songs);
 
     final singer = Singer()
@@ -190,7 +189,8 @@ class QQMusic extends BaseMusicProvider {
       ..plt = MusicPlatform.qq
       ..pltId = Json.getString(dataJson, 'mid')
       ..name = Json.getString(dataJson, 'name')
-      ..cover = _getImageUrl(Json.getString(dataJson, 'mid'), 'album')
+      ..cover =
+          _getImageUrl(Json.getString(dataJson, 'mid'), MusicObjectType.album)
       ..releaseTime = Json.getString(dataJson, 'aDate')
       ..description = Json.getString(dataJson, 'desc')
       ..singers = [singer]
@@ -201,9 +201,94 @@ class QQMusic extends BaseMusicProvider {
   }
 
   @override
-  Future<Singer?> singer(String artistId, MusicObjectType type,
-      {int offset = 0, int count = DEFAULT_REQUEST_COUNT}) async {
+  Future<Singer?> singer(String singerId) async {
     return null;
+  }
+
+  @override
+  Future<Singer?> singerAlbums(String singerId,
+      {int offset = 0, int count = DEFAULT_REQUEST_SINGER_ALBUMS_COUNT}) async {
+    final singerJson = await _singerItems(singerId, MusicObjectType.album,
+        offset: offset, count: count);
+    final dataJson = singerJson.getMap('data');
+
+    final albumsJson = dataJson.getList('list');
+    final albums = albumsJson.map((e) => _convertAlbum3(e)).toList();
+
+    return Singer()
+      ..plt = MusicPlatform.qq
+      ..pltId = dataJson.getString('singer_mid')
+      ..name = dataJson.getString('singer_name')
+      ..avatar = _getImageUrl(singerId, MusicObjectType.singer)
+      ..albumTotal = dataJson.getInt('total')
+      ..albums = albums;
+  }
+
+  @override
+  Future<Singer?> singerSongs(String singerId,
+      {int offset = 0, int count = DEFAULT_REQUEST_SINGER_SONGS_COUNT}) async {
+    final singerJson = await _singerItems(singerId, MusicObjectType.song,
+        offset: offset, count: count);
+
+    final dataJson = singerJson.getMap('data');
+
+    final songsJson = dataJson.getList('songlist');
+    final songs = songsJson.map((e) => _convertSong(e)).toList();
+
+    final singerInfoJson = dataJson.getMap('singer_info');
+    return Singer()
+      ..plt = MusicPlatform.qq
+      ..pltId = singerInfoJson.getString('mid')
+      ..name = singerInfoJson.getString('name')
+      ..avatar = _getImageUrl(singerId, MusicObjectType.singer)
+      ..introduction = dataJson.getString('singer_brief')
+      ..albumTotal = dataJson.getInt('total_album')
+      ..songTotal = dataJson.getInt('total_song')
+      ..songs = songs;
+  }
+
+  Future<Map<String, dynamic>> _singerItems(
+      String singerId, MusicObjectType type,
+      {int offset = 0, int count = DEFAULT_REQUEST_SINGER_SONGS_COUNT}) async {
+    var dataMethod = '';
+    switch (type) {
+      case MusicObjectType.song:
+        dataMethod = 'get_singer_detail_info';
+        break;
+      case MusicObjectType.album:
+        dataMethod = 'get_singer_album';
+        break;
+      default:
+        break;
+    }
+    final dataParams = {
+      'comm': {
+        'ct': 24,
+        'cv': 0,
+      },
+      'singer': {
+        'method': dataMethod,
+        'param': {
+          'sort': 5,
+          'order': 'time',
+          'singermid': singerId,
+          'begin': offset,
+          'num': count,
+          'exstatus': 1,
+        },
+        'module': 'music.web_singer_info_svr',
+      },
+    };
+    final data = jsonEncode(dataParams);
+    final targetUrl =
+        'https://u.y.qq.com/cgi-bin/musicu.fcg?format=json&loginUin=0'
+        '&hostUin=0inCharset=utf8&outCharset=utf-8&platform=yqq.json'
+        '&needNewCode=0&data=$data';
+    final httpResp = await httpMaker.get(targetUrl);
+
+    final respJson = jsonDecode(httpResp) as Map<String, dynamic>;
+    final singerJson = respJson.getMap('singer');
+    return singerJson;
   }
 
   @override
@@ -214,19 +299,17 @@ class QQMusic extends BaseMusicProvider {
     //     '&loginUin=1064549797hostUin=0&format=json&inCharset=utf8&outCharset=utf-8&notice=0&'
     //     'platform=yqq.json&needNewCode=0';
 
-    final targetUrl = 'http://i.y.qq.com/qzone-music/fcg-bin/fcg_ucc_getcdinfo_' +
-        'byids_cp.fcg?type=1&json=1&utf8=1&onlysong=0&jsonpCallback=' +
-        'jsonCallback&nosign=1&disstid=$listId&g_tk=5381&loginUin=0&hostUin=0' +
-        '&format=jsonp&inCharset=GB2312&outCharset=utf-8&notice=0' +
-        '&platform=yqq&jsonpCallback=jsonCallback&needNewCode=0';
+    final targetUrl =
+        'http://i.y.qq.com/qzone-music/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg?' +
+            'type=1&json=1&utf8=1&onlysong=0&nosign=1&disstid=$listId' +
+            '&g_tk=5381&loginUin=0&hostUin=0&format=json&inCharset=GB2312' +
+            '&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0';
 
     String response = await httpMaker.get(targetUrl);
     if (response.isEmpty) {
       return null;
     }
-    final jsonString =
-        response.substring('jsonCallback('.length, response.lastIndexOf(')'));
-    Map<String, dynamic> data = json.decode(jsonString);
+    Map<String, dynamic> data = json.decode(response);
     Map<String, dynamic> dataCdlist0 = Json.getList(data, 'cdlist').first;
 
     final creator = User();
@@ -235,12 +318,9 @@ class QQMusic extends BaseMusicProvider {
     creator.name =
         App.htmlUnescape.convert(Json.getString(dataCdlist0, 'nick'));
     creator.avatar = Json.getString(dataCdlist0, 'headurl');
-    creator.source =
-        'https://y.qq.com/portal/profile.html?uin=${creator.pltId}';
 
     final listJson = Json.getList(dataCdlist0, 'songlist');
-    final songList = await Future.wait(listJson.map((e) => _convertSong2(e)));
-    // await _parseSoundUrl(songList);
+    final songList = listJson.map((e) => _convertSong2(e)).toList();
 
     final playlist = Playlist();
     playlist.pltId = listId;
@@ -249,7 +329,6 @@ class QQMusic extends BaseMusicProvider {
         App.htmlUnescape.convert(Json.getString(dataCdlist0, 'dissname'));
     playlist.cover = Json.getString(dataCdlist0, 'logo');
     playlist.description = Json.getString(dataCdlist0, 'desc');
-    playlist.source = 'https://y.qq.com/n/yqq/playlist/$listId.html';
     playlist.playCount = Json.getInt(dataCdlist0, 'visitnum');
     playlist.creator = creator;
 
@@ -268,6 +347,9 @@ class QQMusic extends BaseMusicProvider {
     final url = 'https://c.y.qq.com/soso/fcgi-bin/client_music_search_songlist?'
         'page_no=$page&query=$enKeyword&format=json&outCharset=utf-8&inCharset=utf-8&'
         'num_per_page=$count&searchid=$searchId&remoteplace=txt.mac.search';
+
+    debugPrint(
+        'qq.searchPlaylist, keyword = $keyword, page = $page, count = $count');
 
     final String response = await httpMaker.get(url);
 
@@ -311,7 +393,7 @@ class QQMusic extends BaseMusicProvider {
   @override
   Future<SearchResult?> searchSinger(String keyword,
       {int page = 0, int count = DEFAULT_REQUEST_COUNT}) {
-    return _searchCpInternal(keyword, 1, 1, page: page, count: count);
+    return _searchCpInternal(keyword, 0, 1, page: page, count: count);
   }
 
   /// 搜索歌曲、专辑、歌手，
@@ -327,6 +409,9 @@ class QQMusic extends BaseMusicProvider {
         '&platform=h5&needNewCode=1&w=$enKeyword&zhidaqu=1&catZhida=$catZhida&t=$type&flag=1'
         '&ie=utf-8&sem=1&aggr=0&perpage=$count&n=$count&p=$page&remoteplace=txt.mqq.all'
         '&_=1520833663464';
+
+    debugPrint(
+        'qq.search, type = $type, keyword = $keyword, page = $page, count = $count');
 
     final response = await httpMaker.get(targetUrl);
 
@@ -349,11 +434,14 @@ class QQMusic extends BaseMusicProvider {
       }
     }
 
+    if (catZhida == 1) {
+      return null;
+    }
+
     if (dataJson.containsKey('song')) {
       final songJson = Json.getMap(dataJson, 'song');
       final listJson = Json.getList(songJson, 'list');
-      final songs = await Future.wait(listJson.map((e) => _convertSong2(e)));
-      // await _parseSoundUrl(songs);
+      final songs = listJson.map((e) => _convertSong2(e)).toList();
 
       result.total = Json.getInt(songJson, 'totalnum');
       result.items = songs;
@@ -391,7 +479,7 @@ class QQMusic extends BaseMusicProvider {
   @override
   MusicPlatform get platform => MusicPlatform.qq;
 
-  Future<Song> _convertSong(Map<String, dynamic> songJson) async {
+  Song _convertSong(Map<String, dynamic> songJson) {
     // debugPrint("qq.convertSong, json = $songJson");
     final singerListJson = Json.getList(songJson, 'singer');
     final singerList = singerListJson.map((item) {
@@ -414,17 +502,14 @@ class QQMusic extends BaseMusicProvider {
       ..pltId = Json.getString(songJson, 'mid')
       ..name = Json.getString(songJson, 'name')
       ..subtitle = Json.getString(songJson, 'subtitle')
-      ..cover = _getImageUrl(album.pltId, 'album')
+      ..cover = _getImageUrl(album.pltId, MusicObjectType.album)
       ..singers = singerList
       ..album = album;
-
-    // await parseTrack(song);
 
     return song;
   }
 
-  Future<Song> _convertSong2(Map<String, dynamic> songJson) async {
-    // debugPrint("qq.convertSong2, json = $songJson");
+  Song _convertSong2(Map<String, dynamic> songJson) {
     final singerListJson = Json.getList(songJson, 'singer');
     final singerList = singerListJson.map((item) {
       final singer = Singer()
@@ -434,9 +519,10 @@ class QQMusic extends BaseMusicProvider {
       return singer;
     }).toList();
 
+    final albumId = Json.getString(songJson, 'albummid');
     final album = Album()
       ..plt = MusicPlatform.qq
-      ..pltId = Json.getString(songJson, 'albummid')
+      ..pltId = albumId
       ..name = Json.getString(songJson, 'albumname');
 
     final song = Song()
@@ -444,12 +530,10 @@ class QQMusic extends BaseMusicProvider {
       ..pltId = Json.getString(songJson, 'songmid')
       ..name = Json.getString(songJson, 'songname')
       ..subtitle = Json.getString(songJson, 'lyric')
-      ..cover = _getImageUrl(album.pltId, 'album')
+      ..cover = _getImageUrl(albumId, MusicObjectType.album)
       ..isPlayable = _isQQSongPlayable(Json.getInt(songJson, "switch"))
       ..singers = singerList
       ..album = album;
-
-    // await parseTrack(song);
 
     return song;
   }
@@ -480,13 +564,28 @@ class QQMusic extends BaseMusicProvider {
       ..pltId = Json.getString(json, 'singerMID')
       ..name = Json.getString(json, 'singerName');
 
+    final albumId = Json.getString(json, 'albumMID');
     return Album()
       ..plt = MusicPlatform.qq
-      ..pltId = Json.getString(json, 'albumMID')
+      ..pltId = albumId
       ..name = Json.getString(json, 'albumName')
-      ..cover = Json.getString(json, 'albumPic')
+      ..cover = _getImageUrl(albumId, MusicObjectType.album)
       ..releaseTime = Json.getString(json, 'publicTime')
-      ..singer = singer;
+      ..singers = [singer];
+  }
+
+  Album _convertAlbum3(Map<String, dynamic> json) {
+    final singersJson = json.getList('singers');
+    final singers = singersJson.map((e) => _convertSinger3(e)).toList();
+    final albumId = Json.getString(json, 'album_mid');
+    return Album()
+      ..plt = MusicPlatform.qq
+      ..pltId = albumId
+      ..name = Json.getString(json, 'album_name')
+      ..cover = _getImageUrl(albumId, MusicObjectType.album)
+      ..description = Json.getString(json, 'desc')
+      ..releaseTime = Json.getString(json, 'pub_time')
+      ..singers = singers;
   }
 
   Singer _convertSinger(Map<String, dynamic> json) {
@@ -518,19 +617,28 @@ class QQMusic extends BaseMusicProvider {
   }
 
   Singer _convertSinger2(Map<String, dynamic> json) {
+    final singerId = Json.getString(json, 'singermid');
     return Singer()
       ..plt = platform
-      ..pltId = Json.getString(json, 'singermid')
+      ..pltId = singerId
       ..name = Json.getString(json, 'singername')
+      ..avatar = _getImageUrl(singerId, MusicObjectType.singer)
       ..songTotal = Json.getInt(json, 'songnum');
+  }
+
+  Singer _convertSinger3(Map<String, dynamic> json) {
+    final singerId = Json.getString(json, 'singer_mid');
+    return Singer()
+      ..plt = platform
+      ..pltId = singerId
+      ..name = Json.getString(json, 'singer_name')
+      ..avatar = _getImageUrl(singerId, MusicObjectType.singer);
   }
 
   Playlist _convertPlaylist(Map<String, dynamic> json) {
     final creatorJson = Json.getMap(json, 'creator');
     final creator = User()
       ..plt = MusicPlatform.qq
-      ..source =
-          'https://y.qq.com/portal/profile.html?uin=${Json.getString(creatorJson, 'encrypt_uin')}'
       ..pltId = Json.getString(creatorJson, 'encrypt_uin')
       ..name = App.htmlUnescape.convert(Json.getString(creatorJson, 'name'))
       ..avatar = Json.getString(creatorJson, 'avatarUrl');
@@ -546,16 +654,16 @@ class QQMusic extends BaseMusicProvider {
       ..songTotal = Json.getInt(json, 'song_count');
   }
 
-  String _getImageUrl(String imageId, String imageType) {
+  String _getImageUrl(String imageId, MusicObjectType imageType) {
     if (imageId.isEmpty) {
       return '';
     }
     var category = '';
-    if (imageType == 'artist') {
-      category = 'mid_singer_300';
+    if (imageType == MusicObjectType.singer) {
+      category = 'mid_singer_500';
     }
-    if (imageType == 'album') {
-      category = 'mid_album_300';
+    if (imageType == MusicObjectType.album) {
+      category = 'mid_album_500';
     }
 
     final params =

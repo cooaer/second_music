@@ -323,27 +323,27 @@ class _FavorIcon extends StatefulWidget {
 }
 
 class _FavorIconState extends State<_FavorIcon> {
-  SongModel? _songModel;
+  SongLogic? _songLogic;
 
   @override
   void initState() {
     super.initState();
     if (widget.currentSong != null) {
-      _songModel = SongModel(widget.currentSong!);
+      _songLogic = SongLogic(widget.currentSong!);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_songModel == null) {
+    if (_songLogic == null) {
       return _buildFavorIcon(context, null, false);
     } else {
       return StreamBuilder(
         initialData: false,
-        stream: _songModel!.isFavoriteStream,
+        stream: _songLogic!.isFavoriteStream,
         builder: (context, AsyncSnapshot<bool> snapshot) {
           return _buildFavorIcon(
-              context, _songModel!.toggleFavorite, snapshot.data!);
+              context, _songLogic!.toggleFavorite, snapshot.data!);
         },
       );
     }
@@ -369,7 +369,7 @@ class _FavorIconState extends State<_FavorIcon> {
   @override
   void dispose() {
     super.dispose();
-    _songModel?.dispose();
+    _songLogic?.dispose();
   }
 }
 

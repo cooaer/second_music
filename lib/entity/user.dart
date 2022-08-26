@@ -8,7 +8,6 @@ class User {
 
   String avatar = "";
   String description = "";
-  String source = "";
 
   //创建的歌单
   PlaylistSet? createPlaylist;

@@ -1,6 +1,6 @@
 //搜索结果
 class SearchResult {
-  int page = 0;
+  int page = -1;
   bool hasError = false;
 
   int total = 0;
@@ -8,5 +8,5 @@ class SearchResult {
 
   bool get hasMore => total > items.length;
 
-  int get nextPage => hasError ? page : page + 1;
+  int get nextPage => page + 1;
 }

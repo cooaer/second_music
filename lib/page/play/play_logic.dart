@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:second_music/entity/song.dart';
 import 'package:second_music/entity/song_list.dart';
-import 'package:second_music/page/home/my_song_list/model.dart';
+import 'package:second_music/page/home/my_song_list/logic.dart';
 import 'package:second_music/repository/local/database/song/dao.dart';
 import 'package:second_music/service/music_service.dart';
 import 'package:second_music/widget/infinite_page_view.dart';
@@ -84,12 +84,12 @@ class PlaySongListLogic extends GetxController {
   void onClose() {}
 }
 
-class SongModel {
+class SongLogic {
   final Song song;
 
   final _songDao = SongDao();
 
-  SongModel(this.song) {
+  SongLogic(this.song) {
     refresh();
   }
 

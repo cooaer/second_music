@@ -54,8 +54,6 @@ dependencies:
     path: ../../github/just_audio/just_audio
   just_audio_background:
     path: ../../github/just_audio/just_audio_background
-  just_audio_platform_interface:
-    path: ../../github/just_audio/just_audio_platform_interface
 
   drift: ^1.7.1
   sqlite3_flutter_libs: ^0.5.0
