@@ -55,13 +55,21 @@ class NeteaseMusic extends BaseMusicProvider {
       return null;
     }
 
-    final respMap = json.decode(respStr);
+    final respMap = _jsonDecode(respStr);
+
+    if (respMap == null) {
+      return null;
+    }
 
     final playlistMap = Json.getMap(respMap, 'playlist');
     final trackIds = Json.getList(playlistMap, 'trackIds')
         .map((e) => Json.getObject(e, 'id'))
         .toList();
     final songs = await _parseSongListTracks(trackIds);
+
+    if (songs == null) {
+      return null;
+    }
 
     final playlist = _convertPlaylistWithoutSongs(playlistMap);
     playlist.songTotal = songs.length;
@@ -117,8 +125,11 @@ class NeteaseMusic extends BaseMusicProvider {
     if (respStr.isEmpty) {
       return null;
     }
-    final respMap = json.decode(respStr);
+    final respMap = _jsonDecode(respStr);
 
+    if (respMap == null) {
+      return null;
+    }
     return _convertAlbum(Json.getMap(respMap, 'album'));
   }
 
@@ -162,7 +173,10 @@ class NeteaseMusic extends BaseMusicProvider {
     if (httpResp.isEmpty) {
       return null;
     }
-    final respMap = json.decode(httpResp);
+    final respMap = _jsonDecode(httpResp);
+    if (respMap == null) {
+      return null;
+    }
     final resultMap = Json.getMap(respMap, 'result');
     return _convertSearchResult(resultMap);
   }
@@ -185,7 +199,10 @@ class NeteaseMusic extends BaseMusicProvider {
     if (respStr.isEmpty) {
       return null;
     }
-    final respMap = json.decode(respStr);
+    final respMap = _jsonDecode(respStr);
+    if (respMap == null) {
+      return null;
+    }
     final resultMap = Json.getMap(respMap, 'result');
     return _convertSearchResult(resultMap);
   }
@@ -206,7 +223,10 @@ class NeteaseMusic extends BaseMusicProvider {
     };
 
     final respStr = await _eapiRequest(targetUrl, eapiUrl, params);
-    final respMap = json.decode(respStr);
+    final respMap = _jsonDecode(respStr);
+    if (respMap == null) {
+      return false;
+    }
     final dataList = Json.getList(respMap, 'data');
     final firstTrackMap = dataList.isNotEmpty ? dataList[0] : null;
     song.soundUrl = Json.getString(firstTrackMap, 'url');
@@ -226,7 +246,10 @@ class NeteaseMusic extends BaseMusicProvider {
     if (respStr.isEmpty) {
       return false;
     }
-    final respMap = json.decode(respStr);
+    final respMap = _jsonDecode(respStr);
+    if (respMap == null) {
+      return false;
+    }
     final dataList = Json.getList(respMap, 'data');
     final firstTrackMap = dataList.isNotEmpty ? dataList[0] : null;
     song.soundUrl = Json.getString(firstTrackMap, 'url');
@@ -290,7 +313,7 @@ class NeteaseMusic extends BaseMusicProvider {
     await setCookie('https://music.163.com', "os", "pc", expire);
   }
 
-  Future<List<Song>> _parseSongListTracks(List trackIds) async {
+  Future<List<Song>?> _parseSongListTracks(List trackIds) async {
     const url = 'https://music.163.com/weapi/v3/song/detail';
     final params = {
       'c': '[' + trackIds.map((e) => '{"id":$e}').toList().join(',') + ']',
@@ -300,9 +323,21 @@ class NeteaseMusic extends BaseMusicProvider {
     if (respStr.isEmpty) {
       return List.empty();
     }
-    final respMap = json.decode(respStr);
+    final respMap = _jsonDecode(respStr);
+    if (respMap == null) {
+      return null;
+    }
     List songsMap = respMap['songs'];
     return songsMap.map((e) => _convertSong(e)).toList();
+  }
+
+  Map<String, dynamic>? _jsonDecode(String str) {
+    try {
+      return json.decode(str);
+    } on FormatException catch (e) {
+      debugPrint(e.toString());
+    }
+    return null;
   }
 
   Playlist _convertPlaylistWithoutSongs(Map<String, dynamic> map) {
