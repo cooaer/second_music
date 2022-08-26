@@ -11,6 +11,7 @@ import 'package:second_music/page/navigator.dart';
 import 'package:second_music/page/song_list/logic.dart';
 import 'package:second_music/page/song_list/widget.dart';
 import 'package:second_music/res/res.dart';
+import 'package:second_music/widget/loading_more.dart';
 import 'package:toast/toast.dart';
 
 class SongListPage extends StatefulWidget {
@@ -106,6 +107,15 @@ class _SongListPageState extends State<SongListPage> {
           delegate: _ControlBarDelegate(songList),
           pinned: true,
         ),
+        _buildLoadingMore(context, songList),
+        if (songList != null && songList.songs.isEmpty)
+          SliverToBoxAdapter(
+            child: Container(
+              height: 100,
+              alignment: Alignment.center,
+              child: Text(stringsOf(context).nullData),
+            ),
+          ),
         if (songList != null && songList.songs.isNotEmpty)
           SliverList(
             delegate: SliverChildBuilderDelegate(
@@ -126,6 +136,26 @@ class _SongListPageState extends State<SongListPage> {
   void dispose() {
     super.dispose();
     _logic.dispose();
+  }
+
+  Widget _buildLoadingMore(BuildContext context, SongList? songList) {
+    final hasError = songList == null;
+    return SliverToBoxAdapter(
+      child: StreamBuilder<bool>(
+        stream: _logic.loadingStream,
+        initialData: _logic.loading,
+        builder: (context, snapshot) {
+          final isLoading = snapshot.data!;
+          if (hasError || isLoading) {
+            return LoadingMore(isLoading, hasError, () {
+              _logic.refresh();
+            });
+          } else {
+            return Container();
+          }
+        },
+      ),
+    );
   }
 }
 

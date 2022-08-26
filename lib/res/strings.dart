@@ -265,6 +265,8 @@ class AppLocalizations {
 
   String get nullText => '无';
 
+  String get nullData => '无数据';
+
   // 歌曲菜单
   String get playNext => '下一首播放';
 

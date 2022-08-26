@@ -22,7 +22,8 @@ class LoadingMore extends StatelessWidget {
     if (!loading && lastError) {
       return SizedBox.expand(
         child: InkWell(
-            onTap: onPressed,
+          onTap: onPressed,
+          child: Center(
             child: Text(
               stringsOf(context).loadErrorAndRetry,
               style: TextStyle(
@@ -30,7 +31,9 @@ class LoadingMore extends StatelessWidget {
                 fontSize: 16,
                 fontWeight: FontWeight.normal,
               ),
-            )),
+            ),
+          ),
+        ),
       );
     } else {
       return Row(

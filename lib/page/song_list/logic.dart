@@ -26,7 +26,21 @@ class SongListLogic {
 
   Stream<SongList> get songListStream => _songListStreamController.stream;
 
+  bool _loading = false;
+
+  bool get loading => _loading;
+  final _loadingStreamController = StreamController<bool>.broadcast();
+
+  Stream<bool> get loadingStream => _loadingStreamController.stream;
+
+  void _updateLoading(bool loading) {
+    _loading = loading;
+    _loadingStreamController.add(loading);
+  }
+
   void refresh() async {
+    _updateLoading(true);
+
     SongList? songList =
         await _songDao.getSongList(plt, songListId, songListType);
     debugPrint(
@@ -47,6 +61,8 @@ class SongListLogic {
       _songList = songList;
       _songListStreamController.add(songList);
     }
+
+    _updateLoading(false);
 
     //更新AppBar颜色
     if (songList != null && songList.hasDisplayCover) {

@@ -226,7 +226,7 @@ class _SingerHotAlbumsState extends State<_SingerHotAlbums> {
     if (state.albums.isEmpty) {
       return Container(
         alignment: Alignment.center,
-        child: Text(stringsOf(context).nullText),
+        child: Text(stringsOf(context).nullData),
       );
     }
 
