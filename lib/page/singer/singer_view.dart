@@ -156,11 +156,29 @@ class _SingerHeader extends StatelessWidget {
   }
 }
 
-class _SingerHotSongs extends StatelessWidget {
+class _SingerHotSongs extends StatefulWidget {
   final SingerLogic logic;
   final SingerState state;
 
   _SingerHotSongs(this.logic, this.state, {Key? key}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() {
+    return _SingerHotSongsState();
+  }
+}
+
+class _SingerHotSongsState extends State<_SingerHotSongs>
+    with AutomaticKeepAliveClientMixin<_SingerHotSongs> {
+  late SingerLogic logic;
+  late SingerState state;
+
+  @override
+  void initState() {
+    super.initState();
+    logic = widget.logic;
+    state = widget.state;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -184,6 +202,9 @@ class _SingerHotSongs extends StatelessWidget {
           );
         });
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class _SingerHotAlbums extends StatefulWidget {
@@ -196,7 +217,8 @@ class _SingerHotAlbums extends StatefulWidget {
   State<StatefulWidget> createState() => _SingerHotAlbumsState();
 }
 
-class _SingerHotAlbumsState extends State<_SingerHotAlbums> {
+class _SingerHotAlbumsState extends State<_SingerHotAlbums>
+    with AutomaticKeepAliveClientMixin<_SingerHotAlbums> {
   static final int crossAxisCount = 3;
   late SingerLogic logic;
   late SingerState state;
@@ -255,6 +277,9 @@ class _SingerHotAlbumsState extends State<_SingerHotAlbums> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class HotAlbumItem extends StatelessWidget {
