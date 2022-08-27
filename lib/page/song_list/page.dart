@@ -12,8 +12,8 @@ import 'package:second_music/page/navigator.dart';
 import 'package:second_music/page/song_list/logic.dart';
 import 'package:second_music/page/song_list/widget.dart';
 import 'package:second_music/res/res.dart';
+import 'package:second_music/util/snack_bar.dart';
 import 'package:second_music/widget/loading_more.dart';
-import 'package:toast/toast.dart';
 
 class SongListPage extends StatefulWidget {
   final String plt;
@@ -86,7 +86,7 @@ class _SongListPageState extends State<SongListPage> {
           actions: <Widget>[
             IconButton(
               onPressed: () {
-                Toast.show(stringsOf(context).developing);
+                showSnackBar(context, stringsOf(context).developing);
               },
               padding: EdgeInsets.symmetric(horizontal: 10),
               icon: Icon(Icons.download_rounded),
@@ -516,7 +516,8 @@ class SongListItem extends StatelessWidget {
             AppNavigator().navigateTo(context, AppNavigator.play,
                 params: {'song': song}, overlay: true);
           } else {
-            Toast.show(stringsOf(context).playFailBecauseOfCopyright);
+            showSnackBar(
+                context, stringsOf(context).playFailBecauseOfCopyright);
           }
         },
         child: Row(

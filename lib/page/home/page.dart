@@ -7,7 +7,6 @@ import 'package:second_music/page/mini_player/mini_player_page.dart';
 import 'package:second_music/page/navigator.dart';
 import 'package:second_music/page/ui_style.dart';
 import 'package:second_music/res/res.dart';
-import 'package:toast/toast.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -19,7 +18,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    ToastContext().init(context);
     final navigatorPaddingBottom =
         MediaQuery.of(context).padding.bottom + MiniPlayer.BAR_HEIGHT;
     return Material(
