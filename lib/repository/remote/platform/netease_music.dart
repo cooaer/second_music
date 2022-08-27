@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
+import 'dart:math';
 
 import 'package:dart_extensions_methods/dart_extension_methods.dart';
-import 'package:flutter/foundation.dart';
-import 'package:html/dom.dart';
+import 'package:flutter/material.dart';
+import 'package:html/dom.dart' as html;
 import 'package:html/parser.dart' show parse;
 import 'package:netease_music_cipher/netease_music_cipher.dart';
 import 'package:second_music/common/date.dart';
@@ -40,7 +41,7 @@ class NeteaseMusic extends BaseMusicProvider {
 
   @override
   Future<Playlist?> playlist(String listId) async {
-    final url = "http://music.163.com/weapi/v3/playlist/detail";
+    final url = "https://music.163.com/weapi/v3/playlist/detail";
     final params = {
       'id': listId,
       'offset': 0,
@@ -49,6 +50,8 @@ class NeteaseMusic extends BaseMusicProvider {
       'n': 1000,
       'csrf_token': ''
     };
+
+    await ensureCookie();
 
     final respStr = await _weapiRequest(url, params);
     if (respStr.isEmpty) {
@@ -65,10 +68,19 @@ class NeteaseMusic extends BaseMusicProvider {
     final trackIds = Json.getList(playlistMap, 'trackIds')
         .map((e) => Json.getObject(e, 'id'))
         .toList();
-    final songs = await _parseSongListTracks(trackIds);
 
-    if (songs == null) {
-      return null;
+    final parseTracksFutures = <Future<List<Song>?>>[];
+    for (int i = 0; i < trackIds.length; i += 1000) {
+      final subTrackIds = trackIds.sublist(i, min(i + 1000, trackIds.length));
+      parseTracksFutures.add(_parseSongListTracks(subTrackIds));
+    }
+    final subLists = await Future.wait(parseTracksFutures);
+    final songs = <Song>[];
+    for (var subList in subLists) {
+      if (subList == null) {
+        return null;
+      }
+      songs.addAll(subList);
     }
 
     final playlist = _convertPlaylistWithoutSongs(playlistMap);
@@ -290,6 +302,7 @@ class NeteaseMusic extends BaseMusicProvider {
     final data = await NeteaseMusicCipher.encryptWeapi(json.encode(params));
     final body =
         'encSecKey=${Uri.encodeQueryComponent(data['encSecKey'])}&params=${Uri.encodeQueryComponent(data['params'])}';
+
     return await httpMaker.post(url, body, headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     });
@@ -321,7 +334,7 @@ class NeteaseMusic extends BaseMusicProvider {
     };
     final respStr = await _weapiRequest(url, params);
     if (respStr.isEmpty) {
-      return List.empty();
+      return null;
     }
     final respMap = _jsonDecode(respStr);
     if (respMap == null) {
@@ -471,6 +484,32 @@ class NeteaseMusic extends BaseMusicProvider {
   bool _isSongPlayable(int fee) {
     return fee != 4 && fee != 1;
   }
+
+  Future<void> ensureCookie() async {
+    const domain = 'https://music.163.com';
+    const nuidName = '_ntes_nuid';
+    const nnidName = '_ntes_nnid';
+    final uidCookie = await getCookie(domain, nuidName);
+    if (uidCookie != null) {
+      return;
+    }
+    final nuidValue = _createSecretKey(32);
+    final nnidValue = '$nuidValue,${DateTime.now().millisecondsSinceEpoch}';
+    final expire =
+        DateTime.now().millisecondsSinceEpoch + 100 * 365 * 24 * 60 * 60 * 1000;
+    await setCookie(domain, nuidName, nuidValue, expire);
+    await setCookie(domain, nnidName, nnidValue, expire);
+  }
+
+  String _createSecretKey(int size) {
+    final result = [];
+    final choices = '012345679abcdef'.split('');
+    for (var i = 0; i < size; i += 1) {
+      final index = Random().nextInt(15);
+      result.add(choices[index]);
+    }
+    return result.join('');
+  }
 }
 
 class _DataObjectTags {
@@ -529,9 +568,9 @@ void _parseHtmlEntryPoint(SendPort initSendPort) async {
   }
 }
 
-Map<String, dynamic> _syncParseDomToMapOfPlaylistSet(Document dom) {
+Map<String, dynamic> _syncParseDomToMapOfPlaylistSet(html.Document dom) {
   final playlists = <Map<String, dynamic>>[];
-  dom.querySelectorAll('.m-cvrlst li').forEach((Element ele) {
+  dom.querySelectorAll('.m-cvrlst li').forEach((html.Element ele) {
     final item = <String, dynamic>{};
     String? url = ele.querySelector('div a')?.attributes['href'] ?? "";
     item['id'] = Uri.parse(url).queryParameters['id'];

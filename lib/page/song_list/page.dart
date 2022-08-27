@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_extensions_methods/dart_extension_methods.dart';
 import 'package:flutter/material.dart';
@@ -524,11 +525,13 @@ class SongListItem extends StatelessWidget {
               width: 10,
             ),
             Container(
-              width: 25,
+              width: 30,
               alignment: Alignment.center,
-              child: Text(
+              child: AutoSizeText(
                 '${index + 1}',
                 textAlign: TextAlign.center,
+                minFontSize: 10,
+                maxLines: 1,
                 style: TextStyle(
                   fontSize: 14,
                   color: AppColors.textLight,

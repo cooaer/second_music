@@ -62,6 +62,7 @@ dependencies:
 
   toast: ^0.3.0
   get: ^4.6.5
+  auto_size_text: ^3.0.0
 
 dev_dependencies:
   flutter_test:
