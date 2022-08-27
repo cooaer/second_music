@@ -242,7 +242,9 @@ class _SingerHotAlbumsState extends State<_SingerHotAlbums>
     double itemHeight = itemWidth + 8 * 2 + 14 * 2 + 6;
 
     if (state.isLoadingAlbums) {
-      return LoadingMore(true, false, () {});
+      return Container(
+          alignment: Alignment.topCenter,
+          child: LoadingMore(true, false, () {}));
     }
 
     if (state.albums.isEmpty) {
@@ -290,6 +292,9 @@ class HotAlbumItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final defaultCoverWidget = Container(
+      color: AppColors.pageBackground,
+    );
     return InkWell(
       onTap: this.onPressed,
       borderRadius: BorderRadius.circular(5),
@@ -303,13 +308,15 @@ class HotAlbumItem extends StatelessWidget {
                 //封面
                 AspectRatio(
                   aspectRatio: 1,
-                  child: CachedNetworkImage(
-                    imageUrl: album.cover,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: AppColors.pageBackground,
-                    ),
-                  ),
+                  child: album.cover.isEmpty
+                      ? defaultCoverWidget
+                      : CachedNetworkImage(
+                          imageUrl: album.cover,
+                          fit: BoxFit.cover,
+                          errorWidget: (context, url, error) =>
+                              defaultCoverWidget,
+                          placeholder: (context, url) => defaultCoverWidget,
+                        ),
                 ),
                 //播放量
 

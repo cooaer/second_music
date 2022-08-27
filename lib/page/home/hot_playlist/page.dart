@@ -179,10 +179,14 @@ class HotPlaylistItem extends StatelessWidget {
                 //封面
                 AspectRatio(
                   aspectRatio: 1,
-                  child: CachedNetworkImage(
-                    imageUrl: playlist.cover,
-                    fit: BoxFit.cover,
-                  ),
+                  child: playlist.cover.isEmpty
+                      ? Container(
+                          color: AppColors.coverBg,
+                        )
+                      : CachedNetworkImage(
+                          imageUrl: playlist.cover,
+                          fit: BoxFit.cover,
+                        ),
                 ),
 
                 //播放量

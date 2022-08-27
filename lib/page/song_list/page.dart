@@ -181,6 +181,13 @@ class _SongListHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final defaultCoverWidget = Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+          color: AppColors.coverBg, borderRadius: BorderRadius.circular(16)),
+    );
+
     return Container(
       decoration: BoxDecoration(
         image: songList?.hasDisplayCover == true
@@ -283,19 +290,15 @@ class _SongListHeader extends StatelessWidget {
                                 children: <Widget>[
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(16),
-                                    child: CachedNetworkImage(
-                                      width: 32,
-                                      height: 32,
-                                      imageUrl: songList!.userAvatar,
-                                      placeholder: (context, url) => Container(
-                                        width: 32,
-                                        height: 32,
-                                        decoration: BoxDecoration(
-                                            color: AppColors.mainBg,
-                                            borderRadius:
-                                                BorderRadius.circular(16)),
-                                      ),
-                                    ),
+                                    child: songList!.userAvatar.isEmpty
+                                        ? defaultCoverWidget
+                                        : CachedNetworkImage(
+                                            width: 32,
+                                            height: 32,
+                                            imageUrl: songList!.userAvatar,
+                                            placeholder: (context, url) =>
+                                                defaultCoverWidget,
+                                          ),
                                   ),
                                   SizedBox(
                                     width: 5,
