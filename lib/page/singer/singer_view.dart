@@ -182,6 +182,7 @@ class _SingerHotSongsState extends State<_SingerHotSongs>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     var itemCount = state.songs.length;
     if (state.isLoadingSongs) {
       itemCount++;
@@ -235,6 +236,7 @@ class _SingerHotAlbumsState extends State<_SingerHotAlbums>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     double itemWidth = (MediaQuery.of(context).size.width -
             (crossAxisCount - 1) * 10 -
             16 * 2) /

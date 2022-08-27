@@ -123,12 +123,13 @@ class MusicService {
   }
 
   void _onDurationChanged(Duration? duration) {
-    // debugPrint("onDurationChanged, duration = ${duration?.inMilliseconds}");
+    debugPrint("onDurationChanged, duration = ${duration?.inMilliseconds}");
     this._setPlayingProgress(duration: duration);
   }
 
   void _onPositionChanged(Duration position) {
-    // debugPrint("onPositionChanged, position= ${position.inMilliseconds}");
+    // debugPrint(
+    //     "onPositionChanged, position= ${position.inMinutes % 60}:${position.inSeconds % 60}:${position.inMilliseconds % 1000}");
     this._setPlayingProgress(position: position);
   }
 
@@ -556,6 +557,7 @@ extension PlayerSongExtension on Song {
 
   Future<Uri?> parseSoundUrl(String uniqueId) async {
     await MusicProvider(plt).parseSoundUrl(this);
+    debugPrint('Song.parseSoundUrl, uniqueId=$uniqueId, url=$soundUrl');
     return Uri.tryParse(this.soundUrl);
   }
 }

@@ -73,7 +73,7 @@ class BilibiliMusic extends BaseMusicProvider {
     final cid = firstPageJson.getInt('cid');
 
     final targetUrl2 =
-        'http://api.bilibili.com/x/player/playurl?fnval=16&bvid=${bvid}&cid=${cid}';
+        'http://api.bilibili.com/x/player/playurl?fnval=16&bvid=$bvid&cid=$cid';
     final httpResp2 = await httpMaker.get(targetUrl2);
     final respJson2 = jsonDecode(httpResp2) as Map<String, dynamic>;
     final dataJson2 = respJson2.getMap('data');

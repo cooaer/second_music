@@ -25,7 +25,7 @@ bool showSnackBar(BuildContext context, String title,
         : SnackBarAction(
             textColor: Theme.of(context).colorScheme.secondary,
             label: actionLabel!,
-            onPressed: onPressedAction!,
+            onPressed: onPressedAction,
           ),
   );
   messenger.showSnackBar(snackBar);
