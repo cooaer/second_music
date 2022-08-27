@@ -20,6 +20,17 @@ class SettingPage extends StatelessWidget {
   }
 
   Widget _buildExample(BuildContext context) {
-    return Container();
+    return Container(
+      child: Column(
+        children: [
+          Container(
+            alignment: Alignment.center,
+            height: 200,
+            child: Text('施工中...'),
+          ),
+          Container()
+        ],
+      ),
+    );
   }
 }
