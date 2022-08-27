@@ -44,16 +44,24 @@ dependencies:
   html_unescape: ^2.0.0
   cookie_jar: ^3.0.0
   netease_music_cipher:
-    path: ../netease_music_cipher
-#    git:
-#       url: git@github.com:cooaer/netease_music_cipher.git
+    #    path: ../netease_music_cipher
+    git:
+      url: git@github.com:cooaer/netease_music_cipher.git
 
-#  just_audio: ^0.9.28
-#  just_audio_background: ^0.0.1-beta.7
+  #  just_audio: ^0.9.28
+  #  just_audio_background: ^0.0.1-beta.7
   just_audio:
-    path: ../../github/just_audio/just_audio
+    #    path: ../../github/just_audio/just_audio
+    git:
+      url: git@github.com:cooaer/just_audio.git
+      ref: resolving_audio_source
+      path: just_audio
   just_audio_background:
-    path: ../../github/just_audio/just_audio_background
+    #    path: ../../github/just_audio/just_audio_background
+    git:
+      url: git@github.com:cooaer/just_audio.git
+      ref: resolving_audio_source
+      path: just_audio_background
 
   drift: ^1.7.1
   sqlite3_flutter_libs: ^0.5.0
