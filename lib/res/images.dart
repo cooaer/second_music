@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:second_music/entity/enum.dart';
 
 class AppImages {
+  static const appIcon = 'assets/images/icon.png';
+
   static IconData playModeIcon(PlayMode mode) {
     switch (mode) {
       case PlayMode.repeatOne:
@@ -16,9 +18,5 @@ class AppImages {
 
   static IconData favorIcon(bool isFavor) {
     return isFavor ? Icons.favorite_rounded : Icons.favorite_border_rounded;
-  }
-
-  static String playIcon(bool playing) {
-    return playing ? 'pause_circle_outline' : 'play_circle_outline';
   }
 }

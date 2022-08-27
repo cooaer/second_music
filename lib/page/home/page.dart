@@ -102,16 +102,9 @@ class _HomeTopBar extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  stringsOf(context).appNameForShort,
-                  style: TextStyle(
-                    fontSize: 28,
-                    color: AppColors.textTitle,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+              Image.asset(
+                AppImages.appIcon,
+                color: AppColors.textTitle,
               ),
               Expanded(
                 flex: 1,
